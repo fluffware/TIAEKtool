@@ -75,6 +75,82 @@ namespace TIAEKtool
                 return access;
             }
 
+            public XmlElement Blank(int num = 1)
+            {
+                XmlElement elem = doc.CreateElement("Blank", StructuredTextNS);
+                elem.SetAttribute("Num", num.ToString());
+                return elem;
+            }
+
+            public XmlElement NewLine(int num = 1)
+            {
+                XmlElement elem = doc.CreateElement("NewLine", StructuredTextNS);
+                elem.SetAttribute("Num", num.ToString());
+                return elem;
+            }
+            public XmlElement Symbol()
+            {
+                XmlElement symbol = doc.CreateElement("Symbol", StructuredTextNS);
+                return symbol;
+            }
+
+            // Add a '.' if previous element was a component
+            public void AddComponentSep(XmlElement symbol)
+            {
+                XmlNode prev = symbol.LastChild;
+                if (prev != null && prev is XmlElement)
+                {
+                    XmlElement elem = (XmlElement)prev;
+                    if (elem.Name == "Component")
+                    {
+                        symbol.AppendChild(Token("."));
+                    }
+                }
+            }
+
+            public void SymbolAddComponent(XmlElement symbol, XmlElement component)
+            {
+                AddComponentSep(symbol);
+                symbol.AppendChild(component);
+            }
+
+            public void SymbolAddComponents(XmlElement symbol, TagComponent component)
+            {
+                
+                LinkedList<TagComponent> list = new LinkedList<TagComponent>();
+                while (component != null)
+                {
+                    list.AddFirst(component);
+                    component = component.Parent;
+                }
+                bool first = true;
+                foreach (TagComponent c in list)
+                {
+                    XmlElement[] xml_indices = null;
+                    if (!first)
+                    {
+                        symbol.AppendChild(Token("."));
+                    } else
+                    {
+                        AddComponentSep(symbol);
+                        first = false;
+                    }
+                  
+                    if (c is ArrayComponent)
+                    {
+                        int[] indices = null;
+                        indices = ((ArrayComponent)c).Indices;
+                        xml_indices = new XmlElement[indices.Length];
+                        for (int i = 0; i < indices.Length; i++)
+                        {
+                            xml_indices[i] = LiteralConstant(indices[i].ToString());
+                        }
+                    }
+                  
+                    symbol.AppendChild( Component(c.Name, xml_indices));
+                }
+               
+            }
         }
     }
 }
