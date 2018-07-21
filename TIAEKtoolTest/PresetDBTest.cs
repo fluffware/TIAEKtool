@@ -24,7 +24,7 @@ namespace TIAEKtoolTest
             subtype.Limits.Add(new ArrayLimits(new IntegerLiteral(-4), new IntegerLiteral(7)));
             type.Members.Add(new StructMember() { Name = "Int", MemberType = UINT.Type });
             type.Members.Add(new StructMember() { Name = "Array", MemberType = subtype });
-            TagComponent path = new TagComponent("Foo", type);
+            PathComponent path = new MemberComponent("Foo", type);
             db.AddPath(path);
            
         }

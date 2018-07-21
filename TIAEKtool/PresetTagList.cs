@@ -20,7 +20,7 @@ namespace TIAEKtool
             private StringBuilder _culture;  // Common for all rows
             private PresetTag _tag;
 
-            protected static string PathType(TagComponent path)
+            protected static string PathType(PathComponent path)
             {
                 DataType type = path.Type;
                 if (type == null) return "Unknown";

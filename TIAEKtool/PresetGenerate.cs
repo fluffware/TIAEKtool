@@ -64,20 +64,21 @@ namespace TIAEKtool
         private void writeButton_Click(object sender, EventArgs e)
         {
             string group_name = "main";
+            string db_name = "sDB_Preset_" + group_name;
             try
             {
-                string block_name = "sDB_Preset_"+group_name;
+               
                 PresetDB db;
-                PlcBlock block = resultGroup.Blocks.Find(block_name);
+                PlcBlock block = resultGroup.Blocks.Find(db_name);
                 Constant preset_count = new GlobalConstant("PresetCount_"+group_name);
                 if (block != null)
                 {
                     XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
-                    db = new PresetDB(block_name, preset_count, block_doc);
+                    db = new PresetDB(db_name, preset_count, block_doc);
                 }
                 else
                 {
-                    db = new PresetDB(block_name, preset_count);
+                    db = new PresetDB(db_name, preset_count);
                 }
                 foreach (PresetTagList.Row r in presetList)
                 {
@@ -93,7 +94,11 @@ namespace TIAEKtool
             try
             {
                 string block_name = "Preset_" + group_name;
-                PresetSCL scl = new PresetSCL(block_name);
+                PresetSCL scl = new PresetSCL(block_name,db_name);
+                foreach (PresetTagList.Row r in presetList)
+                {
+                    scl.AddStore(r.Tag.tagPath);
+                }
                 TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
             }
             catch (Exception ex)

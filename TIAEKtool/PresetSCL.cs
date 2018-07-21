@@ -14,9 +14,13 @@ namespace TIAEKtool
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
         XmlNamespaceManager nsmgr;
+        Builder builder;
+        string preset_db_name;
+       
         protected const string StructuredTextNS = "http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v1";
-        public PresetSCL(string block_name, XmlDocument doc = null)
+        public PresetSCL(string block_name, string db_name, XmlDocument doc = null)
         {
+            preset_db_name = db_name;
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
             nsmgr.AddNamespace("st", StructuredTextNS);
@@ -33,124 +37,254 @@ namespace TIAEKtool
             XmlElement name_elem =
             (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/AttributeList/Name", nsmgr);
             name_elem.InnerText = block_name;
+            builder = new Builder(doc);
+           
+            /*
+            preset_db_enable = doc.CreateDocumentFragment();
+            preset_db_enable.AppendChild(builder.Component(db_name));
+            preset_db_enable.AppendChild(builder.Token("."));
+            preset_db_enable.AppendChild(builder.Component("Enable", index));*/
         }
 
-        class Builder
+        protected class Builder
         {
-            XmlDocument doc;
-            public XmlElement Component(string name, XmlElement [] index)
+            public class XmlBuildException : Exception
             {
-                XmlElement elem = doc.CreateElement("Component", StructuredTextNS);
-                elem.SetAttribute("Name", name);
+                public XmlBuildException(string msg) : base(msg)
+                { }
+            }
+            XmlDocument doc;
+            protected Stack<XmlElement> stack = new Stack<XmlElement>();
+            public XmlElement Parent { get => stack.Peek(); }
+            public XmlElement Last { get; protected set; }
+            int uid = 1;
+
+            public Builder(XmlDocument doc)
+            {
+                this.doc = doc;
+                stack.Push(null);
+                Last = null;
+            }
+
+            public void Add(XmlElement child)
+            {
+                if (Parent != null)
+                {
+                    Parent.AppendChild(child);
+                }
+                Last = child;
+            }
+            public void Push (XmlElement parent = null)
+            {
+
+                stack.Push(parent);
+                Last = null;
+            }
+
+            public void Pop()
+            {
+                Last = stack.Pop();
+            }
+
+            public void Down()
+            {
+                if (Last == null) throw new XmlBuildException("No last elemnt to go down into");
+
+                Push(Last);
+               
+            }
+
+            public void UidElem(string name)
+            {
+                XmlElement elem = doc.CreateElement(name, StructuredTextNS);
+                elem.SetAttribute("UId", uid.ToString());
+                Add(elem);
+                uid++;
+            }
+
+            public void Component(string name, XmlElement [] index = null)
+            {
+                UidElem("Component");
+                Last.SetAttribute("Name", name);
+                Down();
                 if (index != null)
                 {
-                    elem.AppendChild(Token("["));
+                    Token("[");
                     if (index.Length >= 1)
-                        elem.AppendChild(index[0]);
+                        Add(index[0]);
                     for (int i = 1; i < index.Length; i++)
                     {
-                        elem.AppendChild(Token(","));
-                        elem.AppendChild(index[i]);
+                        Token(",");
+                        Add(index[i]);
                     }
-                    elem.AppendChild(Token("]"));
+                    Token("]");
                 }
-                return elem;
+                Pop();
             }
-            public XmlElement Token(string text)
+
+            public void Token(string text)
             {
-                XmlElement elem = doc.CreateElement("Token", StructuredTextNS);
-                elem.SetAttribute("Text", text);
-                return elem;
+                UidElem("Token");
+                Last.SetAttribute("Text", text);
+               
             }
             
-            public XmlElement LiteralConstant(string value)
+            public void LiteralConstant(string value)
             {
-                XmlElement access = doc.CreateElement("Access", StructuredTextNS);
-                access.SetAttribute("Scope", "LiteralConstant");
-                XmlElement constant = doc.CreateElement("Constant", StructuredTextNS);
-                XmlElement constant_value = doc.CreateElement("ConstantValue", StructuredTextNS);
-                constant_value.InnerText = value;
-                constant.AppendChild(constant_value);
-                access.AppendChild(constant);
-                return access;
+               UidElem("Access");
+                Last.SetAttribute("Scope", "LiteralConstant");
+                Down();
+                UidElem("Constant");
+                Down();
+                UidElem("ConstantValue");
+                Last.InnerText = value;
+                Pop();
+                Pop();
             }
 
-            public XmlElement Blank(int num = 1)
+            public void GlobalVariable()
             {
-                XmlElement elem = doc.CreateElement("Blank", StructuredTextNS);
-                elem.SetAttribute("Num", num.ToString());
-                return elem;
+               UidElem("Access");
+                Last.SetAttribute("Scope", "GlobalVariable");
+              
             }
 
-            public XmlElement NewLine(int num = 1)
+            public void LocalVariable()
             {
-                XmlElement elem = doc.CreateElement("NewLine", StructuredTextNS);
-                elem.SetAttribute("Num", num.ToString());
-                return elem;
+                 UidElem("Access");
+                Last.SetAttribute("Scope", "LocalVariable");
+               
             }
-            public XmlElement Symbol()
+
+            public void Blank(int num = 1)
             {
-                XmlElement symbol = doc.CreateElement("Symbol", StructuredTextNS);
-                return symbol;
+                UidElem("Blank");
+                Last.SetAttribute("Num", num.ToString());
+            }
+
+            public void NewLine(int num = 1)
+            {
+                UidElem("NewLine");
+                Last.SetAttribute("Num", num.ToString());
+            }
+            public void Symbol()
+            {
+                UidElem("Symbol");
             }
 
             // Add a '.' if previous element was a component
-            public void AddComponentSep(XmlElement symbol)
+            public void AddComponentSep()
             {
-                XmlNode prev = symbol.LastChild;
-                if (prev != null && prev is XmlElement)
+
+                if (Last != null)
                 {
-                    XmlElement elem = (XmlElement)prev;
-                    if (elem.Name == "Component")
+                    if (Last.Name == "Component")
                     {
-                        symbol.AppendChild(Token("."));
+                        Token(".");
                     }
                 }
             }
 
-            public void SymbolAddComponent(XmlElement symbol, XmlElement component)
-            {
-                AddComponentSep(symbol);
-                symbol.AppendChild(component);
-            }
 
-            public void SymbolAddComponents(XmlElement symbol, TagComponent component)
+            public void SymbolAddComponents(PathComponent component)
             {
                 
-                LinkedList<TagComponent> list = new LinkedList<TagComponent>();
+                LinkedList<PathComponent> list = new LinkedList<PathComponent>();
                 while (component != null)
                 {
                     list.AddFirst(component);
                     component = component.Parent;
                 }
                 bool first = true;
-                foreach (TagComponent c in list)
+                foreach (PathComponent c in list)
                 {
-                    XmlElement[] xml_indices = null;
-                    if (!first)
+                    if (c is MemberComponent)
                     {
-                        symbol.AppendChild(Token("."));
-                    } else
-                    {
-                        AddComponentSep(symbol);
-                        first = false;
-                    }
-                  
-                    if (c is ArrayComponent)
-                    {
-                        int[] indices = null;
-                        indices = ((ArrayComponent)c).Indices;
-                        xml_indices = new XmlElement[indices.Length];
-                        for (int i = 0; i < indices.Length; i++)
+                        
+                        if (!first)
                         {
-                            xml_indices[i] = LiteralConstant(indices[i].ToString());
+                            Token(".");
                         }
+                        else
+                        {
+                            AddComponentSep();
+                            first = false;
+                        }
+                        Component(((MemberComponent)c).Name, null);
                     }
-                  
-                    symbol.AppendChild( Component(c.Name, xml_indices));
+
+                    if (c is IndexComponent)
+                    {
+                        // Patch last component with index
+
+                        Down();
+                        Token("[");
+                        int[] indices = ((IndexComponent)c).Indices;
+                        if (indices.Length >= 1)
+                        {
+                            LiteralConstant(indices[0].ToString());
+                            for (int i = 1; i < indices.Length; i++)
+                            {
+                                Token(",");
+                                LiteralConstant(indices[i].ToString());
+
+                            }
+                            Token("]");
+                          
+                        }
+                        Pop();
+                    }
+                   
                 }
                
             }
+        }
+        public void AddStore(PathComponent comp)
+        {
+            builder.Push(structured_text);
+
+            builder.GlobalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+
+            builder.Component(preset_db_name);
+            builder.Token(".");
+
+            builder.Push();
+            builder.LocalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+            builder.Component("Index");
+            builder.Pop();
+            builder.Pop();
+            XmlElement[] index = new XmlElement[1] { builder.Last };
+            builder.Pop();
+
+           
+            builder.Component("Preset", index);
+
+            builder.Token(".");
+            builder.SymbolAddComponents(comp);
+            builder.Pop(); // End symbol
+            builder.Pop(); // End GlobalVariable
+
+            builder.Blank();
+            builder.Token(":=");
+            builder.Blank();
+
+            builder.GlobalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+            builder.SymbolAddComponents(comp);
+            builder.Pop();
+            builder.Pop();
+
+            builder.Token(";");
+            builder.NewLine();
+
         }
     }
 }

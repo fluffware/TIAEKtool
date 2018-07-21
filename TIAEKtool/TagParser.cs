@@ -16,32 +16,44 @@ using TIAtool;
 namespace TIAEKtool
 {
 
-    public class TagComponent
+    public abstract class PathComponent
 
     {
-        public TagComponent Parent { get; protected set; }
-        public string Name { get; protected set; }
+        public PathComponent Parent { get; protected set; }
+     
         public DataType Type { get; protected set; }
 
-        public TagComponent(string name, DataType type, TagComponent parent = null)
+        public PathComponent(DataType type, PathComponent parent = null)
         {
-            Name = name;
+           
             Type = type;
             Parent = parent;
         }
 
+       
+    }
+
+    public class MemberComponent : PathComponent
+    {
+        public string Name { get; protected set; }
+
+
+        public MemberComponent(string name, DataType type, PathComponent parent = null) : base(type, parent)
+        {
+            Name = name;
+        }
+
         public override string ToString()
         {
-            return ((Parent != null)?Parent.ToString() + ".": "") + Name;
+            return ((Parent != null) ? Parent.ToString() + "." : "") + Name;
         }
     }
 
-
-    public class ArrayComponent : TagComponent
+        public class IndexComponent : PathComponent
     {
-        public int[] Indices;
+        public int[] Indices { get; protected set; }
 
-        public ArrayComponent(string name, DataType type, int[] indices, TagComponent parent = null) : base(name, type, parent)
+        public IndexComponent(int[] indices, DataType type, PathComponent parent = null) : base(type, parent)
         {
             Indices = indices;
         }
@@ -49,7 +61,7 @@ namespace TIAEKtool
 
         public override string ToString()
         {
-            StringBuilder str = new StringBuilder(base.ToString());
+            StringBuilder str = new StringBuilder(Parent.ToString());
             str.Append("[");
             if (Indices.Length >= 1)
             {
@@ -82,7 +94,7 @@ namespace TIAEKtool
 
         public class HandleTagEventArgs
         {
-            public TagComponent Path;
+            public PathComponent Path;
             public MultilingualText Comment;
         }
 
@@ -196,35 +208,90 @@ namespace TIAEKtool
             }
 
 
-            protected TagComponent SubstituteIndices(TagComponent path, IEnumerator<int> indices)
+            // Substitute all indices in path with th low limit of the corresponding array
+            protected PathComponent SubstituteIndicesLow(PathComponent path)
             {
-                TagComponent parent_copy;
+                PathComponent parent_copy;
                 if (path.Parent != null)
                 {
-                    parent_copy = SubstituteIndices(path.Parent, indices);
-                } else
+                    parent_copy = SubstituteIndicesLow(path.Parent);
+                }
+                else
                 {
                     parent_copy = null;
                 }
-               
-                if (path is ArrayComponent)
+
+                if (path is IndexComponent)
                 {
-                    ArrayComponent array = (ArrayComponent)path;
-                    ArrayComponent copy = new ArrayComponent(array.Name, array.Type, new int[array.Indices.Length], parent_copy);
-                    for (int i = 0; i < array.Indices.Length; i++)
+                    IndexComponent ic = (IndexComponent)path;
+                    int[] indices = new int[ic.Indices.Length];
+                    if (!(ic.Parent is MemberComponent && ic.Parent.Type is ARRAY)) throw new Exception("Parent of index component is nor an array");
+                    ARRAY array_type = (ARRAY)ic.Parent.Type;
+                    for (int l = 0; l < array_type.Limits.Count; l++)
                     {
-                        indices.MoveNext();
-                        copy.Indices[i] = indices.Current;
+                        Constant low = array_type.Limits[l].LowLimit;
+                        if (!(low is IntegerLiteral)) throw new Exception("Low limity of array is not an integer constant.");
+                        int low_limit = ((IntegerLiteral)low).Value;
+                        indices[l] = low_limit;
+                        
                     }
-                    return copy;
-                } else
+
+                    return new IndexComponent(indices, ic.Type, parent_copy);
+                }
+                else
                 {
-                  return new TagComponent(path.Name, path.Type, parent_copy);
+                    MemberComponent member = (MemberComponent)path;
+                    return new MemberComponent(member.Name, member.Type, parent_copy);
+                }
+            }
+
+            
+            /// <summary>
+            /// Makes a copy of the path with the indices substitutes
+            /// </summary>
+            /// <param name="path">Original path</param>
+            /// <param name="substituted">Copy of path with new indices</param>
+            /// <param name="indices">Indices to substitute</param>
+            /// <returns>Number of indices in path</returns>
+            protected int SubstituteIndices(PathComponent path, out PathComponent substituted, IEnumerator<int> indices)
+            {
+                PathComponent parent_copy;
+                int subs_count;
+                if (path.Parent != null)
+                {
+                     subs_count = SubstituteIndices(path.Parent, out parent_copy, indices);
+                    
+                }
+                else
+                {
+                    parent_copy = null;
+                    subs_count = 0;
+                }
+
+                if (path is IndexComponent)
+                {
+                    IndexComponent ic = (IndexComponent)path;
+                    IndexComponent copy = new IndexComponent(new int[ic.Indices.Length], ic.Type, parent_copy);
+                    for (int i = 0; i < ic.Indices.Length; i++)
+                    {
+                        if (!indices.MoveNext()) break;
+                        copy.Indices[i] = indices.Current;
+                       
+                    }
+                    subs_count += ic.Indices.Length;
+                    substituted = copy;
+                    return subs_count;
+                }
+                else
+                {
+                    MemberComponent member = (MemberComponent)path;
+                    substituted = new MemberComponent(member.Name, member.Type, parent_copy);
+                    return subs_count;
                 }
             }
 
             static readonly char[] path_sep = new char[] { ',' };
-            protected void readSubelement(XmlElement subelement, TagComponent parent)
+            protected void readSubelement(XmlElement subelement, PathComponent parent)
             {
 
                 string indices_str = subelement.GetAttribute("Path");
@@ -234,7 +301,18 @@ namespace TIAEKtool
                 {
                     indices[i] = int.Parse(index_strings[i]);
                 }
-                TagComponent subs = SubstituteIndices(parent, (indices as IList<int>).GetEnumerator());
+                PathComponent subs;
+                int subs_count = SubstituteIndices(parent, out subs, (indices as IList<int>).GetEnumerator());
+                if (subs_count != indices.Length)
+                {
+                    if (!(subs is IndexComponent) 
+                        || (subs_count != (indices.Length + ((IndexComponent)subs).Indices.Length)))
+                    {
+                        throw new Exception("Length of path in subelement doesn't match number of indices in path");
+                    }
+                    // It's the path of the array itself not an array item.
+                    subs = subs.Parent;
+                }
                 XmlElement comment_elem = subelement.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
                 if (comment_elem != null)
                 {
@@ -253,7 +331,7 @@ namespace TIAEKtool
 
 
 
-            protected TagComponent readMember(XmlElement member_elem, TagComponent parent)
+            protected MemberComponent readMember(XmlElement member_elem, PathComponent parent)
             {
                 string name = member_elem.GetAttribute("Name");
                 
@@ -262,16 +340,13 @@ namespace TIAEKtool
                 string type_str = member_elem.GetAttribute("Datatype");
                 string left;
                 DataType type = DataTypeParser.Parse(type_str, out left);
-                TagComponent info;
-               
+                MemberComponent member = new MemberComponent(name, type, parent);
+                PathComponent child_path = member;
                 if (type is ARRAY)
                 {
                     ARRAY array =  (ARRAY)type;
-                    info = new ArrayComponent(name, type, new int[array.Limits.Count], parent);
+                    child_path = new IndexComponent(new int[array.Limits.Count], array.MemberType, member);
 
-                } else
-                {
-                    info = new TagComponent(name, type, parent);
                 }
 
 
@@ -281,7 +356,7 @@ namespace TIAEKtool
                     MultilingualText comment = readComment(comment_elem);
                     callback_ctxt.Post(handle_tag, new HandleTagEventArgs()
                     {
-                        Path = info,
+                        Path = SubstituteIndicesLow(member),
                         Comment = comment
                     });
                 }
@@ -289,20 +364,11 @@ namespace TIAEKtool
                 XmlNodeList member_elems = member_elem.SelectNodes("if:Member", nsmgr);
                 foreach (XmlNode m in member_elems)
                 {
-                    TagComponent subinfo = readMember(m as XmlElement, info);
-                    if (info.Type is STRUCT)
+                    MemberComponent submember = readMember((XmlElement)m, child_path);
+                    if (child_path.Type is STRUCT)
                     {
-                        STRUCT struct_type = (STRUCT)info.Type;
-                        struct_type.Members.Add(new StructMember() { Name = subinfo.Name, MemberType = subinfo.Type });
-                    }
-                    else if (info.Type is ARRAY)
-                    {
-                        ARRAY array_type = (ARRAY)info.Type;
-                        if (array_type.MemberType is STRUCT)
-                        {
-                            STRUCT struct_type = array_type.MemberType as STRUCT;
-                            struct_type.Members.Add(new StructMember() { Name = subinfo.Name, MemberType = subinfo.Type }); 
-                        }
+                        STRUCT struct_type = (STRUCT)child_path.Type;
+                        struct_type.Members.Add(new StructMember() { Name = submember.Name, MemberType = submember.Type });
                     }
                 }
 
@@ -310,16 +376,16 @@ namespace TIAEKtool
                 foreach (XmlNode s in sub_elems)
                 {
 
-                    readSubelement(s as XmlElement, info);
+                    readSubelement(s as XmlElement, child_path);
 
                 }
 
 
-                return info;
+                return member;
 
             }
 
-            protected void readStaticSection(XmlNode section, TagComponent parent)
+            protected void readStaticSection(XmlNode section, PathComponent parent)
             {
                 XmlNode member_node = section.FirstChild;
                 while (member_node != null)
@@ -344,7 +410,7 @@ namespace TIAEKtool
                 string block_name = block_name_node.InnerText;
                 XmlNode static_section = block_attrs.SelectSingleNode("./Interface/if:Sections/if:Section[@Name='Static']", nsmgr);
                 if (static_section == null) throw new XmlException("Missing static section of block");
-                TagComponent parent = new TagComponent(block_name, new STRUCT());
+                PathComponent parent = new MemberComponent(block_name, new STRUCT());
 
                 readStaticSection(static_section, parent);
             }

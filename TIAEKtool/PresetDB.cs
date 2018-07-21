@@ -130,80 +130,73 @@ namespace TIAEKtool
             return member_elem;
         }
 
-        protected XmlNode AddPathValues(TagComponent path, TagComponent child, out int[] indices)
+        protected XmlElement AddPathValues(XmlElement top_parent, PathComponent path, PathComponent child, out int[] indices)
         {
-            XmlNode parent_node;
+            XmlElement parent_node;
             if (path.Parent == null)
             {
-                parent_node = preset_array;
+                parent_node = top_parent;
                 indices = new int[0];
             }
             else
             {
-                parent_node = AddPathValues(path.Parent, path, out indices);
+                parent_node = AddPathValues(top_parent, path.Parent, path, out indices);
             }
 
-                string name = path.Name;
-                DataType type = path.Type;
-                parent_node = GetMember(parent_node, name, type, child == null || type is ARRAY);
-            
-           
-            if (path is ArrayComponent) {
-                ArrayComponent ac = (ArrayComponent)path;
+            if (path is MemberComponent)
+            {
+                MemberComponent mc = (MemberComponent)path;
+                string name = mc.Name;
+                DataType type = mc.Type;
+                parent_node = GetMember(parent_node, name, type, child == null);
+            }
+
+
+            if (path is IndexComponent) {
+                IndexComponent ac = (IndexComponent)path;
                 int[] new_indices = new int[indices.Length + ac.Indices.Length];
                 Array.Copy(indices, new_indices, indices.Length);
                 Array.Copy(ac.Indices, 0, new_indices, indices.Length, ac.Indices.Length);
                 indices = new_indices;
+
+                if (child == null) // Add all members to children
+
+                    if (path.Type is STRUCT)
+                    {
+                        STRUCT struct_type = (STRUCT)path.Type;
+                        foreach (StructMember m in struct_type.Members)
+                        {
+                            GetMember(parent_node, m.Name, m.MemberType, true);
+                        }
+
+                    }
             }
             return parent_node;
         }
 
-        protected XmlNode AddPathEnable(TagComponent path, TagComponent child, out int[] indices)
+        protected XmlNode AddPathEnable(XmlElement top_parent, PathComponent path, out int[] indices)
         {
-            XmlNode parent_node;
-            if (path.Parent == null)
-            {
-                parent_node = enable_array;
-                indices = new int[0];
 
-            }
-            else
+            if (path is IndexComponent)
             {
-                parent_node = AddPathEnable(path.Parent, path, out indices);
-            }
-
-            string name = path.Name;
-            DataType type;
-            type = path.Type;
-            if (child == null)
+                IndexComponent ic = (IndexComponent)path;
+                MemberComponent mc = (MemberComponent)path.Parent;
+                ARRAY array_type = new ARRAY() { Limits = ((ARRAY)mc.Type).Limits, MemberType = BOOL.Type };
+                MemberComponent mc_copy = new MemberComponent(mc.Name, array_type, mc.Parent);
+                path = new IndexComponent(ic.Indices, BOOL.Type, mc_copy);
+            } else
             {
-                if (type is ARRAY)
-                {
-                    ARRAY array_type = (ARRAY)type;
-                    type = new ARRAY() { Limits = array_type.Limits, MemberType = BOOL.Type };
-                }
-                else
-                {
-                    type = BOOL.Type;
-                }
+                MemberComponent mc = (MemberComponent)path;
+                path = new MemberComponent(mc.Name, BOOL.Type, mc.Parent);
             }
-            parent_node = GetMember(parent_node, name, type, type is ARRAY);
-
-            if (path is ArrayComponent)
-            {
-                ArrayComponent ac = (ArrayComponent)path;
-                int[] new_indices = new int[indices.Length + ac.Indices.Length];
-                Array.Copy(indices, new_indices, indices.Length);
-                Array.Copy(ac.Indices, 0, new_indices, indices.Length, ac.Indices.Length);
-                indices = new_indices;
-            }
-            return parent_node;
+            Console.WriteLine("Path: "+path+" Type: "+path.Type);
+            return AddPathValues(top_parent, path, null, out indices);
         }
-        public XmlNode AddPath(TagComponent path)
+        public XmlNode AddPath(PathComponent path)
         {
             int[] indices;
-            AddPathEnable(path, null, out indices);
-            return AddPathValues(path, null, out indices);
+            AddPathEnable(enable_array, path, out indices);
+            return AddPathValues(preset_array, path, null, out indices);
         }
 
        

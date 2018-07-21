@@ -6,7 +6,7 @@ namespace TIAEKtool
 {
     public class PresetTag
     {
-        public TagComponent tagPath;
+        public PathComponent tagPath;
         public String presetGroup;
         public MultilingualText labels;
     }
