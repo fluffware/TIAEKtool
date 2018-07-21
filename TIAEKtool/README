@@ -1,0 +1,23 @@
+﻿This is a tool to build a preset system for PLC-programs written using Siemens TIA Portal.
+It connects to TIA Portal using TIA Openness.
+
+All generated DBs are created in the "Preset" block-group.
+The DBs that store the presets are called "sDB_Preset_<group>" where <group> is given in the preset annotation.
+Two code blocks are also generated for each these are named "PresetStore_<group>" and "PresetSet_<group>"
+
+To define which tags can have preset values specially formated comments are used.
+The general format for an annotaion in a comment is:
+@{<annotaion type><annotaion data>}
+<annotaion type> may contain ASCII alphanumerics and '_'. First character can not be a digit.
+
+A comment may contain multiple annotations. Any text outside annotations is ignored.
+
+The available annotaions are:
+@{preset [group]: <description>}
+If the group is omitted then i defaults to "main". The decription is a text suitable to present to the user.
+
+@{preset_default <default value>}
+Default value for this preset.
+
+@{preset_nostore}
+No code to store the value is generated.
