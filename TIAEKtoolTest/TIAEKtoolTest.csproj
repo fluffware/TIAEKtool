@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommentParserTest.cs" />
     <Compile Include="PLCTypeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PresetDBTest.cs" />

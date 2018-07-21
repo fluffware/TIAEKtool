@@ -75,6 +75,7 @@
     <Compile Include="BrowseDialog.Designer.cs">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommentParser.cs" />
     <Compile Include="PresetSCL.cs" />
     <Compile Include="ConstTable.cs" />
     <Compile Include="DataType.cs" />
@@ -190,6 +191,9 @@
     <EmbeddedResource Include="InitialPresetSCL.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
