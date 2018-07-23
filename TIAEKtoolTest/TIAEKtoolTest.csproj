@@ -53,6 +53,7 @@
     <Compile Include="PLCTypeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PresetDBTest.cs" />
+    <Compile Include="PresetCommentParserTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

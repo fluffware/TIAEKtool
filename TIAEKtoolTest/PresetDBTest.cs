@@ -25,7 +25,7 @@ namespace TIAEKtoolTest
             type.Members.Add(new StructMember() { Name = "Int", MemberType = UINT.Type });
             type.Members.Add(new StructMember() { Name = "Array", MemberType = subtype });
             PathComponent path = new MemberComponent("Foo", type);
-            db.AddPath(path);
+            db.AddPath(path, new MultilingualText("en-US", "Comment"), "89");
            
         }
     }

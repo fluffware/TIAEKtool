@@ -3,7 +3,7 @@ It connects to TIA Portal using TIA Openness.
 
 All generated DBs are created in the "Preset" block-group.
 The DBs that store the presets are called "sDB_Preset_<group>" where <group> is given in the preset annotation.
-Two code blocks are also generated for each these are named "PresetStore_<group>" and "PresetSet_<group>"
+Two code blocks are also generated for each these are named "PresetStore_<group>" and "PresetRecall_<group>"
 
 To define which tags can have preset values specially formated comments are used.
 The general format for an annotaion in a comment is:
@@ -20,4 +20,4 @@ If the group is omitted then i defaults to "main". The decription is a text suit
 Default value for this preset.
 
 @{preset_nostore}
-No code to store the value is generated.
+Don't generate code to store the value.

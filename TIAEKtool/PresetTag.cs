@@ -9,5 +9,7 @@ namespace TIAEKtool
         public PathComponent tagPath;
         public String presetGroup;
         public MultilingualText labels;
+        public string defaultValue;
+        public bool noStore;
     }
 }

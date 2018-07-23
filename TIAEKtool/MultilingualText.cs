@@ -38,5 +38,13 @@ namespace TIAEKtool
                 texts[culture] = value;
             }
         }
+
+        public string [] Cultures { get
+            {
+                Dictionary<string, string>.KeyCollection keys = texts.Keys;
+                string[] cultures = new string[keys.Count];
+                keys.CopyTo(cultures, 0);
+                return cultures;
+            } }
     }
 }

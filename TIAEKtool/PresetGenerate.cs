@@ -36,7 +36,12 @@ namespace TIAEKtool
 
             IEngineeringCompositionOrObject node = top;
             while (node.Parent is PlcBlockGroup) node = node.Parent;
-            resultGroup = node as PlcBlockGroup;
+            PlcBlockGroup top_group = (PlcBlockGroup)node;
+            resultGroup = top_group.Groups.Find("Preset");
+            if (resultGroup == null)
+            {
+                resultGroup = top_group.Groups.Create("Preset");
+            }
         }
 
 
@@ -47,7 +52,17 @@ namespace TIAEKtool
 
         public void HandleTag(object source, TagParser.HandleTagEventArgs ev)
         {
-            presetList.AddTag(new PresetTag() { tagPath = ev.Path, labels = ev.Comment});
+            PresetTag preset = new PresetTag() { tagPath = ev.Path };
+           
+            foreach (string c in ev.Comment.Cultures)
+            {
+                PresetCommentParser.Parse(ev.Comment[c], c, preset);
+             
+            }
+            if (preset.labels != null)
+            {
+                presetList.AddTag(preset);
+            }
         }
 
         public void ParseDone(object source, TagParser.ParseDoneEventArgs ev)
@@ -63,48 +78,87 @@ namespace TIAEKtool
 
         private void writeButton_Click(object sender, EventArgs e)
         {
-            string group_name = "main";
-            string db_name = "sDB_Preset_" + group_name;
-            try
+            Dictionary<string, List<PresetTag>> tag_groups = new Dictionary<string, List<PresetTag>>();
+            foreach (PresetTagList.Row r in presetList)
             {
-               
-                PresetDB db;
-                PlcBlock block = resultGroup.Blocks.Find(db_name);
-                Constant preset_count = new GlobalConstant("PresetCount_"+group_name);
-                if (block != null)
+                List<PresetTag> tags;
+                if (!tag_groups.TryGetValue(r.Tag.presetGroup, out tags))
                 {
-                    XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
-                    db = new PresetDB(db_name, preset_count, block_doc);
+                    tags = new List<PresetTag>();
+
+                    tag_groups[r.Tag.presetGroup] = tags;
                 }
-                else
-                {
-                    db = new PresetDB(db_name, preset_count);
-                }
-                foreach (PresetTagList.Row r in presetList)
-                {
-                    db.AddPath(r.Tag.tagPath);
-                }
-                TIAutils.ImportPlcBlockXML(db.Document, resultGroup);
-            } catch(Exception ex)
-            {
-                MessageBox.Show(this, "Failed to update preset DB: "+ex.Message);
-                return;
+                tags.Add(r.Tag);
             }
 
-            try
+
+            // Create databases for all groups
+            foreach (string group_name in tag_groups.Keys)
             {
-                string block_name = "Preset_" + group_name;
-                PresetSCL scl = new PresetSCL(block_name,db_name);
-                foreach (PresetTagList.Row r in presetList)
+
+                string db_name = "sDB_Preset_" + group_name;
+                var tags = tag_groups[group_name];
+                try
                 {
-                    scl.AddStore(r.Tag.tagPath);
+                  
+                    PresetDB db;
+                    PlcBlock block = resultGroup.Blocks.Find(db_name);
+                    Constant preset_count = new GlobalConstant("PresetCount_" + group_name);
+                    if (block != null)
+                    {
+                        XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
+                        db = new PresetDB(db_name, preset_count, block_doc);
+                    }
+                    else
+                    {
+                        db = new PresetDB(db_name, preset_count);
+                    }
+                    foreach (var tag in tags)
+                    {
+                        db.AddPath(tag.tagPath, tag.labels, tag.defaultValue);
+                    }
+                    TIAutils.ImportPlcBlockXML(db.Document, resultGroup);
                 }
-                TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, "Failed to update preset SCL block: " + ex.Message);
-                return;
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed to update preset DB: " + ex.Message);
+                    return;
+                }
+
+                try
+                {
+                    string block_name = "PresetStore_" + group_name;
+                    PresetSCL scl = new PresetSCL(block_name, db_name);
+                    foreach (var tag in tags)
+                    {
+                        if (!tag.noStore)
+                        {
+                            scl.AddStore(tag.tagPath);
+                        }
+                    }
+                    TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed to update preset store SCL block: " + ex.Message);
+                    return;
+                }
+
+                try
+                {
+                    string block_name = "PresetRecall_" + group_name;
+                    PresetSCL scl = new PresetSCL(block_name, db_name);
+                    foreach (var tag in tags)
+                    {
+
+                    }
+                    TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed to update preset recall SCL block: " + ex.Message);
+                    return;
+                }
             }
         }
     }

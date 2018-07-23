@@ -30,7 +30,30 @@ namespace TIAEKtool
             Parent = parent;
         }
 
-       
+        public abstract PathComponent CloneComponent();
+
+        public PathComponent ClonePath()
+        {
+            PathComponent clone = CloneComponent();
+            if (Parent != null)
+            {
+                clone.Parent = Parent.ClonePath();
+            }
+            return clone;
+        }
+        public PathComponent PrependPath(PathComponent prefix)
+        {
+
+            PathComponent clone = CloneComponent();
+            if (Parent != null)
+            {
+                clone.Parent = Parent.PrependPath(prefix);
+            } else
+            {
+                clone.Parent = prefix; 
+            }
+            return clone;
+        }
     }
 
     public class MemberComponent : PathComponent
@@ -46,6 +69,10 @@ namespace TIAEKtool
         public override string ToString()
         {
             return ((Parent != null) ? Parent.ToString() + "." : "") + Name;
+        }
+        public override PathComponent CloneComponent()
+        {
+            return new MemberComponent(Name, Type, Parent); 
         }
     }
 
@@ -76,7 +103,10 @@ namespace TIAEKtool
             return str.ToString();
         }
 
-
+        public override PathComponent CloneComponent()
+        {
+            return new IndexComponent(Indices, Type, Parent);
+        }
     }
 
 

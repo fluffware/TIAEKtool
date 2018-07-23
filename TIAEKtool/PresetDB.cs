@@ -20,8 +20,8 @@ namespace TIAEKtool
             }
         }
         protected XmlElement static_section;
-        protected XmlElement enable_array;
-        protected XmlElement preset_array;
+        protected PathComponent enable_prefix;
+        protected PathComponent preset_prefix;
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
       
@@ -29,7 +29,7 @@ namespace TIAEKtool
         protected const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
         public PresetDB(string block_name, Constant array_length, XmlDocument doc = null)
         {
-          
+
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
             nsmgr.AddNamespace("if", InterfaceNS);
@@ -48,11 +48,16 @@ namespace TIAEKtool
             array_type.Limits.Add(new ArrayLimits(new IntegerLiteral(1), array_length));
             array_type.MemberType = new STRUCT();
 
-            preset_array = GetMember(static_section, "Preset", array_type, false);
+            int[] preset_index = new int[1] { 1 };
+            PathComponent preset_member = new MemberComponent("Preset", array_type);
+            preset_prefix = new IndexComponent(preset_index, array_type.MemberType, preset_member);
 
-            enable_array = GetMember(static_section, "Enable", array_type, false);
+            PathComponent enable_member = new MemberComponent("Enable", array_type);
+            enable_prefix = new IndexComponent(preset_index, array_type.MemberType, enable_member);
 
-            XmlElement name_elem = 
+
+
+            XmlElement name_elem =
                 (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.GlobalDB/AttributeList/Name", nsmgr);
             name_elem.InnerText = block_name;
         }
@@ -174,6 +179,61 @@ namespace TIAEKtool
             return parent_node;
         }
 
+        protected XmlNode AddPathAttributes(XmlElement elem, PathComponent path, MultilingualText comment, string start_value, int[] indices)
+        {
+            if (indices.Length > 0)
+            {
+                StringBuilder sub_path = new StringBuilder(indices[0].ToString());
+                for (int i = 1; i < indices.Length; i++)
+                {
+                    sub_path.Append("," + indices[i]);
+                }
+                XmlElement sub_elem = elem.SelectSingleNode("if:Subelement[@Path='" + sub_path + "']", nsmgr) as XmlElement;
+                if (sub_elem == null)
+                {
+                    sub_elem = doc.CreateElement("Subelement", InterfaceNS);
+
+                    sub_elem.SetAttribute("Path", sub_path.ToString());
+                    elem.AppendChild(sub_elem);
+                }
+              
+                elem = sub_elem;
+            }
+            if (comment != null) {
+                XmlElement comment_elem = elem.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
+                if (comment_elem == null)
+                {
+                    comment_elem = doc.CreateElement("Comment", InterfaceNS);
+                    elem.AppendChild(comment_elem);
+                }
+
+                foreach (string culture in comment.Cultures)
+                {
+                    XmlElement mt_elem = elem.SelectSingleNode("if:MultiLanguageText[@Lang='" + culture + "']", nsmgr) as XmlElement;
+                    if (mt_elem == null)
+                    {
+                        mt_elem = doc.CreateElement("MultiLanguageText", InterfaceNS);
+                        mt_elem.SetAttribute("Lang", culture);
+                        comment_elem.AppendChild(mt_elem);
+                    }
+                    mt_elem.InnerText = comment[culture];
+                  
+                }
+              
+            }
+            if (start_value != null)
+            {
+                XmlElement start_elem = elem.SelectSingleNode("if:StartValue", nsmgr) as XmlElement;
+                if (start_elem == null)
+                {
+                    start_elem = doc.CreateElement("StartValue", InterfaceNS);
+                    elem.AppendChild(start_elem);
+                }
+                start_elem.InnerText = start_value;
+            }
+            return elem;
+        }
+
         protected XmlNode AddPathEnable(XmlElement top_parent, PathComponent path, out int[] indices)
         {
 
@@ -192,11 +252,15 @@ namespace TIAEKtool
             Console.WriteLine("Path: "+path+" Type: "+path.Type);
             return AddPathValues(top_parent, path, null, out indices);
         }
-        public XmlNode AddPath(PathComponent path)
+        public XmlNode AddPath(PathComponent path, MultilingualText comment, string start_value)
         {
             int[] indices;
-            AddPathEnable(enable_array, path, out indices);
-            return AddPathValues(preset_array, path, null, out indices);
+            AddPathEnable(static_section, path.PrependPath(enable_prefix), out indices);
+            PathComponent preset_path = path.PrependPath(preset_prefix);
+            XmlElement value_node = AddPathValues(static_section, preset_path, null, out indices);
+            return AddPathAttributes(value_node, preset_path, comment, start_value, indices);
+         
+
         }
 
        
