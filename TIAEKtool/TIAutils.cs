@@ -1,4 +1,5 @@
 ﻿using Siemens.Engineering;
+using Siemens.Engineering.Hmi.Screen;
 using Siemens.Engineering.SW.Blocks;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,56 @@ namespace TIAEKtool
             try {
                 doc.Save(path.ToString());
                 group.Blocks.Import(path, ImportOptions.Override);
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+        }
+
+        static public XmlDocument ExportScreenPopupXML(ScreenPopup popup)
+        { 
+            FileInfo path = TempFile.File("export_popup_", "xml");
+
+            try
+            {
+
+                popup.Export(path, ExportOptions.WithDefaults);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path.ToString());
+                return doc;
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+
+        }
+
+        static public void ImportScreenPopupXML(XmlDocument doc, ScreenPopupFolder folder)
+        {
+
+
+            FileInfo path = TempFile.File("import_popup_", "xml");
+
+            try
+            {
+                doc.Save(path.ToString());
+                folder.ScreenPopups.Import(path, ImportOptions.Override);
             }
             finally
             {

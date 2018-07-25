@@ -22,6 +22,10 @@ namespace TIAEKtool
         protected XmlElement static_section;
         protected PathComponent enable_prefix;
         protected PathComponent preset_prefix;
+
+        protected PathComponent enable_selected_prefix;
+        protected PathComponent preset_selected_prefix;
+
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
       
@@ -55,7 +59,8 @@ namespace TIAEKtool
             PathComponent enable_member = new MemberComponent("Enable", array_type);
             enable_prefix = new IndexComponent(preset_index, array_type.MemberType, enable_member);
 
-
+            enable_selected_prefix = new MemberComponent("EnableSelected", new STRUCT());
+            preset_selected_prefix = new MemberComponent("PresetSelected", new STRUCT());
 
             XmlElement name_elem =
                 (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.GlobalDB/AttributeList/Name", nsmgr);
@@ -256,6 +261,9 @@ namespace TIAEKtool
         {
             int[] indices;
             AddPathEnable(static_section, path.PrependPath(enable_prefix), out indices);
+            AddPathEnable(static_section, path.PrependPath(enable_selected_prefix), out indices);
+
+            AddPathValues(static_section, path.PrependPath(preset_selected_prefix), null, out indices);
             PathComponent preset_path = path.PrependPath(preset_prefix);
             XmlElement value_node = AddPathValues(static_section, preset_path, null, out indices);
             return AddPathAttributes(value_node, preset_path, comment, start_value, indices);

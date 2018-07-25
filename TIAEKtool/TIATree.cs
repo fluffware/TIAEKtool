@@ -324,12 +324,86 @@ namespace TIAtool
             }
         }
 
+
+        // Templates
+        private static void HandleScreenTemplate(NodeHandler handler, Siemens.Engineering.Hmi.Screen.ScreenTemplate template)
+        {
+            handler.Enter(template, template.Name);
+            handler.Exit(template);
+        }
+
+        private static void iterScreenTemplate(NodeHandler handler,  ScreenTemplateComposition templates)
+        {
+            foreach (Siemens.Engineering.Hmi.Screen.ScreenTemplate template in templates)
+            {
+                HandleScreenTemplate(handler, template);
+            }
+        }
+
+        private static void handleScreenTemplateFolder(NodeHandler handler, ScreenTemplateFolder folder)
+        {
+            Console.WriteLine("handleScreenTemplateFolder");
+            NodeHandler child_handler = handler.Enter(folder, folder.Name);
+            if (child_handler != null)
+            {
+                iterScreenTemplate(child_handler, folder.ScreenTemplates);
+                iterScreenTemplateFolder(child_handler, folder.Folders);
+            }
+            handler.Exit(folder);
+        }
+
+        private static void iterScreenTemplateFolder(NodeHandler handler, ScreenTemplateUserFolderComposition folders)
+        {
+            Console.WriteLine("iterScreenTemplateFolder");
+            foreach (ScreenTemplateFolder folder in folders)
+            {
+                handleScreenTemplateFolder(handler, folder);
+            }
+        }
+        // Popups
+        private static void HandleScreenPopup(NodeHandler handler, Siemens.Engineering.Hmi.Screen.ScreenPopup popup)
+        {
+            handler.Enter(popup, popup.Name);
+            handler.Exit(popup);
+        }
+
+        private static void iterScreenPopup(NodeHandler handler, ScreenPopupComposition popups)
+        {
+            foreach (Siemens.Engineering.Hmi.Screen.ScreenPopup popup in popups)
+            {
+                HandleScreenPopup(handler, popup);
+            }
+        }
+
+        private static void handleScreenPopupFolder(NodeHandler handler, ScreenPopupFolder folder)
+        {
+            Console.WriteLine("handleScreenPopupFolder");
+            NodeHandler child_handler = handler.Enter(folder, folder.Name);
+            if (child_handler != null)
+            {
+                iterScreenPopup(child_handler, folder.ScreenPopups);
+                iterScreenPopupFolder(child_handler, folder.Folders);
+            }
+            handler.Exit(folder);
+        }
+
+        private static void iterScreenPopupFolder(NodeHandler handler, ScreenPopupUserFolderComposition folders)
+        {
+            Console.WriteLine("iterScreenPopupFolder");
+            foreach (ScreenPopupFolder folder in folders)
+            {
+                handleScreenPopupFolder(handler, folder);
+            }
+        }
+
+        // Screens
+
         private static void HandleScreen(NodeHandler handler, Siemens.Engineering.Hmi.Screen.Screen screen)
         {
             handler.Enter(screen, screen.Name);
             handler.Exit(screen);
         }
-        private static void iterScreen(NodeHandler handler,  ScreenComposition screens)
+        private static void iterScreen(NodeHandler handler, ScreenComposition screens)
         {
             foreach (Siemens.Engineering.Hmi.Screen.Screen screen in screens)
             {
@@ -357,6 +431,8 @@ namespace TIAtool
                 handleScreenFolder(handler, folder);
             }
         }
+
+        // Device items
         private static void handleDeviceItem(NodeHandler handler, DeviceItem item)
         {
             NodeHandler child_handler = handler.Enter(item, item.Name);
@@ -390,6 +466,26 @@ namespace TIAtool
                             iterScreenFolder(screen_handler, hmi_target.ScreenFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenFolder);
+
+                        NodeHandler template_handler = child_handler.Enter(hmi_target.ScreenTemplateFolder, "Templates");
+                        if (template_handler != null)
+                        {
+                            //Console.WriteLine("Iterating templates");
+                            iterScreenTemplate(template_handler, hmi_target.ScreenTemplateFolder.ScreenTemplates);
+                            iterScreenTemplateFolder(template_handler, hmi_target.ScreenTemplateFolder.Folders);
+                        }
+                        child_handler.Exit(hmi_target.ScreenTemplateFolder);
+
+
+                        NodeHandler popup_handler = child_handler.Enter(hmi_target.ScreenPopupFolder, "Popups");
+                        if (popup_handler != null)
+                        {
+                            //Console.WriteLine("Iterating popups");
+                            iterScreenPopup(template_handler, hmi_target.ScreenPopupFolder.ScreenPopups);
+                            iterScreenPopupFolder(template_handler, hmi_target.ScreenPopupFolder.Folders);
+                        }
+                        child_handler.Exit(hmi_target.ScreenPopupFolder);
+
                     }
                 }
                 IterDeviceItem(child_handler, item.DeviceItems);

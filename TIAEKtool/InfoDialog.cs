@@ -106,7 +106,10 @@ namespace TIAtool
 
                     }
                 }
-                if (node.Tag is Siemens.Engineering.SW.Blocks.PlcBlock || node.Tag is Siemens.Engineering.Hmi.Screen.Screen)
+                if (node.Tag is Siemens.Engineering.SW.Blocks.PlcBlock
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.Screen
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenTemplate
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenPopup)
                 {
                     ExportBtn.Enabled = true;
 
@@ -117,7 +120,9 @@ namespace TIAtool
                 }
 
                 if (node.Tag is Siemens.Engineering.SW.Blocks.PlcBlockGroup
-                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenFolder)
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenFolder
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenTemplateFolder
+                    || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenPopupFolder)
                 {
                     ImportBtn.Enabled = true;
 
@@ -189,6 +194,48 @@ namespace TIAtool
 
                     }
                 }
+                else if (node.Tag is Siemens.Engineering.Hmi.Screen.ScreenTemplate)
+                {
+                    Siemens.Engineering.Hmi.Screen.ScreenTemplate template = node.Tag as Siemens.Engineering.Hmi.Screen.ScreenTemplate;
+                    String name = template.Name;
+                    if (name != null)
+                    {
+                        exportFileDialog.FileName = name + ".xml";
+                    }
+                    if (exportFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        try
+                        {
+                            template.Export(new FileInfo(exportFileDialog.FileName), ExportOptions.WithDefaults);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Failed to export screen template: " + ex.Message);
+                        }
+
+                    }
+                }
+                else if (node.Tag is Siemens.Engineering.Hmi.Screen.ScreenPopup)
+                {
+                    Siemens.Engineering.Hmi.Screen.ScreenPopup popup = node.Tag as Siemens.Engineering.Hmi.Screen.ScreenPopup;
+                    String name = popup.Name;
+                    if (name != null)
+                    {
+                        exportFileDialog.FileName = name + ".xml";
+                    }
+                    if (exportFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        try
+                        {
+                            popup.Export(new FileInfo(exportFileDialog.FileName), ExportOptions.WithDefaults);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Failed to export screen popup: " + ex.Message);
+                        }
+
+                    }
+                }
             }
             finally
             {
@@ -244,6 +291,50 @@ namespace TIAtool
                         catch (Exception ex)
                         {
                             MessageBox.Show("Failed to import screen: " + ex.Message);
+                        }
+
+                    }
+                }
+                else if (node.Tag is Siemens.Engineering.Hmi.Screen.ScreenTemplateFolder)
+                {
+                    Siemens.Engineering.Hmi.Screen.ScreenTemplateFolder folder = node.Tag as Siemens.Engineering.Hmi.Screen.ScreenTemplateFolder;
+                    String name = "NewScreenTemplate";
+                    if (name != null)
+                    {
+                        importFileDialog.FileName = name + ".xml";
+                    }
+                    if (importFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        try
+                        {
+                            folder.ScreenTemplates.Import(new FileInfo(importFileDialog.FileName), ImportOptions.Override);
+                          
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Failed to import screen template: " + ex.Message);
+                        }
+
+                    }
+                }
+                else if (node.Tag is Siemens.Engineering.Hmi.Screen.ScreenPopupFolder)
+                {
+                    Siemens.Engineering.Hmi.Screen.ScreenPopupFolder folder = node.Tag as Siemens.Engineering.Hmi.Screen.ScreenPopupFolder;
+                    String name = "NewScreenPopup";
+                    if (name != null)
+                    {
+                        importFileDialog.FileName = name + ".xml";
+                    }
+                    if (importFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        try
+                        {
+                            folder.ScreenPopups.Import(new FileInfo(importFileDialog.FileName), ImportOptions.Override);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Failed to import screen popup: " + ex.Message);
                         }
 
                     }

@@ -11,8 +11,6 @@
       <HeaderVersion>0.1</HeaderVersion>
       <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v3">
   <Section Name="Input">
-    <Member Name="Set" Datatype="Bool" Accessibility="Public"><AttributeList></AttributeList></Member>
-    <Member Name="Store" Datatype="Bool" Accessibility="Public"><AttributeList></AttributeList></Member>
     <Member Name="Index" Datatype="Int" Accessibility="Public"><AttributeList></AttributeList></Member>
   </Section>
   <Section Name="Output" />

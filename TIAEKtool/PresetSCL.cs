@@ -239,6 +239,24 @@ namespace TIAEKtool
                
             }
         }
+
+        protected void AddComponentWithLocalIndex(string member, string index_variable)
+        {
+            builder.Push();
+            builder.LocalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+            builder.Component(index_variable);
+            builder.Pop();
+            builder.Pop();
+            XmlElement[] index = new XmlElement[1] { builder.Last };
+            builder.Pop();
+
+
+            builder.Component(member, index);
+        }
+
         public void AddStore(PathComponent comp)
         {
             builder.Push(structured_text);
@@ -251,19 +269,7 @@ namespace TIAEKtool
             builder.Component(preset_db_name);
             builder.Token(".");
 
-            builder.Push();
-            builder.LocalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-            builder.Component("Index");
-            builder.Pop();
-            builder.Pop();
-            XmlElement[] index = new XmlElement[1] { builder.Last };
-            builder.Pop();
-
-           
-            builder.Component("Preset", index);
+            AddComponentWithLocalIndex("Preset", "Index");
 
             builder.Token(".");
             builder.SymbolAddComponents(comp);
@@ -285,6 +291,72 @@ namespace TIAEKtool
             builder.Token(";");
             builder.NewLine();
 
+        }
+
+        public void AddRecall(PathComponent comp)
+        {
+            builder.Push(structured_text);
+
+            // If <enable> THEN
+            builder.Token("IF");
+            builder.Blank();
+
+            builder.GlobalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+
+            builder.Component(preset_db_name);
+            builder.Token(".");
+
+            AddComponentWithLocalIndex("Enable", "Index");
+
+            builder.Token(".");
+            builder.SymbolAddComponents(comp);
+            builder.Pop(); // End symbol
+            builder.Pop(); // End GlobalVariable
+
+            builder.Blank();
+            builder.Token("THEN");
+            builder.NewLine();
+
+            builder.Blank(4); // Indent
+            // <path>
+            builder.GlobalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+            builder.SymbolAddComponents(comp);
+            builder.Pop();
+            builder.Pop();
+            
+            // :=
+            builder.Blank();
+            builder.Token(":=");
+            builder.Blank();
+
+            // "sDB_Preset...".Preset[index].<path> 
+            builder.GlobalVariable();
+            builder.Down();
+            builder.Symbol();
+            builder.Down();
+
+            builder.Component(preset_db_name);
+            builder.Token(".");
+
+            AddComponentWithLocalIndex("Preset", "Index");
+
+            builder.Token(".");
+            builder.SymbolAddComponents(comp);
+            builder.Pop(); // End symbol
+            builder.Pop(); // End GlobalVariable
+
+            builder.Token(";");
+            builder.NewLine();
+
+            builder.Token("END_IF");
+            builder.Token(";");
+            builder.NewLine();
         }
     }
 }
