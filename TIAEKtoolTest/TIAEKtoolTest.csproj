@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PresetDBTest.cs" />
     <Compile Include="PresetCommentParserTest.cs" />
+    <Compile Include="IntSetTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -76,7 +76,9 @@
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="CommentParser.cs" />
+    <Compile Include="IntSet.cs" />
     <Compile Include="PresetCommentParser.cs" />
+    <Compile Include="PresetPopup.cs" />
     <Compile Include="PresetSCL.cs" />
     <Compile Include="ConstTable.cs" />
     <Compile Include="DataType.cs" />

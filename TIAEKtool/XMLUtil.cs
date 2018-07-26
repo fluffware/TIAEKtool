@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace TIAtool
+namespace TIAEKtool
 {
     class XMLUtil
     {
@@ -54,6 +54,45 @@ namespace TIAtool
             w.WriteString(name);
             w.WriteEndElement(); // Name
             w.WriteEndElement();
+        }
+
+
+        public static void CollectID(XmlElement top, IntSet idset)
+        {
+            if (top.HasAttribute("ID"))
+            {
+                string id_str = top.GetAttribute("ID");
+                int id;
+                if (int.TryParse(id_str, System.Globalization.NumberStyles.HexNumber, null, out id))
+                {
+                    idset.Add(id);
+
+                }
+            }
+            foreach (var child in top.ChildNodes)
+            {
+                if (child is XmlElement)
+                {
+                    CollectID((XmlElement)child, idset);
+                }
+            }
+        }
+
+        public static void ReplaceID(XmlElement top, IntSet idset)
+        {
+            if (top.HasAttribute("ID"))
+            {
+                int id = idset.LowestFree();
+                idset.Add(id);
+                top.SetAttribute("ID", id.ToString("X"));
+            }
+            foreach (var child in top.ChildNodes)
+            {
+                if (child is XmlElement)
+                {
+                    ReplaceID((XmlElement)child, idset);
+                }
+            }
         }
     }
 }

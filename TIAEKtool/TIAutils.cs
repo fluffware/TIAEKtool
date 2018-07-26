@@ -1,5 +1,6 @@
 ﻿using Siemens.Engineering;
 using Siemens.Engineering.Hmi.Screen;
+using Siemens.Engineering.Hmi.Tag;
 using Siemens.Engineering.SW.Blocks;
 using System;
 using System.Collections.Generic;
@@ -114,5 +115,58 @@ namespace TIAEKtool
                 }
             }
         }
+
+        static public XmlDocument ExportHMITagTableXML(TagTable tag_table)
+        {
+            FileInfo path = TempFile.File("export_tagtable_", "xml");
+
+            try
+            {
+
+                tag_table.Export(path, ExportOptions.WithDefaults);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path.ToString());
+                return doc;
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+
+        }
+
+        static public void ImportHMITagTableXML(XmlDocument doc, TagFolder folder)
+        {
+
+
+            FileInfo path = TempFile.File("import_tagtable_", "xml");
+
+            try
+            {
+                doc.Save(path.ToString());
+                folder.TagTables.Import(path, ImportOptions.Override);
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+        }
     }
 }
+
+
+

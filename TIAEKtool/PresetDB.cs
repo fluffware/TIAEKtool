@@ -233,8 +233,9 @@ namespace TIAEKtool
                 {
                     start_elem = doc.CreateElement("StartValue", InterfaceNS);
                     elem.AppendChild(start_elem);
+                    start_elem.InnerText = start_value; // Only set start value if there wasn't one before
                 }
-                start_elem.InnerText = start_value;
+             
             }
             return elem;
         }

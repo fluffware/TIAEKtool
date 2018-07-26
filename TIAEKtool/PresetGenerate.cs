@@ -3,6 +3,7 @@ using Siemens.Engineering;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.SW.Blocks;
 using Siemens.Engineering.Hmi.Screen;
+using Siemens.Engineering.Hmi.Tag;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -78,6 +79,7 @@ namespace TIAEKtool
         TagParser parser;
         PlcBlockGroup resultGroup;
         IList<ScreenPopupFolder> popupFolders;
+        IList<TagFolder> hmi_tag_tables;
         public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top)
         {
             InitializeComponent();
@@ -110,9 +112,15 @@ namespace TIAEKtool
                 var hmi_list = new List<HmiTarget>();
                 FindHMI.HandleDeviceFolder(hmi_list, dev_group);
                 popupFolders = new List<ScreenPopupFolder>();
+                hmi_tag_tables = new List<TagFolder>();
                 foreach (HmiTarget hmi in hmi_list)
                 {
                     popupFolders.Add(hmi.ScreenPopupFolder);
+                    var preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
+                    if (preset_tag_folder != null)
+                    {
+                        hmi_tag_tables.Add(preset_tag_folder);
+                    }
                 }
             }
         }
@@ -234,7 +242,39 @@ namespace TIAEKtool
                     return;
                 }
 
+                // Create HMI tags
+                foreach (TagFolder folder in hmi_tag_tables)
+                {
+                    try
+                    {
 
+                        string table_name = "Preset_" + group_name;
+                        TagTable table = folder.TagTables.Find(table_name);
+
+                        if (table != null)
+                        {
+
+                            XmlDocument table_doc = TIAutils.ExportHMITagTableXML(table);
+                            HMITagTable editor = new HMITagTable(table_doc);
+                            PathComponent enable_selected = new MemberComponent("EnableSelected", new STRUCT(),new MemberComponent(db_name,new STRUCT()));
+                            int index = 1;
+                            foreach (var tag in tags)
+                            {
+                                editor.AddIndexedTag("PresetEnable_"+group_name+"_", index, tag.tagPath.PrependPath(enable_selected).ToString());
+                                index++;
+                            }
+
+
+                            TIAutils.ImportHMITagTableXML(table_doc, folder);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, "Failed to update tag table: " + ex.Message);
+                        return;
+                    }
+
+                }
                 // Create popups
                 foreach (ScreenPopupFolder folder in popupFolders)
                 {
@@ -248,7 +288,15 @@ namespace TIAEKtool
                         {
 
                             XmlDocument popup_doc = TIAutils.ExportScreenPopupXML(popup);
-
+                            PresetPopup editor = new PresetPopup(popup_doc);
+                            int index = 1;
+                          
+                            foreach (var tag in tags)
+                            {
+                                editor.AddEnableSelection(group_name, index, tag.labels);
+                                index++;
+                            }
+                         
 
                             TIAutils.ImportScreenPopupXML(popup_doc, folder);
                         }
