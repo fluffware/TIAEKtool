@@ -88,29 +88,53 @@ namespace TIAEKtool.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;Document&gt;
+        ///   Looks up a localized string similar to &lt;Document&gt;
         ///  &lt;Engineering version=&quot;V15&quot; /&gt;
         ///  &lt;DocumentInfo&gt;
-        ///   
         ///  &lt;/DocumentInfo&gt;
-        ///  &lt;SW.Blocks.GlobalDB ID=&quot;0&quot;&gt;
+        ///  &lt;SW.Blocks.FC ID=&quot;0&quot;&gt;
         ///    &lt;AttributeList&gt;
         ///      &lt;AutoNumber&gt;true&lt;/AutoNumber&gt;
         ///      &lt;HeaderAuthor /&gt;
         ///      &lt;HeaderFamily /&gt;
         ///      &lt;HeaderName /&gt;
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
-        ///      &lt;Interface&gt;
-        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
-        ///          &lt;Section Name=&quot;Static&quot;&gt;
-        ///          &lt;/Section&gt;
-        ///        &lt;/Sections&gt;
-        /// [rest of string was truncated]&quot;;.
+        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///  &lt;Section Name=&quot;Input&quot;&gt;
+        ///    &lt;Member Name=&quot;Index&quot; Datatype=&quot;Int&quot; Accessibility=&quot;Public&quot;&gt;&lt;AttributeList&gt;&lt;/AttributeList&gt;&lt;/Member&gt;
+        ///  &lt;/Sect [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string InitialPresetSCL {
             get {
                 return ResourceManager.GetString("InitialPresetSCL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Document&gt;
+        ///  &lt;Engineering version=&quot;V15&quot; /&gt;
+        ///  &lt;DocumentInfo&gt;
+        ///   
+        ///  &lt;/DocumentInfo&gt;
+        ///  &lt;SW.Types.PlcStruct ID=&quot;0&quot;&gt;
+        ///    &lt;AttributeList&gt;
+        ///      &lt;Interface&gt;
+        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///          &lt;Section Name=&quot;None&quot;&gt;
+        ///          &lt;/Section&gt;
+        ///        &lt;/Sections&gt;
+        ///      &lt;/Interface&gt;
+        ///      &lt;Name&gt;PresetType&lt;/Name&gt;
+        ///    &lt;/AttributeList&gt;
+        ///    &lt;ObjectList&gt;   
+        ///    &lt;/ObjectList&gt;
+        ///  &lt;/SW.Types.PlcStruct&gt;
+        ///&lt;/Document&gt;.
+        /// </summary>
+        internal static string InitialPresetType {
+            get {
+                return ResourceManager.GetString("InitialPresetType", resourceCulture);
             }
         }
     }

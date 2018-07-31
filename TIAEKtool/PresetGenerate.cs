@@ -16,6 +16,8 @@ using System.Windows.Forms;
 using System.Xml;
 using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW.Features;
+using Siemens.Engineering.SW;
+using Siemens.Engineering.SW.Types;
 
 namespace TIAEKtool
 {
@@ -78,6 +80,7 @@ namespace TIAEKtool
         protected PresetTagList presetList;
         TagParser parser;
         PlcBlockGroup resultGroup;
+        PlcTypeGroup typeGroup;
         IList<ScreenPopupFolder> popupFolders;
         IList<TagFolder> hmi_tag_tables;
         public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top)
@@ -102,6 +105,14 @@ namespace TIAEKtool
             if (resultGroup == null)
             {
                 resultGroup = top_group.Groups.Create("Preset");
+            }
+            while (node != null && !(node is PlcSoftware)) node = node.Parent;
+            if (node == null) throw new Exception("No PlcSoftware node found");
+            PlcSoftware sw = (PlcSoftware)node;
+            typeGroup = sw.TypeGroup.Groups.Find("Preset");
+            if (typeGroup == null)
+            {
+                typeGroup = sw.TypeGroup.Groups.Create("Preset");
             }
 
             node = top;
@@ -178,8 +189,56 @@ namespace TIAEKtool
             foreach (string group_name in tag_groups.Keys)
             {
 
+                
                 string db_name = "sDB_Preset_" + group_name;
                 var tags = tag_groups[group_name];
+
+                try
+                {
+
+                    // Type for preset values
+                    string type_name = "PresetValueType_" + group_name;
+                    PlcType type = typeGroup.Types.Find(type_name);
+                    PresetType preset_type;
+                    if (type != null)
+                    {
+                        XmlDocument type_doc = TIAutils.ExportPlcTypeXML(type);
+                        preset_type = new PresetType(type_name, type_doc);
+                    }
+                    else
+                    {
+                        preset_type = new PresetType(type_name);
+                    }
+                    foreach (var tag in tags)
+                    {
+                        preset_type.AddValueType(tag.tagPath, tag.labels, tag.defaultValue);
+                    }
+                    TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
+
+                    // Type for enable flags
+                    type_name = "PresetEnableType_" + group_name;
+                    type = typeGroup.Types.Find(type_name);
+                    if (type != null)
+                    {
+                        XmlDocument type_doc = TIAutils.ExportPlcTypeXML(type);
+                        preset_type = new PresetType(type_name, type_doc);
+                    }
+                    else
+                    {
+                        preset_type = new PresetType(type_name);
+                    }
+                    foreach (var tag in tags)
+                    {
+                        preset_type.AddEnableType(tag.tagPath);
+                    }
+                    TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed to update preset type: " + ex.Message);
+                    return;
+                }
+                /*
                 try
                 {
 
@@ -206,7 +265,7 @@ namespace TIAEKtool
                     MessageBox.Show(this, "Failed to update preset DB: " + ex.Message);
                     return;
                 }
-
+                */
                 try
                 {
                     string block_name = "PresetStore_" + group_name;

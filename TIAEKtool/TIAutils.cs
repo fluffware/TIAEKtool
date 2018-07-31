@@ -2,6 +2,7 @@
 using Siemens.Engineering.Hmi.Screen;
 using Siemens.Engineering.Hmi.Tag;
 using Siemens.Engineering.SW.Blocks;
+using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,6 +66,59 @@ namespace TIAEKtool
                 }
             }
         }
+
+        static public XmlDocument ExportPlcTypeXML(PlcType type)
+        {
+
+
+            FileInfo path = TempFile.File("export_type_", "xml");
+
+            try
+            {
+
+                type.Export(path, ExportOptions.WithDefaults);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path.ToString());
+                return doc;
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+
+        }
+
+        static public void ImportPlcTypeXML(XmlDocument doc, PlcTypeGroup group)
+        {
+
+
+            FileInfo path = TempFile.File("import_type_", "xml");
+
+            try
+            {
+                doc.Save(path.ToString());
+                group.Types.Import(path, ImportOptions.Override);
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+        }
+
 
         static public XmlDocument ExportScreenPopupXML(ScreenPopup popup)
         { 
