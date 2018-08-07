@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PLC.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,7 @@ namespace TIAEKtool
         /// <param name="prefix">Start of tag name. Typically ends with '_'</param>
         /// <param name="index">Index added to end of name</param>
         /// <param name="plc_tag">PLC tag to connect to</param>
-        public void AddIndexedTag(string prefix, int index, string plc_tag)
+        public void AddIndexedTag(string prefix, int index, string plc_tag, DataType type = null)
         {
             string tag_name = prefix + index.ToString();
             XmlElement tag = tag_list.SelectSingleNode("Hmi.Tag.Tag[AttributeList/Name/text()='" + tag_name+"']") as XmlElement;
@@ -42,7 +43,44 @@ namespace TIAEKtool
                 // Change name
                 XmlElement name_elem = tag.SelectSingleNode("AttributeList/Name") as XmlElement;
                 name_elem.InnerText = tag_name;
+
             }
+
+            // Erase all type information and let the import figure it out
+            XmlElement attr_list = tag.SelectSingleNode("AttributeList") as XmlElement;
+            XmlElement length_elem = attr_list.SelectSingleNode("Length") as XmlElement;
+            if (length_elem != null)
+            {
+                attr_list.RemoveChild(length_elem);
+            }
+            if (type != null)
+            {
+                XmlElement coding_elem = attr_list.SelectSingleNode("Coding") as XmlElement;
+                if (coding_elem != null)
+                {
+                    if (type is REAL || type is LREAL)
+                    {
+                        coding_elem.InnerText = "IEEE754Float";
+                    } else
+                    {
+                        coding_elem.InnerText = "Binary";
+                    }
+                }
+            }
+
+            
+            XmlElement link_list = tag.SelectSingleNode("LinkList") as XmlElement;
+            XmlElement hmi_type_elem = link_list.SelectSingleNode("HmiDataType") as XmlElement;
+            if (hmi_type_elem != null)
+            {
+                link_list.RemoveChild(hmi_type_elem);
+            }
+            XmlElement type_elem = link_list.SelectSingleNode("DataType") as XmlElement;
+            if (type_elem != null)
+            {
+                link_list.RemoveChild(type_elem);
+            }
+
 
             // Set PLC tag
             XmlElement controller_tag_elem = tag.SelectSingleNode("LinkList/ControllerTag/Name") as XmlElement;

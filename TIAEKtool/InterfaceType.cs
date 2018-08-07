@@ -20,6 +20,7 @@ namespace TIAEKtool
         }
 
         protected bool has_remanence_attr;
+        protected bool has_external_attrs;
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
 
@@ -68,9 +69,12 @@ namespace TIAEKtool
                 }
                 member_elem.SetAttribute("Accessibility", "Public");
                 XmlNode attr_list = doc.CreateElement("AttributeList", InterfaceNS);
-                attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalAccessible", "true", SystemDefined));
-                attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalVisible", "true", SystemDefined));
-                attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalWritable", "true", SystemDefined));
+                if (has_external_attrs)
+                {
+                    attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalAccessible", "true", SystemDefined));
+                    attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalVisible", "true", SystemDefined));
+                    attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalWritable", "true", SystemDefined));
+                }
                 member_elem.AppendChild(attr_list);
                 parent_node.AppendChild(member_elem);
             }

@@ -11,7 +11,18 @@
       <HeaderVersion>0.1</HeaderVersion>
       <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v3">
   <Section Name="Input">
-    <Member Name="Index" Datatype="Int" Accessibility="Public"><AttributeList></AttributeList></Member>
+    <Member Name="Value" Datatype='"PresetValueType"' Accessibility="Public">
+      <Sections>
+        <Section Name="None">
+        </Section>
+      </Sections>
+    </Member>
+    <Member Name="Enable" Datatype='"PresetEnableType"' Accessibility="Public">
+      <Sections>
+        <Section Name="None">
+        </Section>
+      </Sections>
+    </Member>
   </Section>
   <Section Name="Output" />
   <Section Name="InOut" />

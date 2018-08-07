@@ -28,28 +28,27 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.loadAlarmDefinitionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveAlarmDefinitionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tIAPortalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.presetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.extractToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.extractAlarmDefsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.alarmList = new System.Windows.Forms.DataGridView();
-            this.ColumnID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnText = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnSilent = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.ColumnAutoAck = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.projectTreeView = new System.Windows.Forms.TreeView();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.btn_connect = new System.Windows.Forms.Button();
+            this.btn_disconnect = new System.Windows.Forms.Button();
+            this.btn_preset = new System.Windows.Forms.Button();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.alarmList)).BeginInit();
+            this.flowLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -57,36 +56,27 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.tIAPortalToolStripMenuItem,
-            this.generateToolStripMenuItem,
-            this.extractToolStripMenuItem});
+            this.generateToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(484, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(392, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loadAlarmDefinitionsToolStripMenuItem,
-            this.saveAlarmDefinitionsToolStripMenuItem});
+            this.quitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
-            // loadAlarmDefinitionsToolStripMenuItem
+            // quitToolStripMenuItem
             // 
-            this.loadAlarmDefinitionsToolStripMenuItem.Name = "loadAlarmDefinitionsToolStripMenuItem";
-            this.loadAlarmDefinitionsToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
-            this.loadAlarmDefinitionsToolStripMenuItem.Text = "Load alarm definitions";
-            this.loadAlarmDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.loadAlarmDefinitionsToolStripMenuItem_Click);
-            // 
-            // saveAlarmDefinitionsToolStripMenuItem
-            // 
-            this.saveAlarmDefinitionsToolStripMenuItem.Name = "saveAlarmDefinitionsToolStripMenuItem";
-            this.saveAlarmDefinitionsToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
-            this.saveAlarmDefinitionsToolStripMenuItem.Text = "Save alarm definitions";
-            this.saveAlarmDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.saveAlarmDefinitionsToolStripMenuItem_Click);
+            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
+            this.quitToolStripMenuItem.Text = "Quit";
+            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
             // 
             // tIAPortalToolStripMenuItem
             // 
@@ -134,21 +124,6 @@
             this.presetsToolStripMenuItem.Text = "Presets";
             this.presetsToolStripMenuItem.Click += new System.EventHandler(this.presetsToolStripMenuItem_Click);
             // 
-            // extractToolStripMenuItem
-            // 
-            this.extractToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.extractAlarmDefsToolStripMenuItem});
-            this.extractToolStripMenuItem.Name = "extractToolStripMenuItem";
-            this.extractToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
-            this.extractToolStripMenuItem.Text = "Extract";
-            // 
-            // extractAlarmDefsToolStripMenuItem
-            // 
-            this.extractAlarmDefsToolStripMenuItem.Name = "extractAlarmDefsToolStripMenuItem";
-            this.extractAlarmDefsToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
-            this.extractAlarmDefsToolStripMenuItem.Text = "Alarm defs";
-            this.extractAlarmDefsToolStripMenuItem.Click += new System.EventHandler(this.extractAlarmDefsToolStripMenuItem_Click);
-            // 
             // loadFileDialog
             // 
             this.loadFileDialog.DefaultExt = "xlsx";
@@ -156,92 +131,97 @@
             this.loadFileDialog.Filter = "EXCEL files (*.xlsx)|*.xlsx";
             this.loadFileDialog.ValidateNames = false;
             // 
-            // alarmList
-            // 
-            this.alarmList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.alarmList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ColumnID,
-            this.ColumnName,
-            this.ColumnText,
-            this.ColumnSilent,
-            this.ColumnAutoAck});
-            this.alarmList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.alarmList.Location = new System.Drawing.Point(0, 24);
-            this.alarmList.Name = "alarmList";
-            this.alarmList.Size = new System.Drawing.Size(484, 238);
-            this.alarmList.TabIndex = 2;
-            this.alarmList.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.alarmList_CellContentClick);
-            // 
-            // ColumnID
-            // 
-            this.ColumnID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.ColumnID.DataPropertyName = "ID";
-            this.ColumnID.HeaderText = "ID";
-            this.ColumnID.MinimumWidth = 30;
-            this.ColumnID.Name = "ColumnID";
-            this.ColumnID.ReadOnly = true;
-            this.ColumnID.Width = 50;
-            // 
-            // ColumnName
-            // 
-            this.ColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ColumnName.DataPropertyName = "Name";
-            this.ColumnName.HeaderText = "Name";
-            this.ColumnName.MinimumWidth = 50;
-            this.ColumnName.Name = "ColumnName";
-            this.ColumnName.ReadOnly = true;
-            // 
-            // ColumnText
-            // 
-            this.ColumnText.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ColumnText.DataPropertyName = "Text";
-            this.ColumnText.FillWeight = 200F;
-            this.ColumnText.HeaderText = "Text";
-            this.ColumnText.MinimumWidth = 50;
-            this.ColumnText.Name = "ColumnText";
-            this.ColumnText.ReadOnly = true;
-            // 
-            // ColumnSilent
-            // 
-            this.ColumnSilent.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.ColumnSilent.DataPropertyName = "Options";
-            this.ColumnSilent.HeaderText = "Silent";
-            this.ColumnSilent.Name = "ColumnSilent";
-            this.ColumnSilent.ReadOnly = true;
-            this.ColumnSilent.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.ColumnSilent.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.ColumnSilent.Width = 70;
-            // 
-            // ColumnAutoAck
-            // 
-            this.ColumnAutoAck.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.ColumnAutoAck.DataPropertyName = "Options";
-            this.ColumnAutoAck.HeaderText = "Auto Ack";
-            this.ColumnAutoAck.Name = "ColumnAutoAck";
-            this.ColumnAutoAck.ReadOnly = true;
-            this.ColumnAutoAck.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.ColumnAutoAck.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.ColumnAutoAck.Width = 70;
-            // 
             // saveFileDialog
             // 
             this.saveFileDialog.DefaultExt = "xlsx";
             this.saveFileDialog.FileName = "AlarmDefs";
             this.saveFileDialog.Filter = "EXCEL files (*.xlsx)|*.xlsx";
             // 
+            // projectTreeView
+            // 
+            this.projectTreeView.CheckBoxes = true;
+            this.projectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.projectTreeView.Location = new System.Drawing.Point(3, 3);
+            this.projectTreeView.Name = "projectTreeView";
+            this.projectTreeView.Size = new System.Drawing.Size(299, 357);
+            this.projectTreeView.TabIndex = 0;
+            this.projectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.AutoSize = true;
+            this.flowLayoutPanel1.Controls.Add(this.btn_connect);
+            this.flowLayoutPanel1.Controls.Add(this.btn_disconnect);
+            this.flowLayoutPanel1.Controls.Add(this.btn_preset);
+            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(308, 3);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(81, 357);
+            this.flowLayoutPanel1.TabIndex = 1;
+            // 
+            // btn_connect
+            // 
+            this.btn_connect.Location = new System.Drawing.Point(3, 3);
+            this.btn_connect.Name = "btn_connect";
+            this.btn_connect.Size = new System.Drawing.Size(75, 23);
+            this.btn_connect.TabIndex = 0;
+            this.btn_connect.Text = "Connect";
+            this.btn_connect.UseVisualStyleBackColor = true;
+            this.btn_connect.Click += new System.EventHandler(this.btn_connect_Click);
+            // 
+            // btn_disconnect
+            // 
+            this.btn_disconnect.Location = new System.Drawing.Point(3, 32);
+            this.btn_disconnect.Name = "btn_disconnect";
+            this.btn_disconnect.Size = new System.Drawing.Size(75, 23);
+            this.btn_disconnect.TabIndex = 1;
+            this.btn_disconnect.Text = "Disconnect";
+            this.btn_disconnect.UseVisualStyleBackColor = true;
+            this.btn_disconnect.Click += new System.EventHandler(this.btn_disconnect_Click);
+            // 
+            // btn_preset
+            // 
+            this.btn_preset.Location = new System.Drawing.Point(3, 61);
+            this.btn_preset.Name = "btn_preset";
+            this.btn_preset.Size = new System.Drawing.Size(75, 23);
+            this.btn_preset.TabIndex = 2;
+            this.btn_preset.Text = "Preset";
+            this.btn_preset.UseVisualStyleBackColor = true;
+            this.btn_preset.Click += new System.EventHandler(this.btn_preset_Click);
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.Controls.Add(this.projectTreeView, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 1, 0);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 24);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(392, 363);
+            this.tableLayoutPanel1.TabIndex = 1;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(484, 262);
-            this.Controls.Add(this.alarmList);
+            this.ClientSize = new System.Drawing.Size(392, 387);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "TIA EK tool";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.alarmList)).EndInit();
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -251,24 +231,21 @@
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem loadAlarmDefinitionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveAlarmDefinitionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tIAPortalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem connectToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem disconnectToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog loadFileDialog;
-        private System.Windows.Forms.DataGridView alarmList;
         private System.Windows.Forms.ToolStripMenuItem generateToolStripMenuItem;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnText;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnSilent;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnAutoAck;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
-        private System.Windows.Forms.ToolStripMenuItem extractToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem extractAlarmDefsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem browseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem presetsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
+        private System.Windows.Forms.TreeView projectTreeView;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.Button btn_connect;
+        private System.Windows.Forms.Button btn_disconnect;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Button btn_preset;
     }
 }
 

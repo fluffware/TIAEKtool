@@ -10,85 +10,121 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using TIAEKtool;
+using Siemens.Engineering.HW;
+using Siemens.Engineering.HW.Features;
 
 namespace TIAtool
 {
     public partial class MainForm : Form
     {
-       
+
+        protected TaskDialog task_dialog = null;
+        protected TiaPortal tiaPortal = null;
+
+        protected TIATree.TreeNodeBuilder builder;
+
         public MainForm()
         {
             InitializeComponent();
-            alarmList.CellFormatting +=
-            new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.cellFormatter);
             disconnectToolStripMenuItem.Enabled = false;
+            btn_disconnect.Enabled = false;
+
+          
+
+            // Project tree
+            AutoExpandMaxChildren = -1;
 
         }
 
-        private void saveAlarmDefinitionsToolStripMenuItem_Click(object sender, EventArgs ev)
+        static bool ProjectDescend(object obj)
         {
-            if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                try
-                {
-                   
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to save alarm definitions: " + ex.Message);
-                }
+            return obj is Project || obj is DeviceUserGroup || obj is Device || obj is DeviceItem;
 
-            }
         }
 
-        private void cellFormatter(object sender,
-        System.Windows.Forms.DataGridViewCellFormattingEventArgs e)
+        static bool ProjectLeaf(object obj)
         {
-            string colName = alarmList.Columns[e.ColumnIndex].Name;
-            if (colName.Equals("ColumnID"))
-            {
-                if (e.Value is Int32)
-                {
-                    int id = (int)e.Value;
-                    if (id < 0)
-                    {
-                        e.Value = "-";
-                    }
-
-
-                }
-            }
-            else if (colName.Equals("ColumnSilent"))
-            {
-
-               
-            }
-            else if (colName.Equals("ColumnAutoAck"))
-            {
-
-               
-            }
+            if (!(obj is DeviceItem)) return false;
+            SoftwareContainer sw_cont = ((DeviceItem)obj).GetService<SoftwareContainer>();
+            return sw_cont != null;
         }
-        private void loadAlarmDefinitionsToolStripMenuItem_Click(object sender, EventArgs ev)
+
+        protected void PortalConnected()
         {
-            if (loadFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            builder = new TIATree.TreeNodeBuilder(tiaPortal);
+            builder.BuildDone += TreeDone;
+            builder.Descend = ProjectDescend;
+            builder.Leaf = ProjectLeaf;
+            FormClosing += FormClosingEventHandler;
+            projectTreeView.MouseDoubleClick += TreeDoubleClick;
+            projectTreeView.Nodes.Clear();
+            builder.StartBuild(projectTreeView.Nodes);
+        }
+
+        protected void PortalDisconnected()
+        {
+            builder.CancelBuild();
+            projectTreeView.Nodes.Clear();
+            builder = null;
+        }
+
+
+
+        public TIATree.Filter Descend
+        {
+            get { return builder.Descend; }
+            set { builder.Descend = value; }
+        }
+
+        public TIATree.Filter Leaf
+        {
+            get { return builder.Leaf; }
+            set { builder.Leaf = value; }
+        }
+
+
+        public int AutoExpandMaxChildren { get; set; }
+
+
+
+        protected void TreeDone(object sender, TIATree.BuildDoneEventArgs e)
+        {
+            if (AutoExpandMaxChildren > 0)
             {
-                try
-                {
-                    alarmList.DataSource = null;
-                 
-                    alarmList.AutoGenerateColumns = false;
-                  
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to load alarm definitions: " + ex.Message);
-                }
+                TIATree.TreeNodeBuilder.Expand(projectTreeView.Nodes, AutoExpandMaxChildren);
+            }
+
+        }
+
+        private void TreeDoubleClick(object sender, EventArgs e)
+        {
+
+            //OKBtn.PerformClick();
+        }
+
+        public Object SelectedObject { get; protected set; }
+
+        private void BlockTree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            TreeNode node = projectTreeView.SelectedNode;
+            if (Leaf(node.Tag))
+            {
+                SelectedObject = node.Tag;
+            }
+            else
+            {
 
             }
         }
 
-        TiaPortal tiaPortal = null;
+        protected void FormClosingEventHandler(object sender, FormClosingEventArgs e)
+        {
+            TIATree.TreeNodeBuilder b = builder;
+            if (b != null)
+            {
+                b.CancelBuild();
+            }
+        }
         PortalSelect select_dialog = null;
         private void connectToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -111,7 +147,10 @@ namespace TIAtool
                     {
                         tiaPortal = proc.Attach();
                         connectToolStripMenuItem.Enabled = false;
+                        btn_connect.Enabled = false;
                         disconnectToolStripMenuItem.Enabled = true;
+                        btn_disconnect.Enabled = true;
+                        PortalConnected();
                     }
                     catch (EngineeringException ex)
                     {
@@ -130,201 +169,46 @@ namespace TIAtool
         {
             if (tiaPortal != null)
             {
+                PortalDisconnected();
                 tiaPortal.Dispose();
                 tiaPortal = null;
-                folder_dialog = null;
                 preset_block_group_dialog = null;
                 browse_dialog = null;
                 connectToolStripMenuItem.Enabled = true;
                 disconnectToolStripMenuItem.Enabled = false;
-            }
-
-        }
-
-        // Generate alarm definitions in project
-        BrowseDialog folder_dialog;
-        private void alarmDefsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            if (tiaPortal != null)
-            {
-                if (folder_dialog == null)
-                {
-                    folder_dialog = new BrowseDialog(tiaPortal);
-                    folder_dialog.Descend = TIATree.ControllerOnly;
-                    folder_dialog.Leaf = (o => o is PlcBlockGroup);
-                    folder_dialog.AutoExpandMaxChildren = 1;
-                    folder_dialog.AcceptText = "Generate";
-                    folder_dialog.Text = "Select where to generate block";
-                }
-                if (folder_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    if (folder_dialog.SelectedObject is PlcBlockGroup)
-                    {
-                        PlcBlockGroup folder = (PlcBlockGroup)folder_dialog.SelectedObject;
-                    
-                   
-
-                        // Move up the tree until we find a ControllerTarget
-                        IEngineeringObject obj = folder.Parent;
-                        while (!(obj is PlcSoftware))
-                        {
-                            obj = obj.Parent;
-                            // Shouldn't happen, but just in case
-                            if (obj == null)
-                            {
-                                MessageBox.Show(this, "No controller found as parent");
-                                return;
-                            }
-                        }
-                        PlcSoftware controller = (PlcSoftware)obj;
-                        List<ConstTable.Constant> consts = new List<ConstTable.Constant>();
-                 
-                    }
-                }
+                btn_connect.Enabled = true;
+                btn_disconnect.Enabled = false;
 
             }
-        }
-
-        private void alarmList_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
 
         }
 
-        SelectHMI hmi_dialog;
-        private void HMITagsToolStripMenuItem_Click(object sender, EventArgs e)
+
+        BrowseDialog preset_block_group_dialog;
+
+        InfoDialog browse_dialog;
+        private void browseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tiaPortal != null)
             {
-                if (hmi_dialog == null)
+                if (browse_dialog == null)
                 {
-                    hmi_dialog = new SelectHMI(tiaPortal);
+                    browse_dialog = new InfoDialog(tiaPortal);
 
+                    browse_dialog.AutoExpandMaxChildren = 1;
+                    browse_dialog.Text = "Browse TIA portal";
                 }
-                if (hmi_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                if (browse_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    
-                  
-                    HmiTarget hmi = hmi_dialog.SelectedHMI;
-                    Console.WriteLine("HMI name: " + hmi.Name);
-                    
-                    foreach (Connection conn in hmi.Connections) {
-                        Console.WriteLine("Connection: " + conn.Name);
-                    }
-                    if (hmi.Connections.Count != 1) {
-                          MessageBox.Show(this, "Can only handle exacltly one HMI connection. This device has "+hmi.Connections.Count);
-                       
-                            return;
-                    }
-                    Connection c = hmi.Connections.First();
-                   
                 }
             }
-
-
         }
-          BrowseDialog preset_block_group_dialog;
-          private void extractAlarmDefsToolStripMenuItem_Click(object sender, EventArgs e)
-          {
-              if (tiaPortal != null)
-              {
-                  if (preset_block_group_dialog == null)
-                  {
-                      preset_block_group_dialog = new BrowseDialog(tiaPortal);
-                      preset_block_group_dialog.Descend = TIATree.ControllerOnly;
-                      preset_block_group_dialog.Leaf = TIATree.SharedDBOnly;
-                      preset_block_group_dialog.AutoExpandMaxChildren = 1;
-                      preset_block_group_dialog.AcceptText = "Extract";
-                      preset_block_group_dialog.Text = "Select alarm data block";
-                  }
-                  if (preset_block_group_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                  {
-                      if (preset_block_group_dialog.SelectedObject is DataBlock)
-                      {
-                          DataBlock block = (DataBlock)preset_block_group_dialog.SelectedObject;
-                          try
-                          {
-
-                              // Extract from data base
-                              FileInfo file = TempFile.File("AlarmDB", "xml");
-                           
-                              block.Export(file, ExportOptions.WithDefaults | ExportOptions.WithReadOnly);
-                             
-
-                              // Extract from constant tags 
-                              // Move up the tree until we find a ControllerTarget
-                              IEngineeringObject obj = (block as IEngineeringObject).Parent;
-                              while (!(obj is PlcSoftware))
-                              {
-                                  obj = obj.Parent;
-                                  // Shouldn't happen, but just in case
-                                  if (obj == null)
-                                  {
-                                      MessageBox.Show(this, "No controller found as parent");
-                                      return;
-                                  }
-                              }
-                              PlcSoftware controller = (PlcSoftware)obj;
-                              List<ConstTable.Constant> consts = new List<ConstTable.Constant>();
-
-                              PlcTagTable table = controller.TagTableGroup.TagTables.Find("Alarms");
-                              if (table == null)
-                              {
-                                  MessageBox.Show(this, "No tag table named Alarms was found");
-                              }
-                              else
-                              {
-                                  file = TempFile.File("ConstantTags", "xml");
-                                  Console.WriteLine("Wrote to " + file.Name);
-                                  table.Export(file, ExportOptions.WithDefaults | ExportOptions.WithReadOnly);
-                                  List<ConstTable.Constant> constants = ConstTable.getConstants(file);
-                                  foreach (ConstTable.Constant c in constants)
-                                  {
-                                      if (c.Name.StartsWith("Alarm") && c.Value is int)
-                                      {
-                                         
-                                      }
-                                  }
-                              }
-                          
-
-                              alarmList.AutoGenerateColumns = false;
-                             
-                          }
-                          catch (Exception ex)
-                          {
-                              MessageBox.Show("Failed to extract alarm definitions: " + ex.Message);
-                          }
-
-
-                      }
-                  }
-              }
-          }
-
-          InfoDialog browse_dialog;
-          private void browseToolStripMenuItem_Click(object sender, EventArgs e)
-          {
-              if (tiaPortal != null)
-              {
-                  if (browse_dialog == null)
-                  {
-                      browse_dialog = new InfoDialog(tiaPortal);
-
-                      browse_dialog.AutoExpandMaxChildren = 1;
-                      browse_dialog.Text = "Browse TIA portal";
-                  }
-                  if (browse_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                  {
-                  }
-              }
-          }
 
         PresetGenerate presetGenerate;
 
         private void presetsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
             if (tiaPortal != null)
             {
                 if (preset_block_group_dialog == null)
@@ -346,6 +230,84 @@ namespace TIAtool
                     }
                 }
             }
+        }
+
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void btn_connect_Click(object sender, EventArgs e)
+        {
+            connectToolStripMenuItem_Click(sender, e);
+        }
+
+        private void btn_disconnect_Click(object sender, EventArgs e)
+        {
+            disconnectToolStripMenuItem_Click(sender, e);
+        }
+
+        private void btn_tasks_Click(object sender, EventArgs e)
+        {
+            if (task_dialog == null)
+            {
+                task_dialog = new TaskDialog();
+            }
+            task_dialog.Show();
+        }
+
+        private bool find_blocks(TreeNodeCollection nodes, ref PlcBlockGroup blocks)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                if (!find_blocks(n.Nodes, ref blocks)) return false;
+                if (!n.Checked) continue;
+                if (!(n.Tag is DeviceItem)) continue;
+                SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
+
+                if (sw_cont != null)
+                {
+                    PlcSoftware controller = sw_cont.Software as PlcSoftware;
+                    if (controller != null)
+                    {
+                        if (blocks != null)
+                        {
+                            return false;
+                        }
+                        blocks = controller.BlockGroup;
+
+                    }
+
+                }
+               
+            }
+            return true;
+        }
+
+        private void btn_preset_Click(object sender, EventArgs e)
+        {
+            PlcBlockGroup blocks = null;
+            if (!find_blocks(projectTreeView.Nodes, ref blocks))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            if (blocks == null)
+            {
+                MessageBox.Show("No PLC is selected");
+                return;
+            }
+
+            presetGenerate = new PresetGenerate(tiaPortal, blocks);
+            presetGenerate.ShowDialog();
+
+
         }
     }
 }

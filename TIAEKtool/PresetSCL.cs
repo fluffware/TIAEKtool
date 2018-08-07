@@ -10,40 +10,37 @@ namespace TIAEKtool
 {
     public class PresetSCL
     {
-        XmlElement structured_text;
+        protected XmlElement structured_text;
+       
+        protected Builder builder;
+        protected string block_name;
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
-        XmlNamespaceManager nsmgr;
-        Builder builder;
-        string preset_db_name;
-       
+        protected XmlNamespaceManager nsmgr;
         protected const string StructuredTextNS = "http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v1";
-        public PresetSCL(string block_name, string db_name, XmlDocument doc = null)
+        protected const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
+        public PresetSCL(string block_name)
         {
-            preset_db_name = db_name;
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
+            nsmgr.AddNamespace("if", InterfaceNS);
             nsmgr.AddNamespace("st", StructuredTextNS);
+            this.block_name = block_name;
+           
+          
+          
+        }
 
-            if (doc == null)
-            {
-                doc = new XmlDocument();
-                doc.LoadXml(Resources.InitialPresetSCL);
-            }
+        protected void SetDocument(XmlDocument doc)
+        {
             this.doc = doc;
+            builder = new Builder(doc);
             structured_text =
-                (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/ObjectList/SW.Blocks.CompileUnit/AttributeList/NetworkSource/st:StructuredText", nsmgr);
+               (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/ObjectList/SW.Blocks.CompileUnit/AttributeList/NetworkSource/st:StructuredText", nsmgr);
             if (structured_text == null) throw new Exception("No 'StructuredText' in XML");
             XmlElement name_elem =
             (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/AttributeList/Name", nsmgr);
             name_elem.InnerText = block_name;
-            builder = new Builder(doc);
-           
-            /*
-            preset_db_enable = doc.CreateDocumentFragment();
-            preset_db_enable.AppendChild(builder.Component(db_name));
-            preset_db_enable.AppendChild(builder.Token("."));
-            preset_db_enable.AppendChild(builder.Component("Enable", index));*/
         }
 
         protected class Builder
@@ -256,107 +253,7 @@ namespace TIAEKtool
 
             builder.Component(member, index);
         }
-
-        public void AddStore(PathComponent comp)
-        {
-            builder.Push(structured_text);
-
-            builder.GlobalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-
-            builder.Component(preset_db_name);
-            builder.Token(".");
-
-            AddComponentWithLocalIndex("Preset", "Index");
-
-            builder.Token(".");
-            builder.SymbolAddComponents(comp);
-            builder.Pop(); // End symbol
-            builder.Pop(); // End GlobalVariable
-
-            builder.Blank();
-            builder.Token(":=");
-            builder.Blank();
-
-            builder.GlobalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-            builder.SymbolAddComponents(comp);
-            builder.Pop();
-            builder.Pop();
-
-            builder.Token(";");
-            builder.NewLine();
-
-        }
-
-        public void AddRecall(PathComponent comp)
-        {
-            builder.Push(structured_text);
-
-            // If <enable> THEN
-            builder.Token("IF");
-            builder.Blank();
-
-            builder.GlobalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-
-            builder.Component(preset_db_name);
-            builder.Token(".");
-
-            AddComponentWithLocalIndex("Enable", "Index");
-
-            builder.Token(".");
-            builder.SymbolAddComponents(comp);
-            builder.Pop(); // End symbol
-            builder.Pop(); // End GlobalVariable
-
-            builder.Blank();
-            builder.Token("THEN");
-            builder.NewLine();
-
-            builder.Blank(4); // Indent
-            // <path>
-            builder.GlobalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-            builder.SymbolAddComponents(comp);
-            builder.Pop();
-            builder.Pop();
-            
-            // :=
-            builder.Blank();
-            builder.Token(":=");
-            builder.Blank();
-
-            // "sDB_Preset...".Preset[index].<path> 
-            builder.GlobalVariable();
-            builder.Down();
-            builder.Symbol();
-            builder.Down();
-
-            builder.Component(preset_db_name);
-            builder.Token(".");
-
-            AddComponentWithLocalIndex("Preset", "Index");
-
-            builder.Token(".");
-            builder.SymbolAddComponents(comp);
-            builder.Pop(); // End symbol
-            builder.Pop(); // End GlobalVariable
-
-            builder.Token(";");
-            builder.NewLine();
-
-            builder.Token("END_IF");
-            builder.Token(";");
-            builder.NewLine();
-        }
+        
+ 
     }
 }

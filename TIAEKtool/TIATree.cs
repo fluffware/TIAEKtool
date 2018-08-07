@@ -122,6 +122,7 @@ namespace TIAtool
             class HandlerAsync : NodeHandler
             {
                 Stack<TreeNode> stack = new Stack<TreeNode>();
+                
                 BackgroundWorker worker;
                 TreeNodeBuilder builder;
                 private readonly TreeNodeCollection nodes;
@@ -240,11 +241,20 @@ namespace TIAtool
 
             public void CancelBuild()
             {
-                if (worker != null)
+                BackgroundWorker w = worker;
+                if (w != null)
                 {
-                    worker.CancelAsync();
+                    w.CancelAsync();
+                    lock (TIA)
+                    {
+                        // Do nothing just wait for the worker to finish
+                    }
                 }
+                
             }
+
+           
+
 
             public void DoWork(object sender, DoWorkEventArgs e)
             {

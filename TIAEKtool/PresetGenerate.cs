@@ -83,9 +83,12 @@ namespace TIAEKtool
         PlcTypeGroup typeGroup;
         IList<ScreenPopupFolder> popupFolders;
         IList<TagFolder> hmi_tag_tables;
+        TaskDialog task_dialog;
+        TiaPortal tiaPortal;
         public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top)
         {
             InitializeComponent();
+            tiaPortal = portal;
             FormClosing += FormClosingEventHandler;
             presetListView.AutoGenerateColumns = false;
             presetList = new PresetTagList();
@@ -170,6 +173,11 @@ namespace TIAEKtool
 
         private void writeButton_Click(object sender, EventArgs e)
         {
+            if (task_dialog == null)
+            {
+                task_dialog = new TaskDialog();
+            }
+            task_dialog.Clear();
             // Sort the groups into separate lists of tags
             Dictionary<string, List<PresetTag>> tag_groups = new Dictionary<string, List<PresetTag>>();
             foreach (PresetTagList.Row r in presetList)
@@ -193,181 +201,63 @@ namespace TIAEKtool
                 string db_name = "sDB_Preset_" + group_name;
                 var tags = tag_groups[group_name];
 
-                try
-                {
+                string value_type_name = "PresetValueType_" + group_name;
+                string enable_type_name = "PresetEnableType_" + group_name;
 
-                    // Type for preset values
-                    string type_name = "PresetValueType_" + group_name;
-                    PlcType type = typeGroup.Types.Find(type_name);
-                    PresetType preset_type;
-                    if (type != null)
-                    {
-                        XmlDocument type_doc = TIAutils.ExportPlcTypeXML(type);
-                        preset_type = new PresetType(type_name, type_doc);
-                    }
-                    else
-                    {
-                        preset_type = new PresetType(type_name);
-                    }
-                    foreach (var tag in tags)
-                    {
-                        preset_type.AddValueType(tag.tagPath, tag.labels, tag.defaultValue);
-                    }
-                    TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
-
-                    // Type for enable flags
-                    type_name = "PresetEnableType_" + group_name;
-                    type = typeGroup.Types.Find(type_name);
-                    if (type != null)
-                    {
-                        XmlDocument type_doc = TIAutils.ExportPlcTypeXML(type);
-                        preset_type = new PresetType(type_name, type_doc);
-                    }
-                    else
-                    {
-                        preset_type = new PresetType(type_name);
-                    }
-                    foreach (var tag in tags)
-                    {
-                        preset_type.AddEnableType(tag.tagPath);
-                    }
-                    TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, "Failed to update preset type: " + ex.Message);
-                    return;
-                }
-                /*
-                try
-                {
-
-                    PresetDB db;
-                    PlcBlock block = resultGroup.Blocks.Find(db_name);
-                    Constant preset_count = new GlobalConstant("PresetCount_" + group_name);
-                    if (block != null)
-                    {
-                        XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
-                        db = new PresetDB(db_name, preset_count, block_doc);
-                    }
-                    else
-                    {
-                        db = new PresetDB(db_name, preset_count);
-                    }
-                    foreach (var tag in tags)
-                    {
-                        db.AddPath(tag.tagPath, tag.labels, tag.defaultValue);
-                    }
-                    TIAutils.ImportPlcBlockXML(db.Document, resultGroup);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, "Failed to update preset DB: " + ex.Message);
-                    return;
-                }
-                */
-                try
-                {
-                    string block_name = "PresetStore_" + group_name;
-                    PresetSCL scl = new PresetSCL(block_name, db_name);
-                    foreach (var tag in tags)
-                    {
-                        if (!tag.noStore)
-                        {
-                            scl.AddStore(tag.tagPath);
-                        }
-                    }
-                    TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, "Failed to update preset store SCL block: " + ex.Message);
-                    return;
-                }
-
-                try
-                {
-                    string block_name = "PresetRecall_" + group_name;
-                    PresetSCL scl = new PresetSCL(block_name, db_name);
-                    foreach (var tag in tags)
-                    {
-                        scl.AddRecall(tag.tagPath);
-                    }
-                    TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, "Failed to update preset recall SCL block: " + ex.Message);
-                    return;
-                }
+                task_dialog.AddTask(new CreatePresetTypesTask(tiaPortal, tags,typeGroup, value_type_name, enable_type_name));
+                string recall_block_name = "PresetRecall_" + group_name;
+                task_dialog.AddTask(new CreatePresetRecallBlockTask(tiaPortal, tags, resultGroup, recall_block_name, value_type_name, enable_type_name));
+                string store_block_name = "PresetStore_" + group_name;
+                task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, value_type_name, enable_type_name));
 
                 // Create HMI tags
+                string table_name = "Preset_" + group_name;
                 foreach (TagFolder folder in hmi_tag_tables)
                 {
-                    try
-                    {
-
-                        string table_name = "Preset_" + group_name;
-                        TagTable table = folder.TagTables.Find(table_name);
-
-                        if (table != null)
-                        {
-
-                            XmlDocument table_doc = TIAutils.ExportHMITagTableXML(table);
-                            HMITagTable editor = new HMITagTable(table_doc);
-                            PathComponent enable_selected = new MemberComponent("EnableSelected", new STRUCT(),new MemberComponent(db_name,new STRUCT()));
-                            int index = 1;
-                            foreach (var tag in tags)
-                            {
-                                editor.AddIndexedTag("PresetEnable_"+group_name+"_", index, tag.tagPath.PrependPath(enable_selected).ToString());
-                                index++;
-                            }
-
-
-                            TIAutils.ImportHMITagTableXML(table_doc, folder);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(this, "Failed to update tag table: " + ex.Message);
-                        return;
-                    }
-
+                  
+                    task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, folder, table_name, group_name, db_name));
                 }
+
                 // Create popups
+                string popup_name = "PresetPopup_" + group_name;
                 foreach (ScreenPopupFolder folder in popupFolders)
                 {
-                    try
-                    {
-
-                        string popup_name = "PresetPopup_" + group_name;
-                        ScreenPopup popup = folder.ScreenPopups.Find(popup_name);
-
-                        if (popup != null)
-                        {
-
-                            XmlDocument popup_doc = TIAutils.ExportScreenPopupXML(popup);
-                            PresetPopup editor = new PresetPopup(popup_doc);
-                            int index = 1;
-                          
-                            foreach (var tag in tags)
-                            {
-                                editor.AddEnableSelection(group_name, index, tag.labels);
-                                index++;
-                            }
-                         
-
-                            TIAutils.ImportScreenPopupXML(popup_doc, folder);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(this, "Failed to update popup screen: " + ex.Message);
-                        return;
-                    }
+                    task_dialog.AddTask(new CreatePresetScreenPopupTask(tiaPortal, tags, folder, popup_name, group_name));
 
                 }
+
             }
+            /*
+            try
+            {
+
+                PresetDB db;
+                PlcBlock block = resultGroup.Blocks.Find(db_name);
+                Constant preset_count = new GlobalConstant("PresetCount_" + group_name);
+                if (block != null)
+                {
+                    XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
+                    db = new PresetDB(db_name, preset_count, block_doc);
+                }
+                else
+                {
+                    db = new PresetDB(db_name, preset_count);
+                }
+                foreach (var tag in tags)
+                {
+                    db.AddPath(tag.tagPath, tag.labels, tag.defaultValue);
+                }
+                TIAutils.ImportPlcBlockXML(db.Document, resultGroup);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Failed to update preset DB: " + ex.Message);
+                return;
+            }
+            */
+
+
+            task_dialog.Show();
         }
     }
 

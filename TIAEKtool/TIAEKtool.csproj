@@ -11,6 +11,7 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -21,10 +22,10 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -48,6 +49,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>TIAtool.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>22D5F32AC7D63610CD7C687F3B55282D137B23EA</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>TIAEKtool_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Siemens.Engineering">
@@ -76,8 +89,20 @@
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="CommentParser.cs" />
+    <Compile Include="CreatePresetScreenPopupTask.cs" />
+    <Compile Include="CreatePresetStoreBlockTask.cs" />
+    <Compile Include="CreatePresetRecallBlockTask.cs" />
+    <Compile Include="CreatePresetHmiTagsTask.cs" />
+    <Compile Include="CreatePresetTypesTask.cs" />
+    <Compile Include="ImageCheckboxCell.cs" />
     <Compile Include="InterfaceType.cs" />
     <Compile Include="IntSet.cs" />
+    <Compile Include="LogDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogDialog.Designer.cs">
+      <DependentUpon>LogDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="PresetCommentParser.cs" />
     <Compile Include="PresetPopup.cs" />
     <Compile Include="PresetSCL.cs" />
@@ -111,18 +136,21 @@
     <Compile Include="PortalSelect.designer.cs">
       <DependentUpon>PortalSelect.cs</DependentUpon>
     </Compile>
+    <Compile Include="PresetRecallSCL.cs" />
+    <Compile Include="PresetStoreSCL.cs" />
     <Compile Include="PresetTag.cs" />
     <Compile Include="PresetTagList.cs" />
     <Compile Include="PresetType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SelectHMI.cs">
+    <Compile Include="SequentialTask.cs" />
+    <Compile Include="TagParser.cs" />
+    <Compile Include="TaskDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SelectHMI.Designer.cs">
-      <DependentUpon>SelectHMI.cs</DependentUpon>
+    <Compile Include="TaskDialog.Designer.cs">
+      <DependentUpon>TaskDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="TagParser.cs" />
     <Compile Include="TempFile.cs" />
     <Compile Include="TIATree.cs" />
     <Compile Include="TIAutils.cs" />
@@ -135,6 +163,9 @@
     <Compile Include="XMLUtil.cs" />
     <EmbeddedResource Include="BrowseDialog.resx">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogDialog.resx">
+      <DependentUpon>LogDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PresetGenerate.resx">
       <DependentUpon>PresetGenerate.cs</DependentUpon>
@@ -158,8 +189,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SelectHMI.resx">
-      <DependentUpon>SelectHMI.cs</DependentUpon>
+    <EmbeddedResource Include="TaskDialog.resx">
+      <DependentUpon>TaskDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WaitConnection.resx">
       <DependentUpon>WaitConnection.cs</DependentUpon>
@@ -174,6 +205,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="TIAEKtool_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -193,7 +225,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="InitialPresetSCL.xml">
+    <EmbeddedResource Include="InitialPresetRecallSCL.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -204,6 +236,21 @@
     <EmbeddedResource Include="InitialPresetType .xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="InitialPresetStoreSCL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\EK.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\EK.ico" />
+    <Content Include="Images\Error.png" />
+    <Content Include="Images\Info.png" />
+    <Content Include="Images\Warning.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

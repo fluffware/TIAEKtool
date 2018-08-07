@@ -39,6 +39,18 @@ namespace TIAEKtool
                 {
                     preset.noStore = true;
                 }
+                else if (type == "preset_unit")
+                {
+                    preset.unit = data.Trim();
+                }
+                else if (type == "preset_precision")
+                {
+                    int value;
+                    if (int.TryParse(data, out value) && value >= 0)
+                    {
+                        preset.precision = value;
+                    }
+                }
             }
         }
 

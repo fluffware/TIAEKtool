@@ -21,8 +21,9 @@ namespace TIAEKtool
         }
 
         const string ENABLE_SWITCH_PREFIX = "PresetEnable_";
+        const string VALUE_FIELD_PREFIX = "PresetValue_";
         const string DESCRIPTION_FIELD_PREFIX = "PresetDescription_";
-        public void AddEnableSelection(string group, int index, MultilingualText description)
+        public void AddEnableSelection(string group, int index, MultilingualText description, string unit, int precision)
         {
             int max_size = 5;
 
@@ -86,13 +87,64 @@ namespace TIAEKtool
                     top_attr.InnerText = (top_coord + max_size * 3 / 2).ToString();
                 }
             }
-
             XmlElement tag_name_elem = enable_switch.SelectSingleNode("ObjectList/Hmi.Screen.Property/ObjectList/Hmi.Dynamic.TagConnectionDynamic/LinkList/Tag/Name") as XmlElement;
             if (tag_name_elem != null)
             {
                 tag_name_elem.InnerText = enable_name;
             }
 
+            string value_name = VALUE_FIELD_PREFIX + group + "_" + index.ToString();
+            XmlElement value_field = screen_objects.SelectSingleNode("Hmi.Screen.ScreenLayer//Hmi.Screen.IOField[AttributeList/ObjectName/text()='" + value_name + "']") as XmlElement;
+            if (value_field == null)
+            {
+                string name = VALUE_FIELD_PREFIX + group + "_" + (index - 1).ToString();
+                XmlElement template = screen_objects.SelectSingleNode("Hmi.Screen.ScreenLayer//Hmi.Screen.IOField[AttributeList/ObjectName/text()='" + name + "']") as XmlElement;
+                if (template == null) throw new Exception("Couldn't find " + name + " to use as template for " + value_name);
+                value_field = (XmlElement)template.CloneNode(true);
+                template.ParentNode.InsertAfter(value_field, template);
+                XMLUtil.ReplaceID(value_field, idset);
+                XmlElement name_attr = value_field.SelectSingleNode("AttributeList/ObjectName") as XmlElement;
+                name_attr.InnerText = value_name;
+
+
+                XmlElement top_attr = value_field.SelectSingleNode("AttributeList/Top") as XmlElement;
+                int top_coord;
+                if (top_attr != null && int.TryParse(top_attr.InnerText, out top_coord))
+                {
+                    top_attr.InnerText = (top_coord + max_size * 3 / 2).ToString();
+                }
+            }
+
+            tag_name_elem = value_field.SelectSingleNode("ObjectList/Hmi.Screen.Property/ObjectList/Hmi.Dynamic.TagConnectionDynamic/LinkList/Tag/Name") as XmlElement;
+            if (tag_name_elem != null)
+            {
+                tag_name_elem.InnerText = value_name;
+            }
+
+            XmlElement unit_elem = value_field.SelectSingleNode("AttributeList/Unit") as XmlElement;
+            if (unit_elem != null)
+            {
+                if (unit == null)
+                {
+                    unit_elem.IsEmpty = true;
+                }
+                else
+                {
+                    unit_elem.InnerText = unit;
+                }
+            }
+
+            XmlElement format_elem = value_field.SelectSingleNode("AttributeList/FormatPattern") as XmlElement;
+            if (format_elem != null)
+            {
+                string pattern = "999999";
+                if (precision > 0)
+                {
+                    if (precision > 5) precision = 5;
+                    pattern += ".99999".Substring(0, precision + 1);
+                }
+                format_elem.InnerText = pattern;
+            }
 
         }
     }
