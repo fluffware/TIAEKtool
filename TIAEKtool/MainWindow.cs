@@ -206,41 +206,12 @@ namespace TIAtool
 
         PresetGenerate presetGenerate;
 
-        private void presetsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            if (tiaPortal != null)
-            {
-                if (preset_block_group_dialog == null)
-                {
-                    preset_block_group_dialog = new BrowseDialog(tiaPortal);
-                    preset_block_group_dialog.Descend = TIATree.BlockGroupOrParent;
-                    preset_block_group_dialog.Leaf = TIATree.BlockOrBlockGroup;
-                    preset_block_group_dialog.AutoExpandMaxChildren = 1;
-                    preset_block_group_dialog.AcceptText = "Search";
-                    preset_block_group_dialog.Text = "Select where to search for preset tags";
-                }
-                if (preset_block_group_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    IEngineeringCompositionOrObject selected = (IEngineeringCompositionOrObject)preset_block_group_dialog.SelectedObject;
-                    if (selected != null)
-                    {
-                        presetGenerate = new PresetGenerate(tiaPortal, (IEngineeringCompositionOrObject)selected);
-                        presetGenerate.ShowDialog();
-                    }
-                }
-            }
-        }
-
+      
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-
-        }
 
         private void btn_connect_Click(object sender, EventArgs e)
         {
@@ -252,15 +223,7 @@ namespace TIAtool
             disconnectToolStripMenuItem_Click(sender, e);
         }
 
-        private void btn_tasks_Click(object sender, EventArgs e)
-        {
-            if (task_dialog == null)
-            {
-                task_dialog = new TaskDialog();
-            }
-            task_dialog.Show();
-        }
-
+       
         private bool find_blocks(TreeNodeCollection nodes, ref PlcBlockGroup blocks)
         {
             foreach (TreeNode n in nodes)

@@ -36,10 +36,6 @@
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.generateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.presetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.loadFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.projectTreeView = new System.Windows.Forms.TreeView();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_connect = new System.Windows.Forms.Button();
@@ -55,8 +51,7 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.tIAPortalToolStripMenuItem,
-            this.generateToolStripMenuItem});
+            this.tIAPortalToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(392, 24);
@@ -109,33 +104,8 @@
             this.browseToolStripMenuItem.Text = "Browse";
             this.browseToolStripMenuItem.Click += new System.EventHandler(this.browseToolStripMenuItem_Click);
             // 
-            // generateToolStripMenuItem
-            // 
-            this.generateToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.presetsToolStripMenuItem});
-            this.generateToolStripMenuItem.Name = "generateToolStripMenuItem";
-            this.generateToolStripMenuItem.Size = new System.Drawing.Size(66, 20);
-            this.generateToolStripMenuItem.Text = "Generate";
-            // 
-            // presetsToolStripMenuItem
-            // 
-            this.presetsToolStripMenuItem.Name = "presetsToolStripMenuItem";
-            this.presetsToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
-            this.presetsToolStripMenuItem.Text = "Presets";
-            this.presetsToolStripMenuItem.Click += new System.EventHandler(this.presetsToolStripMenuItem_Click);
-            // 
-            // loadFileDialog
-            // 
-            this.loadFileDialog.DefaultExt = "xlsx";
-            this.loadFileDialog.FileName = "AlarmDefs";
-            this.loadFileDialog.Filter = "EXCEL files (*.xlsx)|*.xlsx";
-            this.loadFileDialog.ValidateNames = false;
-            // 
-            // saveFileDialog
-            // 
-            this.saveFileDialog.DefaultExt = "xlsx";
-            this.saveFileDialog.FileName = "AlarmDefs";
-            this.saveFileDialog.Filter = "EXCEL files (*.xlsx)|*.xlsx";
+          
+       
             // 
             // projectTreeView
             // 
@@ -145,7 +115,6 @@
             this.projectTreeView.Name = "projectTreeView";
             this.projectTreeView.Size = new System.Drawing.Size(299, 357);
             this.projectTreeView.TabIndex = 0;
-            this.projectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // flowLayoutPanel1
             // 
@@ -234,11 +203,7 @@
         private System.Windows.Forms.ToolStripMenuItem tIAPortalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem connectToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem disconnectToolStripMenuItem;
-        private System.Windows.Forms.OpenFileDialog loadFileDialog;
-        private System.Windows.Forms.ToolStripMenuItem generateToolStripMenuItem;
-        private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ToolStripMenuItem browseToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem presetsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
         private System.Windows.Forms.TreeView projectTreeView;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
