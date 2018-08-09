@@ -13,7 +13,7 @@ namespace TIAEKtool
     public partial class LogDialog : Form
     {
         
-        public LogDialog(IList<SequentialTask.LogEntry> log)
+        public LogDialog(MessageLog log)
         {
             InitializeComponent();
             ImageButtonCell status_btn = new ImageButtonCell();
@@ -21,7 +21,7 @@ namespace TIAEKtool
             logListView.Columns["severity"].CellTemplate = status_btn;
 
          
-            logListView.DataSource = log;
+            logListView.DataSource = log.List;
         }
 
 

@@ -85,21 +85,22 @@ namespace TIAEKtool
         IList<TagFolder> hmi_tag_tables;
         TaskDialog task_dialog;
         TiaPortal tiaPortal;
-        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top)
+        MessageLog log = new MessageLog();
+        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, string culture)
         {
             InitializeComponent();
             tiaPortal = portal;
             FormClosing += FormClosingEventHandler;
             presetListView.AutoGenerateColumns = false;
             presetList = new PresetTagList();
-            presetList.Culture = "sv-SE";
+            presetList.Culture = culture;
             presetListView.DataSource = presetList;
 
             writeButton.Enabled = false;
             parser = new TagParser(portal);
             parser.HandleTag += HandleTag;
             parser.ParseDone += ParseDone;
-            parser.ParseAsync(top);
+            parser.ParseAsync(top, log);
 
             IEngineeringCompositionOrObject node = top;
             while (node.Parent is PlcBlockGroup) node = node.Parent;
@@ -163,6 +164,11 @@ namespace TIAEKtool
         public void ParseDone(object source, TagParser.ParseDoneEventArgs ev)
         {
             writeButton.Enabled = resultGroup != null;
+            if (log.HighestSeverity >= MessageLog.Severity.Warning)
+            {
+                LogDialog dialog = new LogDialog(log);
+                dialog.ShowDialog();
+            }
         }
 
         private void PresetGenerate_Load(object sender, EventArgs e)

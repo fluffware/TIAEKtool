@@ -57,7 +57,7 @@ namespace TIAEKtool
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(Severity.Error, "Failed to update popup screen:\n" + ex.Message);
+                    LogMessage(MessageLog.Severity.Error, "Failed to update popup screen:\n" + ex.Message);
                     return;
                 }
             

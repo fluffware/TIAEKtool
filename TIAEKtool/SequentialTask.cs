@@ -9,15 +9,7 @@ namespace TIAEKtool
 {
     public abstract class SequentialTask:INotifyPropertyChanged
     {
-        public enum Severity
-        {
-            None = 0,
-            Debug,
-            Info,
-            Warning,
-            Error
-        }
-
+      
         #region Events
 
 
@@ -29,17 +21,7 @@ namespace TIAEKtool
         #endregion
         protected BackgroundWorker worker;
 
-        public class LogEntry
-        {
-            public Severity Severity { get; protected set; }
-            public string Message { get; protected set; }
-            public LogEntry(Severity severity, string message)
-            {
-                Severity = severity;
-                Message = message;
-            }
-        }
-        protected List<LogEntry> log = new List<LogEntry>();
+        protected MessageLog log;
    
         #region Properties
         public IList<SequentialTask> DependantTasks { get; protected set; } // Must be run after this task
@@ -47,8 +29,8 @@ namespace TIAEKtool
         public string Description { get; set; }
         bool selected;
         public bool Selected { get => selected; set { selected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected))); } }
-        public IList<LogEntry> Log { get => log; }
-        public Severity LogSeverity { get; protected set; }
+        public MessageLog Log { get => log; }
+        public MessageLog.Severity LogSeverity { get => log.HighestSeverity; }
         public bool IsRunning { get => worker != null; }
         public bool IsCompleted { get; protected set; }
         #endregion
@@ -59,13 +41,22 @@ namespace TIAEKtool
             Description = "<none>";
             Selected = true;
             IsCompleted = false;
-            LogSeverity = Severity.None;
+            log = new MessageLog();
+            log.PropertyChanged += Log_PropertyChanged;  
+        }
+
+        private void Log_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+           if (e.PropertyName == nameof(MessageLog.HighestSeverity))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogSeverity)));
+            }
         }
 
 
-     
 
-       
+
+
 
         #region worker events
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -97,14 +88,9 @@ namespace TIAEKtool
             task.RequisiteTask = this;
         }
 
-        public void LogMessage(Severity severity, string message)
+        public void LogMessage(MessageLog.Severity severity, string message)
         {
-            log.Add(new LogEntry(severity, message));
-            if (severity > LogSeverity)
-            {
-                LogSeverity = severity;
-            }
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogSeverity)));
+            log.LogMessage(severity, message);
         }
 
         public virtual bool Start()

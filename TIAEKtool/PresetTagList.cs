@@ -32,6 +32,10 @@ namespace TIAEKtool
             public string Group { get => _tag.presetGroup; set => _tag.presetGroup = value; }
             public string Label { get => (_tag.labels != null) ? _tag.labels[_culture.ToString()] : ""; set { if (_tag.labels != null) _tag.labels[_culture.ToString()] = value; } }
             public string Type { get => PathType(_tag.tagPath); }
+            public string DefaultValue { get => _tag.defaultValue; }
+            public bool NoStore { get => _tag.noStore; }
+            public string Unit { get => _tag.unit; }
+            public int Precision { get => _tag.precision; }
             public PresetTag Tag { get => _tag; }
             public Row(StringBuilder culture, PresetTag tag)
             {

@@ -23,7 +23,7 @@ namespace TIAEKtool
         {
             base.Paint(graphics, clipBounds, cellBounds, rowIndex, elementState, value, formattedValue, errorText, cellStyle, advancedBorderStyle, paintParts);
 
-            if (!(value is SequentialTask.Severity))
+            if (!(value is MessageLog.Severity))
             {
                 return;
             }

@@ -130,6 +130,7 @@ namespace TIAEKtool
 
         public event EventHandler<HandleTagEventArgs> HandleTag;
 
+      
         TiaPortal portal;
 
         BackgroundWorker worker;
@@ -146,6 +147,8 @@ namespace TIAEKtool
 
 
             XmlNamespaceManager nsmgr;
+
+            public MessageLog Log = null;
 
             public ParseCtxt(SynchronizationContext callback_ctxt, SendOrPostCallback handle_tag)
             {
@@ -193,6 +196,11 @@ namespace TIAEKtool
                 {
 
                 }
+                if (!block.IsConsistent)
+                {
+                    Log?.LogMessage(MessageLog.Severity.Warning, "Skipped block " + block.Name + " because it is inconsistent. Compile block to make it consistent.");
+                    return;
+                }
                 FileInfo path = TempFile.File("block_", "xml");
                 try
                 {
@@ -202,7 +210,7 @@ namespace TIAEKtool
                 }
                 catch (Siemens.Engineering.EngineeringTargetInvocationException e)
                 {
-                    Console.WriteLine("Failed to export block " + block.Name + ": " + e.Message);
+                    Log?.LogMessage(MessageLog.Severity.Error, "Failed to export block " + block.Name + ": " + e.Message);
                 }
                 finally
                 {
@@ -212,7 +220,7 @@ namespace TIAEKtool
                     }
                     catch (IOException e)
                     {
-                        Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                        Log?.LogMessage(MessageLog.Severity.Error, "Failed to delete temporary file: " + e.Message);
                     }
                 }
 
@@ -461,7 +469,7 @@ namespace TIAEKtool
                 this.ctxt = ctxt;
             }
         }
-        public void ParseAsync(IEngineeringCompositionOrObject top)
+        public void ParseAsync(IEngineeringCompositionOrObject top, MessageLog log = null)
         {
             if (worker != null && worker.IsBusy) return;
 
@@ -470,6 +478,7 @@ namespace TIAEKtool
             worker.DoWork += DoWork;
             worker.RunWorkerCompleted += RunWorkerCompleted;
             ParseCtxt parse = new ParseCtxt(SynchronizationContext.Current, OnHandleTag);
+            parse.Log = log;
             WorkerArg arg = new WorkerArg(portal, top, parse);
             worker.RunWorkerAsync(arg);
         }

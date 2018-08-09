@@ -40,7 +40,7 @@ namespace TIAEKtool
                     }
                     else
                     {
-                        LogMessage(Severity.Info, "No type named " + valueTypeName + " found, creating it");
+                        LogMessage(MessageLog.Severity.Info, "No type named " + valueTypeName + " found, creating it");
                         preset_type = new PresetType(valueTypeName);
                     }
                     foreach (var tag in tags)
@@ -59,7 +59,7 @@ namespace TIAEKtool
                     }
                     else
                     {
-                        LogMessage(Severity.Info, "No type named " + enableTypeName + " found, creating it");
+                        LogMessage(MessageLog.Severity.Info, "No type named " + enableTypeName + " found, creating it");
                         preset_type = new PresetType(enableTypeName);
                     }
                     foreach (var tag in tags)
@@ -70,7 +70,7 @@ namespace TIAEKtool
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(Severity.Error, "Failed to update preset type:\n" + ex.Message);
+                    LogMessage(MessageLog.Severity.Error, "Failed to update preset type:\n" + ex.Message);
                     return;
                 }
             }

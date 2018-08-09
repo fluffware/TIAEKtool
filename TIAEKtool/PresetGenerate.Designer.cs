@@ -29,12 +29,16 @@
         private void InitializeComponent()
         {
             this.presetListView = new System.Windows.Forms.DataGridView();
-            this.presetListColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.presetListColumnLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.presetListColumnType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.writeButton = new System.Windows.Forms.Button();
+            this.presetListColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.presetListColumnLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.presetListColumnType = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.presetListColumnNoStore = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.presetListColumnValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.presetListColumnUnit = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.presetListColumnPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.presetListView)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -47,31 +51,16 @@
             this.presetListView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.presetListColumnPath,
             this.presetListColumnLabel,
-            this.presetListColumnType});
+            this.presetListColumnType,
+            this.presetListColumnNoStore,
+            this.presetListColumnValue,
+            this.presetListColumnUnit,
+            this.presetListColumnPrecision});
             this.presetListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.presetListView.Location = new System.Drawing.Point(3, 53);
             this.presetListView.Name = "presetListView";
             this.presetListView.Size = new System.Drawing.Size(794, 394);
             this.presetListView.TabIndex = 0;
-            // 
-            // presetListColumnPath
-            // 
-            this.presetListColumnPath.DataPropertyName = "Path";
-            this.presetListColumnPath.HeaderText = "Tag path";
-            this.presetListColumnPath.Name = "presetListColumnPath";
-            // 
-            // presetListColumnLabel
-            // 
-            this.presetListColumnLabel.DataPropertyName = "Label";
-            this.presetListColumnLabel.HeaderText = "Label";
-            this.presetListColumnLabel.Name = "presetListColumnLabel";
-            // 
-            // presetListColumnType
-            // 
-            this.presetListColumnType.DataPropertyName = "Type";
-            this.presetListColumnType.HeaderText = "Type";
-            this.presetListColumnType.Name = "presetListColumnType";
-            this.presetListColumnType.ReadOnly = true;
             // 
             // tableLayoutPanel1
             // 
@@ -110,6 +99,71 @@
             this.writeButton.UseVisualStyleBackColor = true;
             this.writeButton.Click += new System.EventHandler(this.writeButton_Click);
             // 
+            // presetListColumnPath
+            // 
+            this.presetListColumnPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnPath.DataPropertyName = "Path";
+            this.presetListColumnPath.HeaderText = "Tag path";
+            this.presetListColumnPath.Name = "presetListColumnPath";
+            this.presetListColumnPath.ReadOnly = true;
+            this.presetListColumnPath.Width = 75;
+            // 
+            // presetListColumnLabel
+            // 
+            this.presetListColumnLabel.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnLabel.DataPropertyName = "Label";
+            this.presetListColumnLabel.HeaderText = "Label";
+            this.presetListColumnLabel.Name = "presetListColumnLabel";
+            this.presetListColumnLabel.ReadOnly = true;
+            this.presetListColumnLabel.Width = 58;
+            // 
+            // presetListColumnType
+            // 
+            this.presetListColumnType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnType.DataPropertyName = "Type";
+            this.presetListColumnType.HeaderText = "Type";
+            this.presetListColumnType.Name = "presetListColumnType";
+            this.presetListColumnType.ReadOnly = true;
+            this.presetListColumnType.Width = 56;
+            // 
+            // presetListColumnNoStore
+            // 
+            this.presetListColumnNoStore.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnNoStore.DataPropertyName = "NoStore";
+            this.presetListColumnNoStore.HeaderText = "No store";
+            this.presetListColumnNoStore.Name = "presetListColumnNoStore";
+            this.presetListColumnNoStore.ReadOnly = true;
+            this.presetListColumnNoStore.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.presetListColumnNoStore.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.presetListColumnNoStore.Width = 72;
+            // 
+            // presetListColumnValue
+            // 
+            this.presetListColumnValue.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnValue.DataPropertyName = "DefaultValue";
+            this.presetListColumnValue.HeaderText = "Value";
+            this.presetListColumnValue.Name = "presetListColumnValue";
+            this.presetListColumnValue.ReadOnly = true;
+            this.presetListColumnValue.Width = 59;
+            // 
+            // presetListColumnUnit
+            // 
+            this.presetListColumnUnit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnUnit.DataPropertyName = "Unit";
+            this.presetListColumnUnit.HeaderText = "Unit";
+            this.presetListColumnUnit.Name = "presetListColumnUnit";
+            this.presetListColumnUnit.ReadOnly = true;
+            this.presetListColumnUnit.Width = 51;
+            // 
+            // presetListColumnPrecision
+            // 
+            this.presetListColumnPrecision.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.presetListColumnPrecision.DataPropertyName = "Precision";
+            this.presetListColumnPrecision.HeaderText = "Precision";
+            this.presetListColumnPrecision.Name = "presetListColumnPrecision";
+            this.presetListColumnPrecision.ReadOnly = true;
+            this.presetListColumnPrecision.Width = 75;
+            // 
             // PresetGenerate
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -130,11 +184,15 @@
 
         #endregion
         private System.Windows.Forms.DataGridView presetListView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnPath;
-        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnLabel;
-        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnType;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Button writeButton;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnPath;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnType;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn presetListColumnNoStore;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnValue;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnUnit;
+        private System.Windows.Forms.DataGridViewTextBoxColumn presetListColumnPrecision;
     }
 }

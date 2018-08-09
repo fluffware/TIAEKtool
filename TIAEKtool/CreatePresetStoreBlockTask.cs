@@ -46,7 +46,7 @@ namespace TIAEKtool
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(Severity.Error, "Failed to update preset store SCL block:\n" + ex.Message);
+                    LogMessage(MessageLog.Severity.Error, "Failed to update preset store SCL block:\n" + ex.Message);
                     return;
                 }
 

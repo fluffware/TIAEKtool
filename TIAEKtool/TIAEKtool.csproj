@@ -103,6 +103,7 @@
     <Compile Include="LogDialog.Designer.cs">
       <DependentUpon>LogDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="MessageLog.cs" />
     <Compile Include="PresetCommentParser.cs" />
     <Compile Include="PresetPopup.cs" />
     <Compile Include="PresetSCL.cs" />

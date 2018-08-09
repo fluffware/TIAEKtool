@@ -60,7 +60,7 @@ namespace TIAEKtool
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(Severity.Error, "Failed to update tag table:\n" + ex.Message);
+                    LogMessage(MessageLog.Severity.Error, "Failed to update tag table:\n" + ex.Message);
                     return;
                 }
 
