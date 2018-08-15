@@ -290,11 +290,11 @@ namespace TIAtool
         }
 
        
-        private bool find_blocks(TreeNodeCollection nodes, ref PlcBlockGroup blocks)
+        private bool find_plc(TreeNodeCollection nodes, ref PlcSoftware plc)
         {
             foreach (TreeNode n in nodes)
             {
-                if (!find_blocks(n.Nodes, ref blocks)) return false;
+                if (!find_plc(n.Nodes, ref plc)) return false;
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
@@ -304,11 +304,11 @@ namespace TIAtool
                     PlcSoftware controller = sw_cont.Software as PlcSoftware;
                     if (controller != null)
                     {
-                        if (blocks != null)
+                        if (plc != null)
                         {
                             return false;
                         }
-                        blocks = controller.BlockGroup;
+                        plc = controller;
 
                     }
 
@@ -318,25 +318,118 @@ namespace TIAtool
             return true;
         }
 
+        private bool find_hmi(TreeNodeCollection nodes, ref HmiTarget hmi)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                if (!find_hmi(n.Nodes, ref hmi)) return false;
+                if (!n.Checked) continue;
+                if (!(n.Tag is DeviceItem)) continue;
+                SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
+
+                if (sw_cont != null)
+                {
+                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
+                    if (hmi_target != null)
+                    {
+                        if (hmi != null)
+                        {
+                            return false;
+                        }
+                        hmi = hmi_target;
+                    }
+                }
+            }
+            return true;
+        }
+
         private void btn_preset_Click(object sender, EventArgs e)
         {
-            PlcBlockGroup blocks = null;
-            if (!find_blocks(projectTreeView.Nodes, ref blocks))
+            PlcSoftware plc = null;
+            if (!find_plc(projectTreeView.Nodes, ref plc))
             {
                 MessageBox.Show("More than one PLC is selected");
                 return;
             }
 
-            if (blocks == null)
+            if (plc == null)
             {
                 MessageBox.Show("No PLC is selected");
                 return;
             }
 
-            presetGenerate = new PresetGenerate(tiaPortal, blocks, culture);
+            presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, culture);
             presetGenerate.ShowDialog();
 
 
+        }
+
+        private void btn_hmi_tags_Click(object sender, EventArgs e)
+        {
+            PlcSoftware plc = null;
+            if (!find_plc(projectTreeView.Nodes, ref plc))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            if (plc == null)
+            {
+                MessageBox.Show("No PLC is selected");
+                return;
+            }
+
+            HmiTarget hmi = null;
+            if (!find_hmi(projectTreeView.Nodes, ref hmi))
+            {
+                MessageBox.Show("More than one HMI device is selected");
+                return;
+            }
+
+            if (hmi == null)
+            {
+                MessageBox.Show("No HMI device is selected");
+                return;
+            }
+            ConstantLookup constants = new ConstantLookup();
+
+            try
+            {
+                constants.Populate(tiaPortal, plc);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to build lookup table for user constants: " + ex.Message);
+                return;
+            }
+
+            HMItagBuilder hmi_tags = new HMItagBuilder(tiaPortal, plc, hmi, constants);
+            hmi_tags.ShowDialog();
+        }
+
+        private void btn_copy_Click(object sender, EventArgs e)
+        {
+            PlcSoftware plc = null;
+            if (!find_plc(projectTreeView.Nodes, ref plc))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            HmiTarget hmi = null;
+            if (!find_hmi(projectTreeView.Nodes, ref hmi))
+            {
+                MessageBox.Show("More than one HMI device is selected");
+                return;
+            }
+
+            if (hmi == null && plc == null)
+            {
+                MessageBox.Show("No devices are selected");
+                return;
+            }
+            CopySelection copy = new CopySelection(tiaPortal,plc, hmi);
+            copy.ShowDialog();
         }
     }
 }

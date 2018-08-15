@@ -18,6 +18,7 @@ using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Types;
+using Siemens.Engineering.Hmi.TextGraphicList;
 
 namespace TIAEKtool
 {
@@ -81,8 +82,9 @@ namespace TIAEKtool
         TagParser parser;
         PlcBlockGroup resultGroup;
         PlcTypeGroup typeGroup;
-        IList<ScreenPopupFolder> popupFolders;
-        IList<TagFolder> hmi_tag_tables;
+        PlcSoftware plcSoftware;
+
+        IList<HmiTarget> hmiTargets;
         TaskDialog task_dialog;
         TiaPortal tiaPortal;
         MessageLog log = new MessageLog();
@@ -112,31 +114,22 @@ namespace TIAEKtool
             }
             while (node != null && !(node is PlcSoftware)) node = node.Parent;
             if (node == null) throw new Exception("No PlcSoftware node found");
-            PlcSoftware sw = (PlcSoftware)node;
-            typeGroup = sw.TypeGroup.Groups.Find("Preset");
+            plcSoftware = (PlcSoftware)node;
+            typeGroup = plcSoftware.TypeGroup.Groups.Find("Preset");
             if (typeGroup == null)
             {
-                typeGroup = sw.TypeGroup.Groups.Create("Preset");
+                typeGroup = plcSoftware.TypeGroup.Groups.Create("Preset");
             }
-
+            hmiTargets = new List<HmiTarget>();
             node = top;
             while (node != null && !(node is DeviceUserGroup)) node = node.Parent;
+
             if (node != null)
             {
                 DeviceUserGroup dev_group = (DeviceUserGroup)node;
-                var hmi_list = new List<HmiTarget>();
-                FindHMI.HandleDeviceFolder(hmi_list, dev_group);
-                popupFolders = new List<ScreenPopupFolder>();
-                hmi_tag_tables = new List<TagFolder>();
-                foreach (HmiTarget hmi in hmi_list)
-                {
-                    popupFolders.Add(hmi.ScreenPopupFolder);
-                    var preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
-                    if (preset_tag_folder != null)
-                    {
-                        hmi_tag_tables.Add(preset_tag_folder);
-                    }
-                }
+
+                FindHMI.HandleDeviceFolder(hmiTargets, dev_group);
+               
             }
         }
 
@@ -198,9 +191,23 @@ namespace TIAEKtool
                 tags.Add(r.Tag);
             }
 
+            ConstantLookup constants = new ConstantLookup();
+            constants.Populate(tiaPortal, plcSoftware);
+            foreach (HmiTarget hmi in hmiTargets)
+            {
 
-            // Create databases for all groups
-            foreach (string group_name in tag_groups.Keys)
+              
+
+                // Create HMI tags
+                TagFolder preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
+                if (preset_tag_folder != null)
+                {
+                    task_dialog.AddTask(new CreateHmiPresetConstantTagsTask(tiaPortal,preset_tag_folder,constants));
+                }
+            }
+
+                // Create databases for all groups
+                foreach (string group_name in tag_groups.Keys)
             {
 
                 
@@ -216,52 +223,54 @@ namespace TIAEKtool
                 string store_block_name = "PresetStore_" + group_name;
                 task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, value_type_name, enable_type_name));
 
-                // Create HMI tags
-                string table_name = "Preset_" + group_name;
-                foreach (TagFolder folder in hmi_tag_tables)
+                foreach (HmiTarget hmi in hmiTargets)
                 {
-                  
-                    task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, folder, table_name, group_name, db_name));
-                }
 
-                // Create popups
-                string popup_name = "PresetPopup_" + group_name;
-                foreach (ScreenPopupFolder folder in popupFolders)
-                {
-                    task_dialog.AddTask(new CreatePresetScreenPopupTask(tiaPortal, tags, folder, popup_name, group_name));
+                    // Create text lists 
+                    TextListComposition hmi_text_lists = hmi.TextLists;
+                    int count = 1;
+                    foreach (PresetTag tag in tags)
+                    {
+                        if (tag.state_labels != null)
+                        {
+                            string list_name = "PresetTextList_" + group_name + "_" + count;
+                            task_dialog.AddTask(new CreateHmiTextListTask(tiaPortal, list_name, hmi_text_lists, tag.state_labels));
+                        }
+                        count++;
+                    }
 
+                    // Create HMI tags
+                    TagFolder preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
+                    if (preset_tag_folder != null)
+                    {
+                        string table_name = "Preset_" + group_name;
+                       
+                            task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name));
+                      
+                    }
+                    // Load template screen
+
+                    ScreenTemplate obj_templ = hmi.ScreenTemplateFolder.ScreenTemplates.Find("ObjectTemplate");
+                    if (obj_templ != null)
+                    {
+                        XmlDocument templates = TIAutils.ExportScreenTemplateXML(obj_templ);
+
+                        // Create popups
+                        string popup_name = "PresetPopup_" + group_name;
+
+                        ScreenPopupFolder popup_folder = hmi.ScreenPopupFolder;
+
+
+                        task_dialog.AddTask(new CreatePresetScreenPopupTask(tiaPortal, tags, popup_folder, templates, popup_name, group_name));
+                    }
+                    else
+                    {
+                        MessageBox.Show("No template screen named ObjectTemplate found for HMI " + hmi.Name+". Some screens will not be updated.");
+                    }
                 }
 
             }
-            /*
-            try
-            {
-
-                PresetDB db;
-                PlcBlock block = resultGroup.Blocks.Find(db_name);
-                Constant preset_count = new GlobalConstant("PresetCount_" + group_name);
-                if (block != null)
-                {
-                    XmlDocument block_doc = TIAutils.ExportPlcBlockXML(block);
-                    db = new PresetDB(db_name, preset_count, block_doc);
-                }
-                else
-                {
-                    db = new PresetDB(db_name, preset_count);
-                }
-                foreach (var tag in tags)
-                {
-                    db.AddPath(tag.tagPath, tag.labels, tag.defaultValue);
-                }
-                TIAutils.ImportPlcBlockXML(db.Document, resultGroup);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, "Failed to update preset DB: " + ex.Message);
-                return;
-            }
-            */
-
+           
 
             task_dialog.Show();
         }

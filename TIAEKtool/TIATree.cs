@@ -442,6 +442,19 @@ namespace TIAtool
             }
         }
 
+        private static void IterNetNodes(NodeHandler handler, NodeComposition nodes)
+        {
+            foreach (Node n in nodes)
+            {
+                NodeHandler child_handler = handler.Enter(n, n.Name);
+                if (child_handler != null)
+                {
+
+                }
+                handler.Exit(n);
+            }
+        }
+
         // Device items
         private static void handleDeviceItem(NodeHandler handler, DeviceItem item)
         {
@@ -495,10 +508,32 @@ namespace TIAtool
                             iterScreenPopupFolder(template_handler, hmi_target.ScreenPopupFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenPopupFolder);
+                        
+                        NodeHandler connection_handler = child_handler.Enter(hmi_target.Connections, "Connections");
+                        if (connection_handler != null)
+                        {
+                            foreach (Connection connection in hmi_target.Connections)
+                            {
+                                connection_handler.Enter(connection, connection.Name);
+
+                                connection_handler.Exit(connection);
+                            }
+                        }
+                        child_handler.Exit(hmi_target.Connections);
 
                     }
                 }
-                IterDeviceItem(child_handler, item.DeviceItems);
+
+                NetworkInterface netif = item.GetService<NetworkInterface>();
+                if (netif != null)
+                {
+                    NodeHandler netif_handler = child_handler.Enter(netif, "Nodes");
+                    if (netif_handler != null)
+                    {
+                        IterNetNodes(netif_handler, netif.Nodes);
+                    }
+                    child_handler.Exit(netif);
+                }
             }
             handler.Exit(item);
         }
@@ -517,6 +552,17 @@ namespace TIAtool
             if (child_handler != null)
             {
                 IterDeviceItem(child_handler, device.DeviceItems);
+
+                NetworkInterface netif = device.GetService<NetworkInterface>();
+                if (netif != null)
+                {
+                    NodeHandler netif_handler = child_handler.Enter(netif, "Nodes");
+                    if (netif_handler != null)
+                    {
+                        IterNetNodes(netif_handler, netif.Nodes);
+                    }
+                    child_handler.Exit(netif);
+                }
             }
             handler.Exit(device);
         }
@@ -549,6 +595,31 @@ namespace TIAtool
                 HandleDeviceFolder(handler, f);
             }
         }
+
+        private static void IterNetNodes(NodeHandler handler, NodeAssociation nodes)
+        {
+            foreach (Node n in nodes)
+            {
+                NodeHandler child_handler = handler.Enter(n, n.Name);
+                if (child_handler != null)
+                {
+                  
+                }
+                handler.Exit(n);
+            }
+        }
+        private static void IterSubnets(NodeHandler handler, SubnetComposition subnets)
+        {
+            foreach (Subnet s in subnets)
+            {
+                NodeHandler child_handler = handler.Enter(s, s.Name);
+                if (child_handler != null)
+                {
+                    IterNetNodes(child_handler, s.Nodes);
+                }
+                handler.Exit(s);
+            }
+        }
         private static void HandleProject(NodeHandler handler, Project proj)
         {
             FileInfo path = proj.Path;
@@ -559,9 +630,21 @@ namespace TIAtool
             {
                 IterDeviceFolder(child_handler, proj.DeviceGroups);
                 IterDevice(child_handler, proj.Devices);
+
+                NodeHandler subnet_handler = child_handler.Enter(proj.Subnets, "Subnets");
+                if (subnet_handler != null)
+                {
+                    IterSubnets(subnet_handler, proj.Subnets);
+
+                }
+
+                child_handler.Exit(proj.Subnets);
             }
 
             handler.Exit(proj);
+
+           
+
 
 
         }

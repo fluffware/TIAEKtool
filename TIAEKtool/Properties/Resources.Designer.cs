@@ -95,6 +95,55 @@ namespace TIAEKtool.Properties {
         ///&lt;Document&gt;
         ///  &lt;Engineering version=&quot;V15&quot; /&gt;
         ///  &lt;DocumentInfo&gt;
+        ///  &lt;/DocumentInfo&gt;
+        ///  &lt;Hmi.Tag.TagTable ID=&quot;0&quot;&gt;
+        ///    &lt;AttributeList&gt;
+        ///      &lt;Name&gt;PresetConstants&lt;/Name&gt;
+        ///    &lt;/AttributeList&gt;
+        ///    &lt;ObjectList&gt;
+        ///      &lt;Hmi.Tag.Tag ID=&quot;1&quot; CompositionName=&quot;Tags&quot;&gt;
+        ///        &lt;AttributeList&gt;
+        ///          &lt;AcquisitionTriggerMode&gt;Visible&lt;/AcquisitionTriggerMode&gt;
+        ///          &lt;AddressAccessMode&gt;Symbolic&lt;/AddressAccessMode&gt;
+        ///          &lt;Coding&gt;Binary&lt;/Coding&gt;
+        ///          &lt;ConfirmationTyp [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string InitialHMIConstantTags {
+            get {
+                return ResourceManager.GetString("InitialHMIConstantTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Document&gt;
+        ///  &lt;Engineering version=&quot;V15&quot; /&gt;
+        ///  &lt;DocumentInfo&gt;
+        ///  &lt;/DocumentInfo&gt;
+        ///  &lt;Hmi.TextGraphicList.TextList ID=&quot;0&quot;&gt;
+        ///    &lt;AttributeList&gt;
+        ///      &lt;ListRange&gt;Decimal&lt;/ListRange&gt;
+        ///      &lt;Name&gt;Textlist&lt;/Name&gt;
+        ///    &lt;/AttributeList&gt;
+        ///    &lt;ObjectList&gt;
+        ///      &lt;Hmi.TextGraphicList.TextListEntry ID=&quot;4&quot; CompositionName=&quot;Entries&quot;&gt;
+        ///        &lt;AttributeList&gt;
+        ///          &lt;DefaultEntry&gt;true&lt;/DefaultEntry&gt;
+        ///          &lt;EntryType&gt;SingleValue&lt;/EntryType&gt;
+        ///          &lt;From&gt;0&lt;/From&gt;
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string InitialHMITextList {
+            get {
+                return ResourceManager.GetString("InitialHMITextList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Document&gt;
+        ///  &lt;Engineering version=&quot;V15&quot; /&gt;
+        ///  &lt;DocumentInfo&gt;
         ///   
         ///  &lt;/DocumentInfo&gt;
         ///  &lt;SW.Blocks.GlobalDB ID=&quot;0&quot;&gt;

@@ -15,13 +15,14 @@ namespace TIAEKtool
        ScreenPopupFolder folder;
         string popupName;
         string groupName;
-       
+        XmlDocument templates;
         IList<PresetTag> tags;
-        public CreatePresetScreenPopupTask(TiaPortal portal, IList<PresetTag> tags, ScreenPopupFolder folder, string popup_name, string group_name)
+        public CreatePresetScreenPopupTask(TiaPortal portal, IList<PresetTag> tags, ScreenPopupFolder folder, XmlDocument templates, string popup_name, string group_name)
         {
             this.portal = portal;
             this.tags = tags;
             this.folder = folder;
+            this.templates = templates;
             popupName = popup_name;
             groupName = group_name;
             Description = "Create preset popup screen " + popupName;
@@ -42,12 +43,26 @@ namespace TIAEKtool
                     {
 
                         XmlDocument popup_doc = TIAutils.ExportScreenPopupXML(popup);
-                        PresetPopup editor = new PresetPopup(popup_doc);
+                        PresetPopup editor = new PresetPopup(popup_doc, templates);
                         int index = 1;
 
                         foreach (var tag in tags)
                         {
-                            editor.AddEnableSelection(groupName, index, tag.labels, tag.unit, tag.precision);
+                            DataType type = tag.tagPath.Type;
+                            string template;
+                            if (tag.state_labels != null)
+                            {
+                                template = "PresetGroupState";
+                            } else if (type is Integer || type is BitString || type is REAL || type is LREAL) {
+                                    template = "PresetGroupNumber";
+                            } else if (type is BOOL) {
+                                template = "PresetGroupBool";
+                            } else {
+                                template = "PresetGroupNoValue";
+                            }
+
+                             
+                            editor.AddEnableSelection(template, groupName, index, tag.labels, tag.unit, tag.precision);
                             index++;
                         }
 

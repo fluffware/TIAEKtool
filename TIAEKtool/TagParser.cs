@@ -16,104 +16,14 @@ using TIAtool;
 namespace TIAEKtool
 {
 
-    public abstract class PathComponent
-
-    {
-        public PathComponent Parent { get; protected set; }
-     
-        public DataType Type { get; protected set; }
-
-        public PathComponent(DataType type, PathComponent parent = null)
-        {
-           
-            Type = type;
-            Parent = parent;
-        }
-
-        public abstract PathComponent CloneComponent();
-
-        public PathComponent ClonePath()
-        {
-            PathComponent clone = CloneComponent();
-            if (Parent != null)
-            {
-                clone.Parent = Parent.ClonePath();
-            }
-            return clone;
-        }
-        public PathComponent PrependPath(PathComponent prefix)
-        {
-
-            PathComponent clone = CloneComponent();
-            if (Parent != null)
-            {
-                clone.Parent = Parent.PrependPath(prefix);
-            } else
-            {
-                clone.Parent = prefix; 
-            }
-            return clone;
-        }
-    }
-
-    public class MemberComponent : PathComponent
-    {
-        public string Name { get; protected set; }
-
-
-        public MemberComponent(string name, DataType type, PathComponent parent = null) : base(type, parent)
-        {
-            Name = name;
-        }
-
-        public override string ToString()
-        {
-            return ((Parent != null) ? Parent.ToString() + "." : "") + Name;
-        }
-        public override PathComponent CloneComponent()
-        {
-            return new MemberComponent(Name, Type, Parent); 
-        }
-    }
-
-        public class IndexComponent : PathComponent
-    {
-        public int[] Indices { get; protected set; }
-
-        public IndexComponent(int[] indices, DataType type, PathComponent parent = null) : base(type, parent)
-        {
-            Indices = indices;
-        }
-
-
-        public override string ToString()
-        {
-            StringBuilder str = new StringBuilder(Parent.ToString());
-            str.Append("[");
-            if (Indices.Length >= 1)
-            {
-                str.Append(Indices[0]);
-                for (int i = 1; i < Indices.Length; i++)
-                {
-                    str.Append(",");
-                    str.Append(Indices[i]);
-                }
-            }
-            str.Append("]");
-            return str.ToString();
-        }
-
-        public override PathComponent CloneComponent()
-        {
-            return new IndexComponent(Indices, Type, Parent);
-        }
-    }
-
-
-
+   
     public class TagParser
     {
-
+        public enum Options
+        {
+            AllowNoComment = 1, // Also handle tags without comments
+            NoSubelement = 2, // Don't parse subelements. This means most comments are not parsed.
+        }
 
         public class ParseDoneEventArgs : EventArgs
         {
@@ -142,18 +52,19 @@ namespace TIAEKtool
         class ParseCtxt
         {
 
-            SynchronizationContext callback_ctxt;
-            SendOrPostCallback handle_tag;
+          
 
+            public  delegate void HandleTag(HandleTagEventArgs args);
+            protected HandleTag handle_tag;
 
             XmlNamespaceManager nsmgr;
-
+            protected Options options;
             public MessageLog Log = null;
 
-            public ParseCtxt(SynchronizationContext callback_ctxt, SendOrPostCallback handle_tag)
+            public ParseCtxt(HandleTag handle_tag, Options options = 0)
             {
-                this.callback_ctxt = callback_ctxt;
                 this.handle_tag = handle_tag;
+                this.options = options;
 
                 NameTable nt = new NameTable();
                 nsmgr = new XmlNamespaceManager(nt);
@@ -263,7 +174,7 @@ namespace TIAEKtool
                 {
                     IndexComponent ic = (IndexComponent)path;
                     int[] indices = new int[ic.Indices.Length];
-                    if (!(ic.Parent is MemberComponent && ic.Parent.Type is ARRAY)) throw new Exception("Parent of index component is nor an array");
+                    if (!(ic.Parent is MemberComponent && ic.Parent.Type is ARRAY)) throw new Exception("Parent of index component is not an array");
                     ARRAY array_type = (ARRAY)ic.Parent.Type;
                     for (int l = 0; l < array_type.Limits.Count; l++)
                     {
@@ -291,7 +202,7 @@ namespace TIAEKtool
             /// <param name="substituted">Copy of path with new indices</param>
             /// <param name="indices">Indices to substitute</param>
             /// <returns>Number of indices in path</returns>
-            protected int SubstituteIndices(PathComponent path, out PathComponent substituted, IEnumerator<int> indices)
+            protected static int SubstituteIndices(PathComponent path, out PathComponent substituted, IEnumerator<int> indices)
             {
                 PathComponent parent_copy;
                 int subs_count;
@@ -328,6 +239,7 @@ namespace TIAEKtool
                 }
             }
 
+          
             static readonly char[] path_sep = new char[] { ',' };
             protected void readSubelement(XmlElement subelement, PathComponent parent)
             {
@@ -343,7 +255,7 @@ namespace TIAEKtool
                 int subs_count = SubstituteIndices(parent, out subs, (indices as IList<int>).GetEnumerator());
                 if (subs_count != indices.Length)
                 {
-                    if (!(subs is IndexComponent) 
+                    if (!(subs is IndexComponent)
                         || (subs_count != (indices.Length + ((IndexComponent)subs).Indices.Length)))
                     {
                         throw new Exception("Length of path in subelement doesn't match number of indices in path");
@@ -352,14 +264,19 @@ namespace TIAEKtool
                     subs = subs.Parent;
                 }
                 XmlElement comment_elem = subelement.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
+
+                MultilingualText comment = null;
                 if (comment_elem != null)
                 {
-                    MultilingualText comment = readComment(comment_elem);
-                    callback_ctxt.Post(handle_tag, new HandleTagEventArgs()
+                    comment = readComment(comment_elem);
+                }
+                if (((options & Options.AllowNoComment) != 0) || comment != null) {
+                    handle_tag(new HandleTagEventArgs()
                     {
                         Path = subs,
                         Comment = comment
                     });
+                   
                 }
 
 
@@ -372,9 +289,9 @@ namespace TIAEKtool
             protected MemberComponent readMember(XmlElement member_elem, PathComponent parent)
             {
                 string name = member_elem.GetAttribute("Name");
-                
-              
-               
+
+
+
                 string type_str = member_elem.GetAttribute("Datatype");
                 string left;
                 DataType type = DataTypeParser.Parse(type_str, out left);
@@ -382,21 +299,38 @@ namespace TIAEKtool
                 PathComponent child_path = member;
                 if (type is ARRAY)
                 {
-                    ARRAY array =  (ARRAY)type;
+                    ARRAY array = (ARRAY)type;
                     child_path = new IndexComponent(new int[array.Limits.Count], array.MemberType, member);
+
+                    if ((options & Options.NoSubelement) != 0)
+                    {
+                        if (member != child_path)
+                        {
+                            handle_tag(new HandleTagEventArgs()
+                            {
+                                Path = SubstituteIndicesLow(child_path),
+                                Comment = null
+                            });
+                        }
+                    }
 
                 }
 
 
                 XmlElement comment_elem = member_elem.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
+                MultilingualText comment = null;
                 if (comment_elem != null)
                 {
-                    MultilingualText comment = readComment(comment_elem);
-                    callback_ctxt.Post(handle_tag, new HandleTagEventArgs()
+                    comment = readComment(comment_elem);
+                }
+                if (((options & Options.AllowNoComment) != 0) || comment != null)
+                {
+                    handle_tag(new HandleTagEventArgs()
                     {
                         Path = SubstituteIndicesLow(member),
                         Comment = comment
                     });
+
                 }
 
                 XmlNodeList member_elems = member_elem.SelectNodes("if:Member", nsmgr);
@@ -410,14 +344,16 @@ namespace TIAEKtool
                     }
                 }
 
-                XmlNodeList sub_elems = member_elem.SelectNodes("if:Subelement", nsmgr);
-                foreach (XmlNode s in sub_elems)
+                if ((options & Options.NoSubelement) == 0)
                 {
+                    XmlNodeList sub_elems = member_elem.SelectNodes("if:Subelement", nsmgr);
+                    foreach (XmlNode s in sub_elems)
+                    {
 
-                    readSubelement(s as XmlElement, child_path);
+                        readSubelement(s as XmlElement, child_path);
 
+                    }
                 }
-
 
                 return member;
 
@@ -469,7 +405,32 @@ namespace TIAEKtool
                 this.ctxt = ctxt;
             }
         }
-        public void ParseAsync(IEngineeringCompositionOrObject top, MessageLog log = null)
+        public void Parse(IEngineeringCompositionOrObject top, MessageLog log = null, Options options = 0)
+        {
+            ParseCtxt parse = new ParseCtxt(OnHandleTag,options);
+            parse.Log = log;
+            lock (portal)
+            {
+
+                if (top is PlcBlockGroup)
+                {
+                    parse.HandleBlockFolder((PlcBlockGroup)top);
+                }
+                else
+                {
+                    parse.HandleDataBlock((PlcBlock)top);
+                }
+            }
+        }
+
+        SynchronizationContext callback_ctxt;
+
+        protected void HandleTagAsync(HandleTagEventArgs arg)
+        {
+            callback_ctxt.Post(OnHandleTag, arg);
+        }
+
+        public void ParseAsync(IEngineeringCompositionOrObject top, MessageLog log = null, Options options = 0)
         {
             if (worker != null && worker.IsBusy) return;
 
@@ -477,7 +438,8 @@ namespace TIAEKtool
             worker.WorkerSupportsCancellation = true;
             worker.DoWork += DoWork;
             worker.RunWorkerCompleted += RunWorkerCompleted;
-            ParseCtxt parse = new ParseCtxt(SynchronizationContext.Current, OnHandleTag);
+            callback_ctxt = SynchronizationContext.Current;
+            ParseCtxt parse = new ParseCtxt(HandleTagAsync, options);
             parse.Log = log;
             WorkerArg arg = new WorkerArg(portal, top, parse);
             worker.RunWorkerAsync(arg);

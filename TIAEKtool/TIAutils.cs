@@ -1,6 +1,7 @@
 ﻿using Siemens.Engineering;
 using Siemens.Engineering.Hmi.Screen;
 using Siemens.Engineering.Hmi.Tag;
+using Siemens.Engineering.Hmi.TextGraphicList;
 using Siemens.Engineering.SW.Blocks;
 using Siemens.Engineering.SW.Types;
 using System;
@@ -170,6 +171,55 @@ namespace TIAEKtool
             }
         }
 
+        static public XmlDocument ExportScreenTemplateXML(ScreenTemplate template)
+        {
+            FileInfo path = TempFile.File("export_template_", "xml");
+
+            try
+            {
+
+                template.Export(path, ExportOptions.WithDefaults);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path.ToString());
+                return doc;
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+
+        }
+
+        static public void ImportScreenTemplateXML(XmlDocument doc, ScreenTemplateFolder folder)
+        {
+
+
+            FileInfo path = TempFile.File("import_template_", "xml");
+
+            try
+            {
+                doc.Save(path.ToString());
+                folder.ScreenTemplates.Import(path, ImportOptions.Override);
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+        }
         static public XmlDocument ExportHMITagTableXML(TagTable tag_table)
         {
             FileInfo path = TempFile.File("export_tagtable_", "xml");
@@ -219,6 +269,57 @@ namespace TIAEKtool
                 }
             }
         }
+
+        static public XmlDocument ExportTextListXML(TextList text_list)
+        {
+            FileInfo path = TempFile.File("export_text_list_", "xml");
+
+            try
+            {
+
+                text_list.Export(path, ExportOptions.WithDefaults);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path.ToString());
+                return doc;
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+
+        }
+
+        static public void ImportTextListXML(XmlDocument doc, TextListComposition text_lists)
+        {
+
+
+            FileInfo path = TempFile.File("import_text_list_", "xml");
+
+            try
+            {
+                doc.Save(path.ToString());
+                text_lists.Import(path, ImportOptions.Override);
+            }
+            finally
+            {
+                try
+                {
+                    path.Delete();
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to delete temporary file: " + e.Message);
+                }
+            }
+        }
+
     }
 }
 
