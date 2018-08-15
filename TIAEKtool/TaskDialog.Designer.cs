@@ -188,7 +188,6 @@
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Button btn_run;
         private System.Windows.Forms.Button btn_cancel;
         private System.Windows.Forms.Button btn_done;
         private System.Windows.Forms.DataGridView taskListView;
@@ -197,5 +196,6 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn run;
         private System.Windows.Forms.DataGridViewTextBoxColumn descr;
         private System.Windows.Forms.DataGridViewButtonColumn Log;
+        protected System.Windows.Forms.Button btn_run;
     }
 }

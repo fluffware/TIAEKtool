@@ -36,13 +36,15 @@
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.languageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.projectTreeView = new System.Windows.Forms.TreeView();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_connect = new System.Windows.Forms.Button();
             this.btn_disconnect = new System.Windows.Forms.Button();
             this.btn_preset = new System.Windows.Forms.Button();
+            this.btn_hmi_tags = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.languageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btn_copy = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -106,6 +108,12 @@
             this.browseToolStripMenuItem.Text = "Browse";
             this.browseToolStripMenuItem.Click += new System.EventHandler(this.browseToolStripMenuItem_Click);
             // 
+            // languageToolStripMenuItem
+            // 
+            this.languageToolStripMenuItem.Name = "languageToolStripMenuItem";
+            this.languageToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
+            this.languageToolStripMenuItem.Text = "Language";
+            // 
             // projectTreeView
             // 
             this.projectTreeView.CheckBoxes = true;
@@ -121,6 +129,8 @@
             this.flowLayoutPanel1.Controls.Add(this.btn_connect);
             this.flowLayoutPanel1.Controls.Add(this.btn_disconnect);
             this.flowLayoutPanel1.Controls.Add(this.btn_preset);
+            this.flowLayoutPanel1.Controls.Add(this.btn_hmi_tags);
+            this.flowLayoutPanel1.Controls.Add(this.btn_copy);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(308, 3);
@@ -158,6 +168,16 @@
             this.btn_preset.UseVisualStyleBackColor = true;
             this.btn_preset.Click += new System.EventHandler(this.btn_preset_Click);
             // 
+            // btn_hmi_tags
+            // 
+            this.btn_hmi_tags.Location = new System.Drawing.Point(3, 90);
+            this.btn_hmi_tags.Name = "btn_hmi_tags";
+            this.btn_hmi_tags.Size = new System.Drawing.Size(75, 23);
+            this.btn_hmi_tags.TabIndex = 3;
+            this.btn_hmi_tags.Text = "HMI tags";
+            this.btn_hmi_tags.UseVisualStyleBackColor = true;
+            this.btn_hmi_tags.Click += new System.EventHandler(this.btn_hmi_tags_Click);
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.AutoSize = true;
@@ -174,11 +194,15 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(392, 363);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
-            // languageToolStripMenuItem
+            // btn_copy
             // 
-            this.languageToolStripMenuItem.Name = "languageToolStripMenuItem";
-            this.languageToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
-            this.languageToolStripMenuItem.Text = "Language";
+            this.btn_copy.Location = new System.Drawing.Point(3, 119);
+            this.btn_copy.Name = "btn_copy";
+            this.btn_copy.Size = new System.Drawing.Size(75, 23);
+            this.btn_copy.TabIndex = 4;
+            this.btn_copy.Text = "Copy";
+            this.btn_copy.UseVisualStyleBackColor = true;
+            this.btn_copy.Click += new System.EventHandler(this.btn_copy_Click);
             // 
             // MainForm
             // 
@@ -217,6 +241,8 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Button btn_preset;
         private System.Windows.Forms.ToolStripMenuItem languageToolStripMenuItem;
+        private System.Windows.Forms.Button btn_hmi_tags;
+        private System.Windows.Forms.Button btn_copy;
     }
 }
 

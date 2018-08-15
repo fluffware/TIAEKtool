@@ -89,11 +89,25 @@
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="CommentParser.cs" />
+    <Compile Include="CopySelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CopySelection.Designer.cs">
+      <DependentUpon>CopySelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CreateHmiConstantTagsTask .cs" />
+    <Compile Include="CreateHmiTextListTask.cs" />
+    <Compile Include="CreateHmiTagsFromBlockTask.cs" />
     <Compile Include="CreatePresetScreenPopupTask.cs" />
     <Compile Include="CreatePresetStoreBlockTask.cs" />
     <Compile Include="CreatePresetRecallBlockTask.cs" />
     <Compile Include="CreatePresetHmiTagsTask.cs" />
     <Compile Include="CreatePresetTypesTask.cs" />
+    <Compile Include="ConstantLookup.cs" />
+    <Compile Include="HMItagBuilder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HMIConstantTable.cs" />
     <Compile Include="ImageCheckboxCell.cs" />
     <Compile Include="InterfaceType.cs" />
     <Compile Include="IntSet.cs" />
@@ -104,6 +118,7 @@
       <DependentUpon>LogDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="MessageLog.cs" />
+    <Compile Include="PathComponent.cs" />
     <Compile Include="PresetCommentParser.cs" />
     <Compile Include="PresetPopup.cs" />
     <Compile Include="PresetSCL.cs" />
@@ -164,6 +179,9 @@
     <Compile Include="XMLUtil.cs" />
     <EmbeddedResource Include="BrowseDialog.resx">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CopySelection.resx">
+      <DependentUpon>CopySelection.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LogDialog.resx">
       <DependentUpon>LogDialog.cs</DependentUpon>
@@ -252,6 +270,12 @@
     <Content Include="Images\Error.png" />
     <Content Include="Images\Info.png" />
     <Content Include="Images\Warning.png" />
+    <EmbeddedResource Include="InitialHMIConstantTags.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InitialHMITextList.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
