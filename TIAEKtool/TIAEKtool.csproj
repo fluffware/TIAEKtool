@@ -89,6 +89,8 @@
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="CommentParser.cs" />
+    <Compile Include="CopyPlcTypeTask .cs" />
+    <Compile Include="CopyPlcBlockTask.cs" />
     <Compile Include="CopySelection.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -170,6 +172,7 @@
     <Compile Include="TempFile.cs" />
     <Compile Include="TIATree.cs" />
     <Compile Include="TIAutils.cs" />
+    <Compile Include="TreeNodeDepthFirstEnumerator.cs" />
     <Compile Include="WaitConnection.cs">
       <SubType>Form</SubType>
     </Compile>

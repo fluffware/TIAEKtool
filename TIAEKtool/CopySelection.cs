@@ -8,6 +8,7 @@ using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Blocks;
 using Siemens.Engineering.SW.Types;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -25,6 +26,7 @@ namespace TIAEKtool
             this.plc = plc;
             this.hmi = hmi;
             InitializeComponent();
+            btn_copy.Enabled = false;
             fromTreeView.AfterCheck += node_AfterCheck;
             toTreeView.AfterCheck += node_AfterCheck;
             worker = new BackgroundWorker();
@@ -81,9 +83,11 @@ namespace TIAEKtool
             class NodeEnter: NodeEvent
         {
             public string Name;
-            public NodeEnter(NodeDest dest, string name) : base(dest)
+            public bool Sort;
+            public NodeEnter(NodeDest dest, string name, bool sort = false) : base(dest)
             {
                 Name = name;
+                Sort = sort;
             }
         }
         class NodeExit : NodeEvent
@@ -109,7 +113,7 @@ namespace TIAEKtool
                 worker.ReportProgress(50, new NodeData(NodeDest.From,block.Name, block));
             }
             foreach (PlcBlockGroup child in group.Groups) {
-                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name));
+                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name, true));
                 AddBlocks(child);
                 worker.ReportProgress(50, new NodeExit(NodeDest.From));
             }
@@ -123,7 +127,7 @@ namespace TIAEKtool
             }
             foreach (PlcTypeGroup child in group.Groups)
             {
-                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name));
+                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name, true));
                 AddTypes(child);
                 worker.ReportProgress(50, new NodeExit(NodeDest.From));
             }
@@ -137,7 +141,7 @@ namespace TIAEKtool
             }
             foreach (ScreenFolder child in group.Folders)
             {
-                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name));
+                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name, true));
                 AddScreens(child);
                 worker.ReportProgress(50, new NodeExit(NodeDest.From));
             }
@@ -151,7 +155,7 @@ namespace TIAEKtool
             }
             foreach (TagFolder child in group.Folders)
             {
-                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name));
+                worker.ReportProgress(50, new NodeEnter(NodeDest.From, child.Name, true));
                 AddTagTables(child);
                 worker.ReportProgress(50, new NodeExit(NodeDest.From));
             }
@@ -182,7 +186,7 @@ namespace TIAEKtool
 
         private void FindDevices(DeviceUserGroup devices)
         {
-            worker.ReportProgress(50, new NodeEnter(NodeDest.To, devices.Name));
+            worker.ReportProgress(50, new NodeEnter(NodeDest.To, devices.Name, true));
             foreach (Device device in devices.Devices)
             {
                 FindDeviceItems(device.Items); 
@@ -203,7 +207,7 @@ namespace TIAEKtool
                 IEngineeringObject engineering_obj = null;
                 if (plc != null)
                 {
-                    worker.ReportProgress(50,new NodeEnter(NodeDest.From, plc.Name));
+                    worker.ReportProgress(50,new NodeEnter(NodeDest.From, plc.Name, true));
 
                     worker.ReportProgress(50, new NodeEnter(NodeDest.From, "Blocks"));
                     AddBlocks(plc.BlockGroup);
@@ -222,7 +226,7 @@ namespace TIAEKtool
 
                 if (hmi != null)
                 {
-                    worker.ReportProgress(50, new NodeEnter(NodeDest.From, hmi.Name));
+                    worker.ReportProgress(50, new NodeEnter(NodeDest.From, hmi.Name, true));
                   
                     worker.ReportProgress(50, new NodeEnter(NodeDest.From, "Screens"));
                     AddScreens(hmi.ScreenFolder);
@@ -255,6 +259,19 @@ namespace TIAEKtool
             }
         }
 
+        private static void TreeNodeInsertSorted(TreeNodeCollection nodes, TreeNode node)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].Text.CompareTo(node.Text) >= 0)
+                {
+                    nodes.Insert(i, node);
+                    return;
+                }
+            }
+            nodes.Add(node);
+        }
+
         private TreeNode CurrentParent = null;
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -282,7 +299,14 @@ namespace TIAEKtool
             if (enter != null)
             {
                 TreeNode child = new TreeNode(enter.Name);
-                nodes.Add(child);
+                if (enter.Sort)
+                {
+                    TreeNodeInsertSorted(nodes, child);
+                }
+                else
+                {
+                    nodes.Add(child);
+                }
                 CurrentParent = child;
             }
             NodeExit exit = e.UserState as NodeExit;
@@ -295,19 +319,91 @@ namespace TIAEKtool
             {
                 TreeNode child = new TreeNode(node_data.Name);
                 child.Tag = node_data.Object;
-                nodes.Add(child);
+                TreeNodeInsertSorted(nodes,child);
             }
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-           
+            btn_copy.Enabled = true;
+            worker = null;
         }
 
         private void btn_cancel_Click(object sender, EventArgs e)
         {
+            if (worker != null)
+            {
+                worker.CancelAsync();
+            }
             Close();
         }
 
+        private void btn_copy_Click(object sender, EventArgs e)
+        {
+            List<PlcSoftware> plcs = new List<PlcSoftware>();
+            foreach (TreeNode node in new TreeNodeDepthFirstEnumerator(toTreeView.Nodes))
+            {
+                PlcSoftware sw = node.Tag as PlcSoftware;
+                if (node.Checked && sw != null)
+                {
+                    plcs.Add(sw);
+                }
+            }
+            TaskDialog tasks = new TaskDialog();
+
+           
+            List<PlcType> plc_types = new List<PlcType>();     
+            List<PlcBlock> plc_blocks = new List<PlcBlock>();
+            List<Siemens.Engineering.Hmi.Screen.Screen> screens = new List<Siemens.Engineering.Hmi.Screen.Screen> ();
+            List<TagTable> tag_tables = new List<TagTable>();
+            foreach (TreeNode node in new TreeNodeDepthFirstEnumerator(fromTreeView.Nodes))
+            {
+                if (node.Checked)
+                {
+                    PlcBlock block = node.Tag as PlcBlock;
+                    if (block != null)
+                    {
+                        plc_blocks.Add(block);
+                    }
+                    PlcType type = node.Tag as PlcType;
+                    if (type != null)
+                    {
+                        plc_types.Add(type);
+                    }
+                    Siemens.Engineering.Hmi.Screen.Screen screen = node.Tag as Siemens.Engineering.Hmi.Screen.Screen;
+                    if (screen != null)
+                    {
+                        screens.Add(screen);
+                    }
+
+                    TagTable tag_table = node.Tag as TagTable;
+                    if (tag_table != null)
+                    {
+                        tag_tables.Add(tag_table);
+                    }
+                }
+            }
+           
+
+            foreach (PlcBlock block in plc_blocks)
+            {
+                foreach (PlcSoftware plc in plcs)
+                {
+                    tasks.AddTask(new CopyPlcBlockTask(portal, block, plc, check_overwrite.Checked));
+                }
+
+            }
+
+
+            foreach (PlcType type in plc_types)
+            {
+                foreach (PlcSoftware plc in plcs)
+                {
+                    tasks.AddTask(new CopyPlcTypeTask(portal, type, plc, check_overwrite.Checked));
+                }
+
+            }
+            tasks.ShowDialog(this);
+        }
     }
 }

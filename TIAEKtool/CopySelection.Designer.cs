@@ -35,8 +35,8 @@
             this.check_overwrite = new System.Windows.Forms.CheckBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.groupFrom = new System.Windows.Forms.GroupBox();
-            this.groupTo = new System.Windows.Forms.GroupBox();
             this.fromTreeView = new System.Windows.Forms.TreeView();
+            this.groupTo = new System.Windows.Forms.GroupBox();
             this.toTreeView = new System.Windows.Forms.TreeView();
             this.mainHBox.SuspendLayout();
             this.bottomPanel.SuspendLayout();
@@ -94,6 +94,7 @@
             this.btn_copy.TabIndex = 0;
             this.btn_copy.Text = "Copy";
             this.btn_copy.UseVisualStyleBackColor = true;
+            this.btn_copy.Click += new System.EventHandler(this.btn_copy_Click);
             // 
             // check_overwrite
             // 
@@ -135,6 +136,15 @@
             this.groupFrom.TabStop = false;
             this.groupFrom.Text = "From";
             // 
+            // fromTreeView
+            // 
+            this.fromTreeView.CheckBoxes = true;
+            this.fromTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.fromTreeView.Location = new System.Drawing.Point(3, 16);
+            this.fromTreeView.Name = "fromTreeView";
+            this.fromTreeView.Size = new System.Drawing.Size(788, 189);
+            this.fromTreeView.TabIndex = 0;
+            // 
             // groupTo
             // 
             this.groupTo.Controls.Add(this.toTreeView);
@@ -145,15 +155,6 @@
             this.groupTo.TabIndex = 1;
             this.groupTo.TabStop = false;
             this.groupTo.Text = "To";
-            // 
-            // fromTreeView
-            // 
-            this.fromTreeView.CheckBoxes = true;
-            this.fromTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.fromTreeView.Location = new System.Drawing.Point(3, 16);
-            this.fromTreeView.Name = "fromTreeView";
-            this.fromTreeView.Size = new System.Drawing.Size(788, 189);
-            this.fromTreeView.TabIndex = 0;
             // 
             // toTreeView
             // 
