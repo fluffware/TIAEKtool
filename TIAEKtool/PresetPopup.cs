@@ -267,12 +267,14 @@ namespace TIAEKtool
                 throw new Exception("No text field named " + field_name + " found in group " + group_name);
                
             }
+            List<ParseText.FieldInfo> fields = null;
             foreach (string culture in description.Cultures)
             {
-                XmlElement text_p_elem = description_field.SelectSingleNode("ObjectList/MultilingualText/ObjectList/MultilingualTextItem/AttributeList[Culture/text()='" + culture + "']/Text/body/p") as XmlElement;
-                if (text_p_elem != null)
+                XmlElement text_elem = description_field.SelectSingleNode("ObjectList/MultilingualText/ObjectList/MultilingualTextItem/AttributeList[Culture/text()='" + culture + "']/Text") as XmlElement;
+                if (text_elem != null)
                 {
-                    text_p_elem.InnerText = description[culture];
+                    XmlElement parsed = ParseText.ParseTextToTextElement(doc, description[culture], ref fields);
+                    text_elem.ParentNode.ReplaceChild(parsed, text_elem);
                 }
             }
 

@@ -120,6 +120,7 @@
       <DependentUpon>LogDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="MessageLog.cs" />
+    <Compile Include="ParseText.cs" />
     <Compile Include="PathComponent.cs" />
     <Compile Include="PresetCommentParser.cs" />
     <Compile Include="PresetPopup.cs" />
