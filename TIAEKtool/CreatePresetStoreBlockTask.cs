@@ -14,8 +14,10 @@ namespace TIAEKtool
         string valueTypeName;
         string enableTypeName;
         string blockName;
+        string blockEnabledName;
         IList<PresetTag> tags;
-        public CreatePresetStoreBlockTask(TiaPortal portal, IList<PresetTag> tags, PlcBlockGroup blockGroup, string blockName, string value_type_name, string enable_type_name)
+
+        public CreatePresetStoreBlockTask(TiaPortal portal, IList<PresetTag> tags, PlcBlockGroup blockGroup, string blockName, string blockEnabledName, string value_type_name, string enable_type_name)
         {
             this.portal = portal;
             this.tags = tags;
@@ -23,8 +25,10 @@ namespace TIAEKtool
             this.valueTypeName = value_type_name;
             this.enableTypeName = enable_type_name;
             this.blockName = blockName;
-            Description = "Create store SCL block " + blockName;
+            this.blockEnabledName = blockEnabledName;
+            Description = "Create store SCL block " + blockName + " and " + blockEnabledName;
         }
+
         protected override void DoWork()
         {
             lock (portal)
@@ -35,18 +39,21 @@ namespace TIAEKtool
                 {
 
                     PresetStoreSCL scl = new PresetStoreSCL(blockName, valueTypeName, null);
+                    PresetStoreEnabledSCL enabled_scl = new PresetStoreEnabledSCL(blockEnabledName, valueTypeName, enableTypeName, null);
                     foreach (var tag in tags)
                     {
                         if (!tag.noStore)
                         {
                             scl.AddStore(tag.tagPath);
+                            enabled_scl.AddStore(tag.tagPath);
                         }
                     }
                     TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
+                    TIAutils.ImportPlcBlockXML(enabled_scl.Document, resultGroup);
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(MessageLog.Severity.Error, "Failed to update preset store SCL block:\n" + ex.Message);
+                    LogMessage(MessageLog.Severity.Error, "Failed to create preset store SCL block:\n" + ex.Message);
                     return;
                 }
 

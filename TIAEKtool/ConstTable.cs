@@ -93,7 +93,7 @@ namespace TIAEKtool
                 w.WriteEndElement(); // ObjectList
                 w.WriteEndElement(); // SW.Tags.PlcUserConstant
                 w.WriteEndElement(); // Document
-                w.Close();
+                //w.Close();
             }
             return file;
          }

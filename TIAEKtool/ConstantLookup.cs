@@ -12,6 +12,7 @@ namespace TIAEKtool
 {
     public class ConstantLookup: IEnumerable<System.Collections.Generic.KeyValuePair<string, ConstantLookup.Entry>>
     {
+
         public class Entry
         {
             public string type;
@@ -62,17 +63,31 @@ namespace TIAEKtool
             }
         }
 
+        public int IntegerLookup(string name)
+        {
+            ConstantLookup.Entry entry = Lookup(name);
+            if (entry == null) new KeyNotFoundException("Failed to lookup constant " + name);
+            int value = int.Parse(entry.value);
+            return value;
+        }
 
 
-       
+
         IEnumerator<KeyValuePair<string, Entry>> IEnumerable<KeyValuePair<string, Entry>>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        protected IEnumerator<KeyValuePair<string, Entry>> GetEnumerator()
         {
             return lookup.GetEnumerator();
         }
+
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return lookup.GetEnumerator();
+            return GetEnumerator();
         }
+        
     }
 }

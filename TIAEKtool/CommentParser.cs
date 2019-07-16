@@ -27,13 +27,29 @@ namespace TIAEKtool
                     pos++;
                 }
                 if (pos == len) break;
+
+                StringBuilder data = new StringBuilder();
                 string type = comment.Substring(start, pos - start);
-                start = pos;
-                pos = comment.IndexOf('}', pos);
-                if (pos == -1) break;
-                string data = comment.Substring(start, pos - start);
+                while (true)
+                {
+                    start = pos;
+                    pos = comment.IndexOfAny(new char[] { '}', '\\' },pos);
+                    if (pos == -1) break;
+                    data.Append(comment.Substring(start, pos - start));
+                    if (comment[pos] == '\\')
+                    {
+                        pos++;
+                        if (pos >= len) break;
+                        data.Append(comment[pos]);
+                        pos++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
                 pos++;
-                handler(type, data);
+                handler(type, data.ToString());
             }
         }
     }

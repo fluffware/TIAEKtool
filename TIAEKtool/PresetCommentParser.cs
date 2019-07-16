@@ -21,6 +21,10 @@ namespace TIAEKtool
                     string group = data.Substring(0, p).Trim();
                     if (group == "") group = "main";
                     string label = data.Substring(p + 1).Trim();
+                    if (preset.presetGroup != null && !preset.presetGroup.Equals(group))
+                    {
+                        group = "<inconsistent>";
+                    }
                     preset.presetGroup = group;
                     if (preset.labels == null)
                     {
@@ -51,13 +55,37 @@ namespace TIAEKtool
                         preset.precision = value;
                     }
                 }
+                else if (type == "preset_min")
+                {
+                    float value;
+                    if (float.TryParse(data, out value))
+                    {
+                        preset.min = value;
+                    }
+                }
+                else if (type == "preset_max")
+                {
+                    float value;
+                    if (float.TryParse(data, out value))
+                    {
+                        preset.max = value;
+                    }
+                }
+                else if (type == "preset_order")
+                {
+                    int value;
+                    if (int.TryParse(data, out value))
+                    {
+                        preset.order = value;
+                    }
+                }
                 else if (type == "preset_state")
                 {
                     int p = data.IndexOf(':');
                     if (p < 0) return;
                     string value_str = data.Substring(0, p).Trim();
-                    int value;
-                    if (int.TryParse(value_str, out value))
+                   
+                    if (int.TryParse(value_str, out int value))
                     {
                         string label_str = data.Substring(p + 1).Trim();
                         if (preset.state_labels == null)

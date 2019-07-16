@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TIAEKtool
 {
-    public abstract class SequentialTask:INotifyPropertyChanged
+    public abstract class SequentialTask:INotifyPropertyChanged, IDisposable
     {
       
         #region Events
@@ -20,6 +20,7 @@ namespace TIAEKtool
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
         protected BackgroundWorker worker;
+        protected Object workerRunning= new object(); // Locked while the worker is running
 
         protected MessageLog log;
    
@@ -71,7 +72,7 @@ namespace TIAEKtool
 
         protected void Worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            lock (worker)
+            lock (workerRunning)
             {
                 DoWork();
                 IsCompleted = true;
@@ -111,7 +112,7 @@ namespace TIAEKtool
             if (w != null)
             {
                 w.CancelAsync();
-                lock(worker) // Wait for task to end 
+                lock(workerRunning) // Wait for task to end 
                 {
                 }
             }
@@ -130,6 +131,40 @@ namespace TIAEKtool
         /// The actual work is done here
         /// </summary>
         protected abstract void DoWork();
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Cancel();
+                    worker.Dispose();
+                    worker = null;
+                }
+
+                
+
+                disposedValue = true;
+            }
+        }
+
+
+        ~SequentialTask() {
+           // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+          Dispose(false);
+         }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
 
     }
 }

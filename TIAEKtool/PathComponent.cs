@@ -46,7 +46,12 @@ namespace TIAEKtool
             }
             return clone;
         }
+
+        public static PathComponent operator + (PathComponent a, PathComponent b) {
+            return b.CloneComponent().PrependPath(a.CloneComponent());
+        }
     }
+
 
     public class MemberComponent : PathComponent
     {
@@ -74,7 +79,7 @@ namespace TIAEKtool
 
         public IndexComponent(int[] indices, DataType type, PathComponent parent = null) : base(type, parent)
         {
-            Indices = indices;
+            Indices = (int[])indices.Clone();
         }
 
 
@@ -103,20 +108,7 @@ namespace TIAEKtool
     public class PathComponentUtils
     {
 
-        private static int IntegerConstantLookup(ConstantLookup constants, string name)
-        {
-            ConstantLookup.Entry entry = constants.Lookup(name);
-            if (entry == null) new Exception("Failed to lookup constant " + name);
-            int value;
-            if (!int.TryParse(entry.value, out value)) new Exception("Constant " + name + " doas not have an integer value");
-            return value;
-        }
-        private static IntegerLiteral ResolveIntConstant(ConstantLookup lookup, Constant constant)
-        {
-            if (constant is IntegerLiteral) return (IntegerLiteral)constant;
-            if (!(constant is GlobalConstant)) throw new Exception("Can only resolve global constants");
-            return new IntegerLiteral(IntegerConstantLookup(lookup, ((GlobalConstant)constant).Name));
-        }
+       
 
         public static PathComponent InitializeArrayPath(PathComponent path, ConstantLookup constants)
         {
@@ -155,8 +147,8 @@ namespace TIAEKtool
                     for (int i = 0; i < new_array_type.Limits.Count(); i++)
                     {
                         new_array_type.Limits[i] = new ArrayLimits(
-                            ResolveIntConstant(constants, array_type.Limits[i].LowLimit),
-                            ResolveIntConstant(constants, array_type.Limits[i].HighLimit));
+                            new IntegerLiteral(array_type.Limits[i].LowLimit.ResolveInt(constants)),
+                            new IntegerLiteral(array_type.Limits[i].HighLimit.ResolveInt(constants)));
                     }
                     type = new_array_type;
                 }

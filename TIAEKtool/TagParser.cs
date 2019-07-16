@@ -17,7 +17,7 @@ namespace TIAEKtool
 {
 
    
-    public class TagParser
+    public class TagParser : IDisposable
     {
         public enum Options
         {
@@ -32,7 +32,7 @@ namespace TIAEKtool
 
         public event EventHandler<ParseDoneEventArgs> ParseDone;
 
-        public class HandleTagEventArgs
+        public class HandleTagEventArgs :EventArgs
         {
             public PathComponent Path;
             public MultilingualText Comment;
@@ -57,7 +57,7 @@ namespace TIAEKtool
             public  delegate void HandleTag(HandleTagEventArgs args);
             protected HandleTag handle_tag;
 
-            XmlNamespaceManager nsmgr;
+         
             protected Options options;
             public MessageLog Log = null;
 
@@ -66,9 +66,6 @@ namespace TIAEKtool
                 this.handle_tag = handle_tag;
                 this.options = options;
 
-                NameTable nt = new NameTable();
-                nsmgr = new XmlNamespaceManager(nt);
-                nsmgr.AddNamespace("if", "http://www.siemens.com/automation/Openness/SW/Interface/v3");
             }
 
             private void IterBlockFolder(PlcBlockUserGroupComposition folders)
@@ -143,7 +140,7 @@ namespace TIAEKtool
             {
 
                 MultilingualText comment = new MultilingualText();
-                XmlNodeList text_elems = comment_elem.SelectNodes("if:MultiLanguageText", nsmgr);
+                XmlNodeList text_elems = comment_elem.SelectNodes("if:MultiLanguageText", XMLUtil.nameSpaces);
                 foreach (XmlNode t in text_elems)
                 {
                     XmlElement mlt = t as XmlElement;
@@ -263,7 +260,7 @@ namespace TIAEKtool
                     // It's the path of the array itself not an array item.
                     subs = subs.Parent;
                 }
-                XmlElement comment_elem = subelement.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
+                XmlElement comment_elem = subelement.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) as XmlElement;
 
                 MultilingualText comment = null;
                 if (comment_elem != null)
@@ -317,7 +314,7 @@ namespace TIAEKtool
                 }
 
 
-                XmlElement comment_elem = member_elem.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
+                XmlElement comment_elem = member_elem.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) as XmlElement;
                 MultilingualText comment = null;
                 if (comment_elem != null)
                 {
@@ -333,7 +330,7 @@ namespace TIAEKtool
 
                 }
 
-                XmlNodeList member_elems = member_elem.SelectNodes("if:Member", nsmgr);
+                XmlNodeList member_elems = member_elem.SelectNodes("if:Member", XMLUtil.nameSpaces);
                 foreach (XmlNode m in member_elems)
                 {
                     MemberComponent submember = readMember((XmlElement)m, child_path);
@@ -346,7 +343,7 @@ namespace TIAEKtool
 
                 if ((options & Options.NoSubelement) == 0)
                 {
-                    XmlNodeList sub_elems = member_elem.SelectNodes("if:Subelement", nsmgr);
+                    XmlNodeList sub_elems = member_elem.SelectNodes("if:Subelement", XMLUtil.nameSpaces);
                     foreach (XmlNode s in sub_elems)
                     {
 
@@ -376,13 +373,13 @@ namespace TIAEKtool
             {
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path.ToString());
-                XmlNode block_attrs = doc.SelectSingleNode("/Document/SW.Blocks.GlobalDB/AttributeList", nsmgr);
+                XmlNode block_attrs = doc.SelectSingleNode("/Document/SW.Blocks.GlobalDB/AttributeList", XMLUtil.nameSpaces);
                 if (block_attrs == null) return;
 
-                XmlNode block_name_node = block_attrs.SelectSingleNode("Name", nsmgr);
+                XmlNode block_name_node = block_attrs.SelectSingleNode("Name", XMLUtil.nameSpaces);
                 if (block_name_node == null) throw new XmlException("Missing block name");
                 string block_name = block_name_node.InnerText;
-                XmlNode static_section = block_attrs.SelectSingleNode("./Interface/if:Sections/if:Section[@Name='Static']", nsmgr);
+                XmlNode static_section = block_attrs.SelectSingleNode("./Interface/if:Sections/if:Section[@Name='Static']", XMLUtil.nameSpaces);
                 if (static_section == null) throw new XmlException("Missing static section of block");
                 PathComponent parent = new MemberComponent(block_name, new STRUCT());
 
@@ -492,5 +489,36 @@ namespace TIAEKtool
                 worker.CancelAsync();
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    worker.Dispose();
+                    worker = null;
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        ~TagParser() {
+           // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+           Dispose(false);
+        }
+
+      
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

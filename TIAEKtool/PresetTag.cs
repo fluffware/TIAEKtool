@@ -6,7 +6,7 @@ namespace TIAEKtool
 {
     
 
-    public class PresetTag
+    public class PresetTag : IComparable
     {
         public PathComponent tagPath;
         public String presetGroup;
@@ -15,6 +15,16 @@ namespace TIAEKtool
         public bool noStore;
         public string unit;
         public int precision = 0; // Number of digits after decimal point
+        public float min = float.MinValue;  // Min numeric value, inclusive
+        public float max = float.MaxValue;   // Max numeric value, inclusive
+        public int order = 10000;   // Lower values are presented to the user before higher values
         public IDictionary<int,MultilingualText> state_labels;
+
+        public int CompareTo(object obj)
+        {
+            return order.CompareTo(((PresetTag)obj).order);
+        }
     }
+
+
 }

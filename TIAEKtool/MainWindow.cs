@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using TIAEKtool;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
+using System.Threading;
 
 namespace TIAtool
 {
@@ -20,6 +21,8 @@ namespace TIAtool
 
         protected string culture = null;
         protected TaskDialog task_dialog = null;
+
+        protected TIAAsyncWrapper tiaThread;
         protected TiaPortal tiaPortal = null;
 
         protected TIATree.TreeNodeBuilder builder;
@@ -30,11 +33,12 @@ namespace TIAtool
             disconnectToolStripMenuItem.Enabled = false;
             btn_disconnect.Enabled = false;
 
-          
+            FormClosing += FormClosingEventHandler;
 
             // Project tree
             AutoExpandMaxChildren = -1;
 
+            tiaThread = new TIAAsyncWrapper();
         }
 
         static bool ProjectDescend(object obj)
@@ -102,11 +106,11 @@ namespace TIAtool
 
         protected void PortalConnected()
         {
-            builder = new TIATree.TreeNodeBuilder(tiaPortal);
+            builder = new TIATree.TreeNodeBuilder(tiaThread, tiaPortal);
             builder.BuildDone += TreeDone;
             builder.Descend = ProjectDescend;
             builder.Leaf = ProjectLeaf;
-            FormClosing += FormClosingEventHandler;
+         
             projectTreeView.Nodes.Clear();
             projectTreeView.AfterCheck += node_AfterCheck;
             builder.StartBuild(projectTreeView.Nodes);
@@ -199,7 +203,7 @@ namespace TIAtool
 
             if (select_dialog == null)
             {
-                select_dialog = new PortalSelect();
+                select_dialog = new PortalSelect(tiaThread);
             }
             if (select_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -211,7 +215,7 @@ namespace TIAtool
                     Application.DoEvents();
                     try
                     {
-                        tiaPortal = proc.Attach();
+                        tiaPortal = (TiaPortal)tiaThread.RunSync((_) => { return proc.Attach(); }, null) ;
                         connectToolStripMenuItem.Enabled = false;
                         btn_connect.Enabled = false;
                         disconnectToolStripMenuItem.Enabled = true;
@@ -259,7 +263,7 @@ namespace TIAtool
             {
                 if (browse_dialog == null)
                 {
-                    browse_dialog = new InfoDialog(tiaPortal);
+                    browse_dialog = new InfoDialog(tiaThread, tiaPortal);
 
                     browse_dialog.AutoExpandMaxChildren = 1;
                     browse_dialog.Text = "Browse TIA portal";
@@ -430,6 +434,54 @@ namespace TIAtool
             }
             CopySelection copy = new CopySelection(tiaPortal,plc, hmi);
             copy.ShowDialog();
+        }
+        protected override void OnClosed(EventArgs e)
+        {
+            tiaThread.Stop();
+            base.OnClosed(e);
+        }
+
+        class TaskDebug : TIAAsyncWrapper.Task
+        {
+            public override object Run()
+            {
+                Console.WriteLine("TIA op started");
+                Thread.Sleep(5000);
+                Console.WriteLine("TIA op ended");
+                //throw new NotImplementedException();
+                return 5;
+            }
+
+            public override void CaughtException(Exception ex)
+            {
+                MessageBox.Show("Exception in operation: " + ex.Message);
+            }
+
+            public override void Done(object obj)
+            {
+                MessageBox.Show("Operation done"+(int)obj);
+            }
+
+
+        }
+        private void startTIAOpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            TIAAsyncWrapper.Task task = new TaskDebug();
+            tiaThread.RunAsync(task);
+        }
+
+        private void startSyncTIAOpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            object res = tiaThread.RunSync((object arg) =>
+            {
+                Console.WriteLine("TIA sync op started");
+                Thread.Sleep(5000);
+                Console.WriteLine("TIA sync op ended");
+                //throw new NotImplementedException();
+                return 6;
+            }, null);
+
+            Console.WriteLine("Result: "+res);
         }
     }
 }

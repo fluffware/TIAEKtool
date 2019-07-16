@@ -10,7 +10,7 @@ namespace TIAEKtool
 {
     public class InterfaceType
     {
-
+        [SerializableAttribute]
         public class TagPathException : Exception
         {
             public TagPathException(string msg) : base(msg)

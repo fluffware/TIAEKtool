@@ -12,6 +12,7 @@ using Siemens.Engineering;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.SW;
 using System.Threading;
+using TIAEKtool;
 
 namespace TIAtool
 {
@@ -19,12 +20,12 @@ namespace TIAtool
     {
         TIATree.TreeNodeBuilder builder;
         TiaPortal portal;
-        public InfoDialog(TiaPortal portal)
+        public InfoDialog(TIAAsyncWrapper thread, TiaPortal portal)
         {
             InitializeComponent();
             AutoExpandMaxChildren = -1;
             this.portal = portal;
-            builder = new TIATree.TreeNodeBuilder(portal);
+            builder = new TIATree.TreeNodeBuilder(thread, portal);
             builder.BuildDone += TreeDone;
             VisibleChanged += updateList;
             FormClosing += FormClosingEventHandler;

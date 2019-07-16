@@ -15,6 +15,7 @@
         {
             if (disposing && (components != null))
             {
+                tiaThread.Dispose();
                 components.Dispose();
             }
             base.Dispose(disposing);
@@ -43,8 +44,11 @@
             this.btn_disconnect = new System.Windows.Forms.Button();
             this.btn_preset = new System.Windows.Forms.Button();
             this.btn_hmi_tags = new System.Windows.Forms.Button();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btn_copy = new System.Windows.Forms.Button();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startTIAOpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startSyncTIAOpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -55,7 +59,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.tIAPortalToolStripMenuItem,
-            this.languageToolStripMenuItem});
+            this.languageToolStripMenuItem,
+            this.debugToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(392, 24);
@@ -178,6 +183,16 @@
             this.btn_hmi_tags.UseVisualStyleBackColor = true;
             this.btn_hmi_tags.Click += new System.EventHandler(this.btn_hmi_tags_Click);
             // 
+            // btn_copy
+            // 
+            this.btn_copy.Location = new System.Drawing.Point(3, 119);
+            this.btn_copy.Name = "btn_copy";
+            this.btn_copy.Size = new System.Drawing.Size(75, 23);
+            this.btn_copy.TabIndex = 4;
+            this.btn_copy.Text = "Copy";
+            this.btn_copy.UseVisualStyleBackColor = true;
+            this.btn_copy.Click += new System.EventHandler(this.btn_copy_Click);
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.AutoSize = true;
@@ -194,15 +209,28 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(392, 363);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
-            // btn_copy
+            // debugToolStripMenuItem
             // 
-            this.btn_copy.Location = new System.Drawing.Point(3, 119);
-            this.btn_copy.Name = "btn_copy";
-            this.btn_copy.Size = new System.Drawing.Size(75, 23);
-            this.btn_copy.TabIndex = 4;
-            this.btn_copy.Text = "Copy";
-            this.btn_copy.UseVisualStyleBackColor = true;
-            this.btn_copy.Click += new System.EventHandler(this.btn_copy_Click);
+            this.debugToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startTIAOpToolStripMenuItem,
+            this.startSyncTIAOpToolStripMenuItem});
+            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
+            this.debugToolStripMenuItem.Text = "Debug";
+            // 
+            // startTIAOpToolStripMenuItem
+            // 
+            this.startTIAOpToolStripMenuItem.Name = "startTIAOpToolStripMenuItem";
+            this.startTIAOpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.startTIAOpToolStripMenuItem.Text = "Start TIA op";
+            this.startTIAOpToolStripMenuItem.Click += new System.EventHandler(this.startTIAOpToolStripMenuItem_Click);
+            // 
+            // startSyncTIAOpToolStripMenuItem
+            // 
+            this.startSyncTIAOpToolStripMenuItem.Name = "startSyncTIAOpToolStripMenuItem";
+            this.startSyncTIAOpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.startSyncTIAOpToolStripMenuItem.Text = "Start sync TIA op";
+            this.startSyncTIAOpToolStripMenuItem.Click += new System.EventHandler(this.startSyncTIAOpToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -243,6 +271,9 @@
         private System.Windows.Forms.ToolStripMenuItem languageToolStripMenuItem;
         private System.Windows.Forms.Button btn_hmi_tags;
         private System.Windows.Forms.Button btn_copy;
+        private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startTIAOpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startSyncTIAOpToolStripMenuItem;
     }
 }
 

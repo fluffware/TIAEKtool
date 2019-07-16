@@ -45,6 +45,7 @@ namespace TIAEKtool
 
         protected class Builder
         {
+            [SerializableAttribute]
             public class XmlBuildException : Exception
             {
                 public XmlBuildException(string msg) : base(msg)

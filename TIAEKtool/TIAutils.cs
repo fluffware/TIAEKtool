@@ -52,7 +52,10 @@ namespace TIAEKtool
             FileInfo path = TempFile.File("import_block_", "xml");
            
             try {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
+               
                 group.Blocks.Import(path, ImportOptions.Override);
             }
             finally
@@ -104,7 +107,10 @@ namespace TIAEKtool
 
             try
             {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
+                
                 group.Types.Import(path, ImportOptions.Override);
             }
             finally
@@ -155,7 +161,10 @@ namespace TIAEKtool
 
             try
             {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
+               
                 folder.ScreenPopups.Import(path, ImportOptions.Override);
             }
             finally
@@ -205,7 +214,10 @@ namespace TIAEKtool
 
             try
             {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
+               
                 folder.ScreenTemplates.Import(path, ImportOptions.Override);
             }
             finally
@@ -254,7 +266,10 @@ namespace TIAEKtool
 
             try
             {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
+               
                 folder.TagTables.Import(path, ImportOptions.Override);
             }
             finally
@@ -304,7 +319,9 @@ namespace TIAEKtool
 
             try
             {
-                doc.Save(path.ToString());
+                XmlWriter writer = XmlWriter.Create(path.ToString());
+                doc.Save(writer);
+                writer.Close();
                 text_lists.Import(path, ImportOptions.Override);
             }
             finally

@@ -9,6 +9,16 @@ namespace TIAEKtool
 {
     class XMLUtil
     {
+        static readonly public XmlNamespaceManager nameSpaces;
+        public MessageLog Log = null;
+
+        static XMLUtil()
+        {
+            NameTable nt = new NameTable();
+            nameSpaces = new XmlNamespaceManager(nt);
+            nameSpaces.AddNamespace("if", "http://www.siemens.com/automation/Openness/SW/Interface/v3");
+        }
+
         static public void SimpleValue(XmlWriter w, string name, string value, bool readOnly = false)
         {
             w.WriteStartElement(name);

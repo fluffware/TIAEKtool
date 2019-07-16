@@ -10,17 +10,18 @@ using System.Windows.Forms;
 using Siemens.Engineering;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.SW;
+using TIAEKtool;
 
 namespace TIAtool
 {
     public partial class BrowseDialog : Form
     {
         protected TIATree.TreeNodeBuilder builder;
-        public BrowseDialog(TiaPortal portal)
+        public BrowseDialog(TIAAsyncWrapper thread, TiaPortal portal)
         {
             InitializeComponent();
             AutoExpandMaxChildren = -1;
-            builder = new TIATree.TreeNodeBuilder(portal);
+            builder = new TIATree.TreeNodeBuilder(thread, portal);
             builder.BuildDone += TreeDone;
             VisibleChanged += UpdateList;
             FormClosing += FormClosingEventHandler;

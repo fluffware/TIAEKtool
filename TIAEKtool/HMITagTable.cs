@@ -84,6 +84,7 @@ namespace TIAEKtool
 
             // Set PLC tag
             XmlElement controller_tag_elem = tag.SelectSingleNode("LinkList/ControllerTag/Name") as XmlElement;
+            if (controller_tag_elem == null) throw new Exception("No PLC tag for HMI tag " + tag_name);
             controller_tag_elem.InnerText = plc_tag;
         }
 

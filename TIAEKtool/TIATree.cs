@@ -31,6 +31,7 @@ using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Threading;
+using TIAEKtool;
 
 namespace TIAtool
 {
@@ -75,8 +76,8 @@ namespace TIAtool
         public class TreeNodeBuilder
         {
             public TiaPortal TIA;
+            TIAAsyncWrapper thread;
 
-        
             public Filter Descend = AlwaysTrue; // Examine child items
             public Filter Leaf = AlwaysTrue; // Include this item even if no child item is included
 
@@ -119,93 +120,7 @@ namespace TIAtool
                 }
             }
 
-            class HandlerAsync : NodeHandler
-            {
-                Stack<TreeNode> stack = new Stack<TreeNode>();
-                
-                BackgroundWorker worker;
-                TreeNodeBuilder builder;
-                private readonly TreeNodeCollection nodes;
-                SynchronizationContext caller_ctxt;
-                public DoWorkEventArgs WorkerArgs { get; set; }
-                public HandlerAsync(TreeNodeBuilder builder, TreeNodeCollection nodes, BackgroundWorker worker, SynchronizationContext caller_ctxt)
-                {
-                    this.builder = builder;
-                    this.nodes = nodes;
-                    this.worker = worker;
-                    this.caller_ctxt = caller_ctxt;
-                }
-
-                class Args
-                {
-                    public string name;
-                    public object obj;
-                }
-                public override NodeHandler Enter(Object obj, string name)
-                {
-                    caller_ctxt.Post(EnterHandler, new Args() { name = name, obj = obj });
-                    if (worker.CancellationPending)
-                    {
-                        if (WorkerArgs != null) WorkerArgs.Cancel = true;
-                        return null;
-                    }
-                   
-                 
-                    if (builder.Descend(obj))
-                    {
-                        return this;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-
-                public override void Exit(object obj)
-                {
-                        caller_ctxt.Post(ExitHandler, obj);             
-                }
-
-                void EnterHandler(object state)
-                {
-                    Args args = (Args)state;
-                    TreeNode node = new TreeNode(args.name);
-                    node.Tag = args.obj;
-                    stack.Push(node);
-                    Console.WriteLine("Enter: "+node.Text);
-                }
-
-                void ExitHandler(object state)
-                {
-                   
-                    TreeNode node = stack.Pop();
-                    Console.WriteLine("Exit: " + node.Text);
-                  
-                    //System.Diagnostics.Debug.Assert(node.Tag == state, node.Text);
-                    if (builder.Leaf(state))
-                    {
-                        TreeNode n = node;
-                        // Add all nodes on the stack that hasn't already got a parent
-                        if (n.Parent == null)
-                        {
-                            foreach (TreeNode p in stack)
-                            {
-                                p.Nodes.Add(n);
-                                if (p.Parent != null)
-                                {
-                                    n = null;
-                                    break;
-                                }
-                                n = p;
-                            }
-                            if (n != null && !nodes.Contains(n))
-                            {
-                                nodes.Add(n);
-                            }
-                        }
-                    }
-                }
-            }
+            
 
            
 
@@ -213,38 +128,147 @@ namespace TIAtool
             {
                 return true;
             }
-            public TreeNodeBuilder(TiaPortal tia)
+            public TreeNodeBuilder(TIAAsyncWrapper tiaThread, TiaPortal tia)
             {
                 TIA = tia;
+                thread = tiaThread;
             }
-            public void Build(TreeNodeCollection nodes)
+
+            class BuildTask : TIAAsyncWrapper.Task
             {
-                lock (TIA)
+                TiaPortal TIA;
+                Stack<TreeNode> stack = new Stack<TreeNode>();
+                TreeNodeBuilder builder;
+                private readonly TreeNodeCollection nodes;
+                HandlerAsync handler;
+
+                class HandlerAsync : NodeHandler
                 {
-                    Handler handler = new Handler(this, nodes);
-                    Handle(handler, TIA);
+                    BuildTask task;
+
+                    public HandlerAsync(BuildTask task)
+                    {
+                        this.task = task;
+                    }
+
+                    public class EnterArgs
+                    {
+                        public string name;
+                        public object obj;
+                    }
+
+                    public override NodeHandler Enter(Object obj, string name)
+                    {
+                        task.SendResult(new EnterArgs() { name = name, obj = obj });
+                        if (task.cancelled)
+                        {
+                            return null;
+                        }
+
+
+                        if (task.builder.Descend(obj))
+                        {
+                            return this;
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+
+                    public override void Exit(object obj)
+                    {
+                        task.SendResult(obj);
+                    }
+
+
                 }
+                
+                public BuildTask(TreeNodeBuilder builder, TreeNodeCollection nodes, TiaPortal tia)
+                {
+                    this.builder = builder;
+                    this.nodes = nodes;
+                    this.TIA = tia;
+                    handler = new HandlerAsync(this);
+                }
+                public override object Run()
+                {
+                    lock (TIA)
+                    {
+                        Handle(handler, TIA);
+                    }
+                    return null;
+                }
+
+                public override void Done(object result)
+                {
+                    builder.BuildDone(this, new BuildDoneEventArgs());
+                }
+
+                public override void Result(object result)
+                {
+                    HandlerAsync.EnterArgs enterArgs = result as HandlerAsync.EnterArgs;
+                    if (enterArgs != null)
+                    {
+
+                        TreeNode node = new TreeNode(enterArgs.name);
+                        node.Tag = enterArgs.obj;
+                        stack.Push(node);
+                        Console.WriteLine("Enter: " + node.Text);
+                    }
+
+
+                    else
+                    {
+
+                        TreeNode node = stack.Pop();
+                        Console.WriteLine("Exit: " + node.Text);
+
+                        //System.Diagnostics.Debug.Assert(node.Tag == state, node.Text);
+                        if (builder.Leaf(result))
+                        {
+                            TreeNode n = node;
+                            // Add all nodes on the stack that hasn't already got a parent
+                            if (n.Parent == null)
+                            {
+                                foreach (TreeNode p in stack)
+                                {
+                                    p.Nodes.Add(n);
+                                    if (p.Parent != null)
+                                    {
+                                        n = null;
+                                        break;
+                                    }
+                                    n = p;
+                                }
+                                if (n != null && !nodes.Contains(n))
+                                {
+                                    nodes.Add(n);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                public override void CaughtException(Exception ex)
+                {
+                   
+                    Console.WriteLine("Failed to build node tree: " + ex.Message +"\n"+ ex.StackTrace);
+                }
+
             }
-
-            protected BackgroundWorker worker;
-
             public void StartBuild(TreeNodeCollection nodes)
             {
-                worker = new BackgroundWorker();
-                worker.WorkerSupportsCancellation = true;
-                worker.DoWork += DoWork;
-                worker.RunWorkerCompleted += RunWorkerCompleted;
-
-                HandlerAsync handler = new HandlerAsync(this, nodes, worker, SynchronizationContext.Current);
-                worker.RunWorkerAsync(handler);
+                BuildTask task = new BuildTask(this, nodes,TIA);
+                thread.RunAsync(task);
             }
 
             public void CancelBuild()
             {
-                BackgroundWorker w = worker;
-                if (w != null)
+                TIAAsyncWrapper t = thread;
+                if (t != null)
                 {
-                    w.CancelAsync();
+                    t.cancel();
                     lock (TIA)
                     {
                         // Do nothing just wait for the worker to finish
@@ -255,27 +279,6 @@ namespace TIAtool
 
            
 
-
-            public void DoWork(object sender, DoWorkEventArgs e)
-            {
-                lock (TIA)
-                {
-                    HandlerAsync handler = (HandlerAsync)e.Argument;
-                    handler.WorkerArgs = e;
-                    Handle(handler, TIA);
-                }
-            }
-
-            public void RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-            {
-                OnBuildDone();
-                worker = null;
-            }
-
-            protected virtual void OnBuildDone()
-            {
-                BuildDone(this, new BuildDoneEventArgs());
-            }
 
             // Expand all nodes with max_children or fewer
             public static void Expand(TreeNodeCollection nodes, int max_children)
@@ -334,6 +337,38 @@ namespace TIAtool
             }
         }
 
+        // PLC types
+        private static void HandleType(NodeHandler handler, PlcType type)
+        {
+            handler.Enter(type, type.Name);
+            handler.Exit(type);
+        }
+
+        private static void iterType(NodeHandler handler, PlcTypeComposition types)
+        {
+            foreach (PlcType type in types)
+            {
+                HandleType(handler, type);
+            }
+        }
+        private static void HandleTypeFolder(NodeHandler handler, PlcTypeUserGroup folder)
+        {
+            NodeHandler child_handler = handler.Enter(folder, folder.Name);
+            if (child_handler != null)
+            {
+                iterType(child_handler, folder.Types);
+                iterTypeFolder(child_handler, folder.Groups);
+            }
+            handler.Exit(folder);
+        }
+
+        private static void iterTypeFolder(NodeHandler handler, PlcTypeUserGroupComposition folders)
+        {
+            foreach (PlcTypeUserGroup folder in folders)
+            {
+                HandleTypeFolder(handler, folder);
+            }
+        }
 
         // Templates
         private static void HandleScreenTemplate(NodeHandler handler, Siemens.Engineering.Hmi.Screen.ScreenTemplate template)
@@ -474,6 +509,13 @@ namespace TIAtool
                             iterBlockFolder(block_handler, controller.BlockGroup.Groups);
                         }
                         child_handler.Exit(controller.BlockGroup);
+                        NodeHandler type_handler = child_handler.Enter(controller.TypeGroup, "Types");
+                        if (type_handler != null)
+                        {
+                            iterType(type_handler, controller.TypeGroup.Types);
+                            iterTypeFolder(block_handler, controller.TypeGroup.Groups);
+                        }
+                        child_handler.Exit(controller.TypeGroup);
                     }
 
 

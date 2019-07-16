@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TIAEKtool;
 
 namespace PLC.Types
 {
@@ -393,7 +394,19 @@ namespace PLC.Types
 
     public abstract class Constant
     {
+        public int ResolveInt(ConstantLookup lookup)
+        {
+            if (this is IntegerLiteral i) return i.Value;
+            if (this is NamedConstant c)
+            {
+                return lookup.IntegerLookup(c.Name);
+            }
+            else
+            {
+                throw new Exception("Can only resolve named constants");
+            }
 
+        }
     }
 
     public class IntegerLiteral : Constant
@@ -423,6 +436,8 @@ namespace PLC.Types
     public abstract class NamedConstant : Constant
     {
         public string Name;
+
+       
     }
 
     public class LocalConstant : NamedConstant

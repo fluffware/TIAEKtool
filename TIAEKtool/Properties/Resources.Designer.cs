@@ -204,6 +204,30 @@ namespace TIAEKtool.Properties {
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
         ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
         ///  &lt;Section Name=&quot;Input&quot;&gt;
+        ///    &lt;Member Name=&quot;Enable&quot; Datatype=&apos;&quot;PresetEnableType&quot;&apos; Accessibility=&quot;Public&quot;&gt;
+        ///      &lt;Sections&gt;
+        ///        &lt;Secti [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string InitialPresetStoreEnabledSCL {
+            get {
+                return ResourceManager.GetString("InitialPresetStoreEnabledSCL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Document&gt;
+        ///  &lt;Engineering version=&quot;V15&quot; /&gt;
+        ///  &lt;DocumentInfo&gt;
+        ///  &lt;/DocumentInfo&gt;
+        ///  &lt;SW.Blocks.FC ID=&quot;0&quot;&gt;
+        ///    &lt;AttributeList&gt;
+        ///      &lt;AutoNumber&gt;true&lt;/AutoNumber&gt;
+        ///      &lt;HeaderAuthor /&gt;
+        ///      &lt;HeaderFamily /&gt;
+        ///      &lt;HeaderName /&gt;
+        ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
+        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///  &lt;Section Name=&quot;Input&quot;&gt;
         ///  &lt;/Section&gt;
         ///        &lt;Section Name=&quot;Output&quot;&gt;
         ///          &lt;Member Name=&quot;Value&quot; Datatype=&apos;&quot;PresetValueType&quot;&apos; Access [rest of string was truncated]&quot;;.

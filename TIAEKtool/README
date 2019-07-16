@@ -3,7 +3,7 @@ It connects to TIA Portal using TIA Openness.
 
 
 
-All presets belong to a group. If now group is given explicitly the group is "main". In the following <group> should be replaced with the specific group name.
+All presets belong to a group. If no group is given explicitly the group is "main". In the following <group> should be replaced with the specific group name.
 
 
 Two type are generated for each group called "PresetValueType_<group>" and PresetEnableType_<group>.
@@ -20,6 +20,7 @@ To define which tags can have preset values specially formated comments are used
 The general format for an annotaion in a comment is:
 @{<annotaion type><annotaion data>}
 <annotaion type> may contain ASCII alphanumerics and '_'. First character can not be a digit.
+Any occurance of '}' inside the annotation must be preceeded by '\'. 
 
 A comment may contain multiple annotations. Any text outside annotations is ignored.
 

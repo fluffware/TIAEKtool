@@ -27,6 +27,11 @@ namespace TIAEKtool
                     && field.Length == Length
                     && field.FormatPattern == FormatPattern;
             }
+            public override int GetHashCode()
+            {
+                return TagName.GetHashCode() ^ DisplayType.GetHashCode() ^ Length ^ FormatPattern.GetHashCode();
+            }
+
         }
 
         public static XmlElement ParseTextToTextElement(XmlDocument doc, string text, ref List<FieldInfo> fields)

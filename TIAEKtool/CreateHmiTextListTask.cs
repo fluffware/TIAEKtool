@@ -79,16 +79,11 @@ namespace TIAEKtool
                 culture_elem.InnerText = culture;
                 attr_list2.AppendChild(culture_elem);
 
-                XmlElement text_elem = doc.CreateElement("Text");
-                attr_list2.AppendChild(text_elem);
+                List<ParseText.FieldInfo> fields = null;
+                XmlElement parsed_text = ParseText.ParseTextToTextElement(doc, text[culture], ref fields);
+                attr_list2.AppendChild(parsed_text);
 
 
-                XmlElement body = doc.CreateElement("body");
-                text_elem.AppendChild(body);
-
-                XmlElement para = doc.CreateElement("p");
-                para.InnerText = text[culture];
-                body.AppendChild(para);
             }
             return entry;
         }

@@ -33,11 +33,8 @@ namespace TIAEKtool
                 SoftwareContainer sw_cont = item.GetService<SoftwareContainer>();
                 if (sw_cont != null)
                 {
-                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
-                    if (hmi_target != null)
-                    {
+                    if (sw_cont.Software is HmiTarget hmi_target) {
                         hmi.Add(hmi_target);
-
                     }
                 }
                 IterDeviceItem(hmi, item.DeviceItems);
@@ -94,11 +91,14 @@ namespace TIAEKtool
             tiaPortal = portal;
             FormClosing += FormClosingEventHandler;
             presetListView.AutoGenerateColumns = false;
-            presetList = new PresetTagList();
-            presetList.Culture = culture;
+            presetList = new PresetTagList
+            {
+                Culture = culture
+            };
             presetListView.DataSource = presetList;
 
             writeButton.Enabled = false;
+            exportButton.Enabled = false;
             parser = new TagParser(portal);
             parser.HandleTag += HandleTag;
             parser.ParseDone += ParseDone;
@@ -131,6 +131,12 @@ namespace TIAEKtool
                 FindHMI.HandleDeviceFolder(hmiTargets, dev_group);
                
             }
+            Project proj = tiaPortal.Projects[0];
+            LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
+           
+                cultureComboBox.Items.Clear();
+                cultureComboBox.Items.AddRange(langs.Select(l => l.Culture.Name).ToArray());
+            cultureComboBox.SelectedItem = culture;
         }
 
 
@@ -156,7 +162,9 @@ namespace TIAEKtool
 
         public void ParseDone(object source, TagParser.ParseDoneEventArgs ev)
         {
+          
             writeButton.Enabled = resultGroup != null;
+            exportButton.Enabled = resultGroup != null;
             if (log.HighestSeverity >= MessageLog.Severity.Warning)
             {
                 LogDialog dialog = new LogDialog(log);
@@ -169,8 +177,26 @@ namespace TIAEKtool
 
         }
 
+        private Dictionary<string, List<PresetTag>> tagGroups(PresetTagList presets)
+        {
+            Dictionary<string, List<PresetTag>> tag_groups = new Dictionary<string, List<PresetTag>>();
+            foreach (PresetTagList.Row r in presets)
+            {
+                List<PresetTag> tags;
+                if (!tag_groups.TryGetValue(r.Tag.presetGroup, out tags))
+                {
+                    tags = new List<PresetTag>();
+                }
+                tags.Add(r.Tag);
+                tags.Sort();
+                tag_groups[r.Tag.presetGroup] = tags;
 
-        private void writeButton_Click(object sender, EventArgs e)
+
+            }
+            return tag_groups;
+        }
+
+        private void WriteButton_Click(object sender, EventArgs e)
         {
             if (task_dialog == null)
             {
@@ -178,18 +204,8 @@ namespace TIAEKtool
             }
             task_dialog.Clear();
             // Sort the groups into separate lists of tags
-            Dictionary<string, List<PresetTag>> tag_groups = new Dictionary<string, List<PresetTag>>();
-            foreach (PresetTagList.Row r in presetList)
-            {
-                List<PresetTag> tags;
-                if (!tag_groups.TryGetValue(r.Tag.presetGroup, out tags))
-                {
-                    tags = new List<PresetTag>();
-
-                    tag_groups[r.Tag.presetGroup] = tags;
-                }
-                tags.Add(r.Tag);
-            }
+            Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
+          
 
             ConstantLookup constants = new ConstantLookup();
             constants.Populate(tiaPortal, plcSoftware);
@@ -212,6 +228,7 @@ namespace TIAEKtool
 
                 
                 string db_name = "sDB_Preset_" + group_name;
+                string hmi_db_name = "sDB_HMI_Preset_" + group_name;
                 var tags = tag_groups[group_name];
 
                 string value_type_name = "PresetValueType_" + group_name;
@@ -221,7 +238,8 @@ namespace TIAEKtool
                 string recall_block_name = "PresetRecall_" + group_name;
                 task_dialog.AddTask(new CreatePresetRecallBlockTask(tiaPortal, tags, resultGroup, recall_block_name, value_type_name, enable_type_name));
                 string store_block_name = "PresetStore_" + group_name;
-                task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, value_type_name, enable_type_name));
+                string store_enabled_block_name = "PresetStoreEnabled_" + group_name;
+                task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, store_enabled_block_name, value_type_name, enable_type_name));
 
                 foreach (HmiTarget hmi in hmiTargets)
                 {
@@ -244,9 +262,12 @@ namespace TIAEKtool
                     if (preset_tag_folder != null)
                     {
                         string table_name = "Preset_" + group_name;
-                       
-                            task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name));
-                      
+                        ConstantLookup.Entry count_entry = constants.Lookup("PresetCount_" + group_name);
+                        if (count_entry != null)
+                        {
+                            int nPreset = int.Parse(count_entry.value);
+                            task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name,hmi_db_name, nPreset));
+                        }
                     }
                     // Load template screen
 
@@ -273,6 +294,114 @@ namespace TIAEKtool
            
 
             task_dialog.Show();
+        }
+
+        private PlcBlock findPlcBlockName(string name, PlcBlockGroup blocks)
+        {
+            PlcBlock block = blocks.Blocks.Find(name);
+            if (block == null)
+            {
+                foreach (PlcBlockGroup group in blocks.Groups)
+                {
+                    block = findPlcBlockName(name, group);
+                    if (block != null) break;
+                }
+            }
+            return block;
+        }
+        private PlcBlock findPlcBlock(PathComponent path, PlcBlockGroup blocks)
+        {
+            while (path.Parent != null)
+            {
+                path = path.Parent;
+            }
+            if (!(path is MemberComponent)) return null;
+            string name = ((MemberComponent)path).Name;
+            Console.WriteLine("Name "+name);
+            return findPlcBlockName(name,blocks);
+        }
+
+        private void exportButton_Click(object sender, EventArgs e)
+        {
+
+            if (savePresetList.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    ConstantLookup constants = new ConstantLookup();
+                    constants.Populate(tiaPortal, plcSoftware);
+
+                    Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
+
+                    PlcBlockGroup preset_group = plcSoftware.BlockGroup.Groups.Find("Preset");
+                    if (preset_group == null)
+                    {
+                        MessageBox.Show("No group named Preset found for PLC " + plcSoftware.Name);
+                        return;
+                    }
+
+                    Dictionary<string, string[]> preset_names = new Dictionary<string, string[]>();
+                    Dictionary<string, List<PresetDocument.PresetInfo>> preset_values = new Dictionary<string, List<PresetDocument.PresetInfo>>();
+                    foreach (string group_name in tag_groups.Keys)
+                    {
+                        string preset_db_name = "sDB_Preset_" + group_name;
+                        PlcBlock preset_db = preset_group.Blocks.Find(preset_db_name);
+                        if (preset_db == null)
+                        {
+                            MessageBox.Show("No block named " + preset_db_name + " found for PLC " + plcSoftware.Name);
+                            return;
+                        }
+                        XmlDocument doc;
+                        try
+                        {
+                            doc = TIAutils.ExportPlcBlockXML(preset_db);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Failed to export block " + preset_db_name + ": " + ex.Message);
+                            return;
+                        }
+
+                        if (doc.DocumentElement.SelectSingleNode("/Document/SW.Blocks.GlobalDB//if:Section[@Name='Static']", XMLUtil.nameSpaces) is XmlElement static_elem)
+                        {
+                            preset_names[group_name] = PresetValueParser.GetPresetNames(static_elem, constants);
+
+                            preset_values[group_name] = new List<PresetDocument.PresetInfo>();
+                            var tags = tag_groups[group_name];
+                            foreach (var tag in tags)
+                            {
+                                var values = PresetValueParser.GetPresetValue(static_elem, tag.tagPath, constants);
+                                var enabled = PresetValueParser.GetPresetEnabled(static_elem, tag.tagPath, constants);
+                                Console.WriteLine(tag.tagPath + ":" + (string.Join(",", values)));
+                                preset_values[group_name].Add(new PresetDocument.PresetInfo(){ tag = tag, values = values, enabled = enabled});
+                            }
+
+
+                        }
+                        else
+                        {
+                            MessageBox.Show("No static section found for " + preset_db_name);
+                            return;
+                        }
+
+                    }
+                   
+
+
+                    PresetDocument.Save(savePresetList.FileName, preset_values,preset_names, cultureComboBox.SelectedItem.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to export preset list: " + ex.Message);
+                }
+
+            }
+        }
+
+        private void cultureComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            presetList.Culture = cultureComboBox.SelectedItem.ToString();
         }
     }
 
