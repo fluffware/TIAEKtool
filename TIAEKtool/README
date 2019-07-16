@@ -13,16 +13,17 @@ Two type are generated for each group called "PresetValueType_<group>" and Prese
 All generated DBs are created in the "Preset" block-group.
 Two code blocks are generated for each group are named "PresetStore_<group>" and "PresetRecall_<group>".
 "PresetStore_<group>" copies values from the preset tags into a struct of type "PresetValueType_<group>".
+"PresetStoreEnabled_<group>" copies values from the preset tags into a struct of type "PresetValueType_<group>", but only if the corresponding bit is set in the Enable parameter.
 "PresetRecall_<group>" copies values from a struct of type "PresetValueType_<group>" to the various tags, but only if the corresponding enable bit is set.
 
 
-To define which tags can have preset values specially formated comments are used.
+To define which tags can have preset values, specially formated comments are used.
 The general format for an annotaion in a comment is:
-@{<annotaion type><annotaion data>}
+@{<annotaion type> <annotaion data>}
 <annotaion type> may contain ASCII alphanumerics and '_'. First character can not be a digit.
 Any occurance of '}' inside the annotation must be preceeded by '\'. 
 
-A comment may contain multiple annotations. Any text outside annotations is ignored.
+A comment may (and often do) contain multiple annotations. Any text outside annotations is ignored.
 
 The available annotaions are:
 @{preset [group]: <description>}
@@ -37,5 +38,17 @@ Don't generate code to store the value.
 @{preset_unit <unit>}
 Unit for this preset
 
-@{preset_precision}
+@{preset_precision <precision>}
 Number of digits after decimal point for real numbers. Default is 0.
+
+@{preset_order <order>}
+The argument is an integer which assigns relative order of the presets. A lower number is presented before a higher. Default is 10000.
+
+@{preset_min <min>}
+@{preset_min <max>}
+Minimum and maximum allowed value for the preset. Default is the limits for the type of the preset.
+
+@{preset_state <value>: <Description>}
+Assigns a name to a specific value for an enumerated type. If present the preset will be presented as a multiple choice between the given states.
+
+
