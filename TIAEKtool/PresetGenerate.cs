@@ -257,18 +257,46 @@ namespace TIAEKtool
                         count++;
                     }
 
+                    // Get number of presets configured
+                    string count_entry_name = "PresetCount_" + group_name;
+                    ConstantLookup.Entry count_entry = constants.Lookup(count_entry_name);
+                    if (count_entry == null)
+                    {
+                        throw new Exception("Global constant " + count_entry_name + " not found");
+                    }
+
+                    
+                    int nPresets = int.Parse(count_entry.value);
+
+                    Dictionary<int, MultilingualText> preset_names = new Dictionary<int, MultilingualText>();
+                    // Create preset name list
+                    Project proj = tiaPortal.Projects[0];
+                    LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
+
+                    IEnumerable<string> cultures = langs.Select(l => l.Culture.Name);
+                    {
+                        for (int p = 1; p <= nPresets; p++)
+                        {
+                            string name_string = "<hmitag length='20' type='Text' name='PresetName_" + group_name + "_" + p + "'>Preset " + p + "</hmitag>";
+                            MultilingualText text = new MultilingualText();
+                            foreach (string c in cultures)
+                            {
+                                text.AddText(c, name_string);
+                            }
+                            preset_names.Add(p, text);
+                        }
+
+                        string list_name = "PresetNameList_" + group_name;
+                        task_dialog.AddTask(new CreateHmiTextListTask(tiaPortal, list_name, hmi_text_lists, preset_names));
+                    }
                     // Create HMI tags
                     TagFolder preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
                     if (preset_tag_folder != null)
                     {
                         string table_name = "Preset_" + group_name;
-                        ConstantLookup.Entry count_entry = constants.Lookup("PresetCount_" + group_name);
-                        if (count_entry != null)
-                        {
-                            int nPreset = int.Parse(count_entry.value);
-                            task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name,hmi_db_name, nPreset));
-                        }
+                        task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name,hmi_db_name, nPresets));
                     }
+
                     // Load template screen
 
                     ScreenTemplate obj_templ = hmi.ScreenTemplateFolder.ScreenTemplates.Find("ObjectTemplate");
