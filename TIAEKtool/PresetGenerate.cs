@@ -85,7 +85,7 @@ namespace TIAEKtool
         TaskDialog task_dialog;
         TiaPortal tiaPortal;
         MessageLog log = new MessageLog();
-        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, string culture)
+        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiTarget> hmiTargets, string culture)
         {
             InitializeComponent();
             tiaPortal = portal;
@@ -120,17 +120,8 @@ namespace TIAEKtool
             {
                 typeGroup = plcSoftware.TypeGroup.Groups.Create("Preset");
             }
-            hmiTargets = new List<HmiTarget>();
-            node = top;
-            while (node != null && !(node is DeviceUserGroup)) node = node.Parent;
+            this.hmiTargets = hmiTargets;
 
-            if (node != null)
-            {
-                DeviceUserGroup dev_group = (DeviceUserGroup)node;
-
-                FindHMI.HandleDeviceFolder(hmiTargets, dev_group);
-               
-            }
             Project proj = tiaPortal.Projects[0];
             LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
            
@@ -195,7 +186,8 @@ namespace TIAEKtool
             }
             return tag_groups;
         }
-
+        const string PRESET_DB_PREFIX = "sDB_Preset_";
+        const string PRESET_HMI_DB_PREFIX = "sDB_HMI_Preset_";
         private void WriteButton_Click(object sender, EventArgs e)
         {
             if (task_dialog == null)
@@ -203,18 +195,52 @@ namespace TIAEKtool
                 task_dialog = new TaskDialog();
             }
             task_dialog.Clear();
+
+            Project proj = tiaPortal.Projects[0];
+            LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
+
+            string[] cultures = langs.Select(l => l.Culture.Name).ToArray();
+            string default_culture = proj.LanguageSettings.ReferenceLanguage.Culture.Name;
+            foreach (PresetTagList.Row row in presetList)
+            {
+                row.Tag.labels.AddMissingCultures(cultures, default_culture);
+                if (row.Tag.state_labels != null)
+                {
+                    foreach (MultilingualText text in row.Tag.state_labels.Values)
+                    {
+                        text.AddMissingCultures(cultures, default_culture);
+                    }
+                }
+            }
             // Sort the groups into separate lists of tags
             Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
           
 
             ConstantLookup constants = new ConstantLookup();
             constants.Populate(tiaPortal, plcSoftware);
-            foreach (HmiTarget hmi in hmiTargets)
+
+            // Create databases for all groups
+            foreach (string group_name in tag_groups.Keys)
             {
 
-              
+                string db_name = PRESET_DB_PREFIX + group_name;
+                string hmi_db_name = PRESET_HMI_DB_PREFIX + group_name;
+                var tags = tag_groups[group_name];
 
-                // Create HMI tags
+                string value_type_name = "PresetValueType_" + group_name;
+                string enable_type_name = "PresetEnableType_" + group_name;
+
+                task_dialog.AddTask(new CreatePresetTypesTask(tiaPortal, tags, typeGroup, value_type_name, enable_type_name));
+                string recall_block_name = "PresetRecall_" + group_name;
+                task_dialog.AddTask(new CreatePresetRecallBlockTask(tiaPortal, tags, resultGroup, recall_block_name, value_type_name, enable_type_name));
+                string store_block_name = "PresetStore_" + group_name;
+                string store_enabled_block_name = "PresetStoreEnabled_" + group_name;
+                task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, store_enabled_block_name, value_type_name, enable_type_name));
+            }
+
+            foreach (HmiTarget hmi in hmiTargets)
+            {
+               // Create HMI tags
                 TagFolder preset_tag_folder = hmi.TagFolder.Folders.Find("Preset");
                 if (preset_tag_folder != null)
                 {
@@ -222,24 +248,12 @@ namespace TIAEKtool
                 }
             }
 
-                // Create databases for all groups
-                foreach (string group_name in tag_groups.Keys)
+            // Create HMI for all groups
+            foreach (string group_name in tag_groups.Keys)
             {
-
-                
-                string db_name = "sDB_Preset_" + group_name;
-                string hmi_db_name = "sDB_HMI_Preset_" + group_name;
                 var tags = tag_groups[group_name];
-
-                string value_type_name = "PresetValueType_" + group_name;
-                string enable_type_name = "PresetEnableType_" + group_name;
-
-                task_dialog.AddTask(new CreatePresetTypesTask(tiaPortal, tags,typeGroup, value_type_name, enable_type_name));
-                string recall_block_name = "PresetRecall_" + group_name;
-                task_dialog.AddTask(new CreatePresetRecallBlockTask(tiaPortal, tags, resultGroup, recall_block_name, value_type_name, enable_type_name));
-                string store_block_name = "PresetStore_" + group_name;
-                string store_enabled_block_name = "PresetStoreEnabled_" + group_name;
-                task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, store_enabled_block_name, value_type_name, enable_type_name));
+                string db_name = PRESET_DB_PREFIX + group_name;
+                string hmi_db_name = PRESET_HMI_DB_PREFIX + group_name;
 
                 foreach (HmiTarget hmi in hmiTargets)
                 {
@@ -270,10 +284,8 @@ namespace TIAEKtool
 
                     Dictionary<int, MultilingualText> preset_names = new Dictionary<int, MultilingualText>();
                     // Create preset name list
-                    Project proj = tiaPortal.Projects[0];
-                    LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
-
-                    IEnumerable<string> cultures = langs.Select(l => l.Culture.Name);
+                  
+                 
                     {
                         for (int p = 1; p <= nPresets; p++)
                         {
@@ -294,12 +306,16 @@ namespace TIAEKtool
                     if (preset_tag_folder != null)
                     {
                         string table_name = "Preset_" + group_name;
-                        task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name,hmi_db_name, nPresets));
+                        task_dialog.AddTask(new CreatePresetHmiTagsTask(tiaPortal, tags, preset_tag_folder, table_name, group_name, db_name, hmi_db_name, nPresets));
+                    }
+                    else
+                    {
+                        MessageBox.Show("No HMI tag group name 'Preset' was found for HMI " + hmi.Name + ". No tag tables will be updated.");
                     }
 
-                    // Load template screen
+                     // Load template screen
 
-                    ScreenTemplate obj_templ = hmi.ScreenTemplateFolder.ScreenTemplates.Find("ObjectTemplate");
+                        ScreenTemplate obj_templ = hmi.ScreenTemplateFolder.ScreenTemplates.Find("ObjectTemplate");
                     if (obj_templ != null)
                     {
                         XmlDocument templates = TIAutils.ExportScreenTemplateXML(obj_templ);

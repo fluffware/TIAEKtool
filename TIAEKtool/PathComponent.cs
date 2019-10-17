@@ -12,7 +12,7 @@ namespace TIAEKtool
     {
         public PathComponent Parent { get; protected set; }
 
-        public DataType Type { get; protected set; }
+        public DataType Type { get; set; }
 
         public PathComponent(DataType type, PathComponent parent = null)
         {
@@ -63,9 +63,21 @@ namespace TIAEKtool
             Name = name;
         }
 
+        static public readonly char[] ESCAPED_CHARS = { '.', '[', ']', '"', ' ' };
+        static private string EscapeName(string str)
+        {
+            if (str.IndexOfAny(ESCAPED_CHARS) >= 0)
+            {
+                return '"' + str + '"';
+            }
+            else
+            {
+                return str;
+            }
+        }
         public override string ToString()
         {
-            return ((Parent != null) ? Parent.ToString() + "." : "") + Name;
+            return ((Parent != null) ? Parent.ToString() + "." : "") + EscapeName(Name);
         }
         public override PathComponent CloneComponent()
         {
@@ -180,6 +192,61 @@ namespace TIAEKtool
             }
             if (path.Parent == null) return false;
             return NextArrayPath(path.Parent);
+        }
+
+        static readonly char[] special_chars = { '.', '[', '"' };
+        public class ParseException : Exception
+        {
+            public ParseException(string msg) : base(msg)
+            {
+                
+            }
+
+        }
+
+        public static PathComponent ParsePath(string str)
+        {
+            int pos = 0;
+            PathComponent path = null;
+            string name;
+            while (pos < str.Length) {
+                if (str[pos] == '"')
+                {
+                    if (pos + 1 >= str.Length) throw new ParseException("Path ends with '\"'");
+
+                    int end = str.IndexOf('"', pos + 1);
+                    if (end == -1) throw new ParseException("No terminating '\"'");
+                    name = str.Substring(pos + 1, end - pos - 1);
+                    pos = end + 1;
+                }
+                else
+                {
+                    int start = pos;
+                    pos = str.IndexOfAny(MemberComponent.ESCAPED_CHARS, pos);
+                    if (pos == -1)
+                    {
+                        pos = str.Length;
+                    }
+                    name = str.Substring(start, pos - start);
+                }
+                path = new MemberComponent(name, null, path);
+                if (pos == str.Length) break;
+                if (str[pos] == '[') {
+                    if (pos + 1 >= str.Length) throw new ParseException("Path ends with '['");
+                    int end = str.IndexOf(']', pos + 1);
+                    if (end == -1) throw new ParseException("No terminating ']'");
+                    string indices = str.Substring(pos + 1, end - pos - 1);
+                    string[] index_str = indices.Split(',');
+                    path = new IndexComponent(index_str.Select(s => int.Parse(s)).ToArray<int>(), null, path);
+                    pos = end + 1;
+                }
+                if (pos == str.Length) break;
+                if (str[pos] != '.') {
+                    throw new ParseException("Expected '.'");
+                }
+                pos++;
+            }
+            return path;
         }
 
     }

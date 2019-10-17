@@ -11,12 +11,12 @@ namespace TIAEKtool
     {
         static readonly public XmlNamespaceManager nameSpaces;
         public MessageLog Log = null;
-
+        public const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
         static XMLUtil()
         {
             NameTable nt = new NameTable();
             nameSpaces = new XmlNamespaceManager(nt);
-            nameSpaces.AddNamespace("if", "http://www.siemens.com/automation/Openness/SW/Interface/v3");
+            nameSpaces.AddNamespace("if", XMLUtil.InterfaceNS);
         }
 
         static public void SimpleValue(XmlWriter w, string name, string value, bool readOnly = false)

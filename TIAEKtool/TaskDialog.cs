@@ -129,5 +129,26 @@ namespace TIAEKtool
         {
             Close();
         }
+
+        private void btn_disable_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow r in taskListView.SelectedRows) {
+                if (r.DataBoundItem is SequentialTask task)
+                {
+                    task.Selected = false;
+                }
+            }
+        }
+
+        private void btn_enable_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow r in taskListView.SelectedRows)
+            {
+                if (r.DataBoundItem is SequentialTask task)
+                {
+                    task.Selected = true;
+                }
+            }
+        }
     }
 }

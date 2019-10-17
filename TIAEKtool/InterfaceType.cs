@@ -25,13 +25,13 @@ namespace TIAEKtool
         public XmlDocument Document { get => doc; }
 
         protected XmlNamespaceManager nsmgr;
-        protected const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
+        
 
         public InterfaceType()
         {
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
-            nsmgr.AddNamespace("if", InterfaceNS);
+            nsmgr.AddNamespace("if", XMLUtil.InterfaceNS);
         }
 
         protected const int SystemDefined = 1;
@@ -39,7 +39,7 @@ namespace TIAEKtool
 
         protected XmlElement CreateAttribute(string type, string name, string value, int flags = 0)
         {
-            XmlElement elem = doc.CreateElement(type, InterfaceNS);
+            XmlElement elem = doc.CreateElement(type, XMLUtil.InterfaceNS);
 
             elem.SetAttribute("Name", name);
 
@@ -60,7 +60,7 @@ namespace TIAEKtool
             XmlElement member_elem = parent_node.SelectSingleNode("if:Member[@Name='" + name + "']", nsmgr) as XmlElement;
             if (member_elem == null)
             {
-                member_elem = doc.CreateElement("Member", InterfaceNS);
+                member_elem = doc.CreateElement("Member", XMLUtil.InterfaceNS);
                 member_elem.SetAttribute("Name", name);
                 member_elem.SetAttribute("Datatype", type.ToString());
                 if (has_remanence_attr)
@@ -68,7 +68,7 @@ namespace TIAEKtool
                     member_elem.SetAttribute("Remanence", "Retain");
                 }
                 member_elem.SetAttribute("Accessibility", "Public");
-                XmlNode attr_list = doc.CreateElement("AttributeList", InterfaceNS);
+                XmlNode attr_list = doc.CreateElement("AttributeList", XMLUtil.InterfaceNS);
                 if (has_external_attrs)
                 {
                     attr_list.AppendChild(CreateAttribute("BooleanAttribute", "ExternalAccessible", "true", SystemDefined));
@@ -169,7 +169,7 @@ namespace TIAEKtool
                 XmlElement sub_elem = elem.SelectSingleNode("if:Subelement[@Path='" + sub_path + "']", nsmgr) as XmlElement;
                 if (sub_elem == null)
                 {
-                    sub_elem = doc.CreateElement("Subelement", InterfaceNS);
+                    sub_elem = doc.CreateElement("Subelement", XMLUtil.InterfaceNS);
 
                     sub_elem.SetAttribute("Path", sub_path.ToString());
                     elem.AppendChild(sub_elem);
@@ -182,7 +182,7 @@ namespace TIAEKtool
                 XmlElement comment_elem = elem.SelectSingleNode("if:Comment", nsmgr) as XmlElement;
                 if (comment_elem == null)
                 {
-                    comment_elem = doc.CreateElement("Comment", InterfaceNS);
+                    comment_elem = doc.CreateElement("Comment", XMLUtil.InterfaceNS);
                     elem.AppendChild(comment_elem);
                 }
 
@@ -191,7 +191,7 @@ namespace TIAEKtool
                     XmlElement mt_elem = elem.SelectSingleNode("if:MultiLanguageText[@Lang='" + culture + "']", nsmgr) as XmlElement;
                     if (mt_elem == null)
                     {
-                        mt_elem = doc.CreateElement("MultiLanguageText", InterfaceNS);
+                        mt_elem = doc.CreateElement("MultiLanguageText", XMLUtil.InterfaceNS);
                         mt_elem.SetAttribute("Lang", culture);
                         comment_elem.AppendChild(mt_elem);
                     }
@@ -205,7 +205,7 @@ namespace TIAEKtool
                 XmlElement start_elem = elem.SelectSingleNode("if:StartValue", nsmgr) as XmlElement;
                 if (start_elem == null)
                 {
-                    start_elem = doc.CreateElement("StartValue", InterfaceNS);
+                    start_elem = doc.CreateElement("StartValue", XMLUtil.InterfaceNS);
                     elem.AppendChild(start_elem);
                     start_elem.InnerText = start_value; // Only set start value if there wasn't one before
                 }

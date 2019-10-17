@@ -18,12 +18,12 @@ namespace TIAEKtool
         public XmlDocument Document { get => doc; }
         protected XmlNamespaceManager nsmgr;
         protected const string StructuredTextNS = "http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v1";
-        protected const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
+        
         public PresetSCL(string block_name)
         {
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
-            nsmgr.AddNamespace("if", InterfaceNS);
+            nsmgr.AddNamespace("if", XMLUtil.InterfaceNS);
             nsmgr.AddNamespace("st", StructuredTextNS);
             this.block_name = block_name;
            

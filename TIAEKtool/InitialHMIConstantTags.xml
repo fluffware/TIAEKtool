@@ -46,54 +46,8 @@
           </HmiDataType>
         </LinkList>
         <ObjectList>
-          <MultilingualText ID="4" CompositionName="Comment">
-            <ObjectList>
-              <MultilingualTextItem ID="5" CompositionName="Items">
-                <AttributeList>
-                  <Culture>sv-SE</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-              <MultilingualTextItem ID="6" CompositionName="Items">
-                <AttributeList>
-                  <Culture>en-US</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-            </ObjectList>
-          </MultilingualText>
-          <MultilingualText ID="7" CompositionName="DisplayName">
-            <ObjectList>
-              <MultilingualTextItem ID="8" CompositionName="Items">
-                <AttributeList>
-                  <Culture>sv-SE</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-              <MultilingualTextItem ID="9" CompositionName="Items">
-                <AttributeList>
-                  <Culture>en-US</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-            </ObjectList>
-          </MultilingualText>
-          <MultilingualText ID="A" CompositionName="TagValue">
-            <ObjectList>
-              <MultilingualTextItem ID="B" CompositionName="Items">
-                <AttributeList>
-                  <Culture>sv-SE</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-              <MultilingualTextItem ID="C" CompositionName="Items">
-                <AttributeList>
-                  <Culture>en-US</Culture>
-                  <Text />
-                </AttributeList>
-              </MultilingualTextItem>
-            </ObjectList>
-          </MultilingualText>
+         
+         
         </ObjectList>
       </Hmi.Tag.Tag>
     </ObjectList>

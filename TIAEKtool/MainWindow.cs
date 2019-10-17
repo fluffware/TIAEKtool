@@ -13,6 +13,8 @@ using TIAEKtool;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
 using System.Threading;
+using static TIAEKtool.PresetDocument;
+using System.Xml;
 
 namespace TIAtool
 {
@@ -110,7 +112,7 @@ namespace TIAtool
             builder.BuildDone += TreeDone;
             builder.Descend = ProjectDescend;
             builder.Leaf = ProjectLeaf;
-         
+
             projectTreeView.Nodes.Clear();
             projectTreeView.AfterCheck += node_AfterCheck;
             builder.StartBuild(projectTreeView.Nodes);
@@ -215,7 +217,7 @@ namespace TIAtool
                     Application.DoEvents();
                     try
                     {
-                        tiaPortal = (TiaPortal)tiaThread.RunSync((_) => { return proc.Attach(); }, null) ;
+                        tiaPortal = (TiaPortal)tiaThread.RunSync((_) => { return proc.Attach(); }, null);
                         connectToolStripMenuItem.Enabled = false;
                         btn_connect.Enabled = false;
                         disconnectToolStripMenuItem.Enabled = true;
@@ -242,7 +244,7 @@ namespace TIAtool
                 PortalDisconnected();
                 tiaPortal.Dispose();
                 tiaPortal = null;
-              
+
                 browse_dialog = null;
                 connectToolStripMenuItem.Enabled = true;
                 disconnectToolStripMenuItem.Enabled = false;
@@ -254,7 +256,7 @@ namespace TIAtool
         }
 
 
-     
+
 
         InfoDialog browse_dialog;
         private void browseToolStripMenuItem_Click(object sender, EventArgs e)
@@ -276,7 +278,7 @@ namespace TIAtool
 
         PresetGenerate presetGenerate;
 
-      
+
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
@@ -293,7 +295,7 @@ namespace TIAtool
             disconnectToolStripMenuItem_Click(sender, e);
         }
 
-       
+
         private bool find_plc(TreeNodeCollection nodes, ref PlcSoftware plc)
         {
             foreach (TreeNode n in nodes)
@@ -305,8 +307,7 @@ namespace TIAtool
 
                 if (sw_cont != null)
                 {
-                    PlcSoftware controller = sw_cont.Software as PlcSoftware;
-                    if (controller != null)
+                    if (sw_cont.Software is PlcSoftware controller)
                     {
                         if (plc != null)
                         {
@@ -317,7 +318,7 @@ namespace TIAtool
                     }
 
                 }
-               
+
             }
             return true;
         }
@@ -347,6 +348,26 @@ namespace TIAtool
             return true;
         }
 
+        private void find_hmis(TreeNodeCollection nodes, ref List<HmiTarget> hmis)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                find_hmis(n.Nodes, ref hmis);
+                if (!n.Checked) continue;
+                if (!(n.Tag is DeviceItem)) continue;
+                SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
+
+                if (sw_cont != null)
+                {
+                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
+                    if (hmi_target != null)
+                    {
+                        hmis.Add(hmi_target);
+                    }
+                }
+            }
+        }
+
         private void btn_preset_Click(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
@@ -361,8 +382,9 @@ namespace TIAtool
                 MessageBox.Show("No PLC is selected");
                 return;
             }
-
-            presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, culture);
+            List<HmiTarget> hmis = new List<HmiTarget>();
+            find_hmis(projectTreeView.Nodes, ref hmis);
+            presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, hmis, culture);
             presetGenerate.ShowDialog();
 
 
@@ -432,7 +454,7 @@ namespace TIAtool
                 MessageBox.Show("No devices are selected");
                 return;
             }
-            CopySelection copy = new CopySelection(tiaPortal,plc, hmi);
+            CopySelection copy = new CopySelection(tiaPortal, plc, hmi);
             copy.ShowDialog();
         }
         protected override void OnClosed(EventArgs e)
@@ -459,7 +481,7 @@ namespace TIAtool
 
             public override void Done(object obj)
             {
-                MessageBox.Show("Operation done"+(int)obj);
+                MessageBox.Show("Operation done" + (int)obj);
             }
 
 
@@ -481,7 +503,112 @@ namespace TIAtool
                 return 6;
             }, null);
 
-            Console.WriteLine("Result: "+res);
+            Console.WriteLine("Result: " + res);
         }
+
+        void UpdatePresetValues(
+            PlcSoftware plcSoftware, 
+            Dictionary<string, List<PresetInfo>> preset_group_info, 
+            Dictionary<string, string[]> preset_names)
+        {
+            ConstantLookup constants = new ConstantLookup();
+            constants.Populate(tiaPortal, plcSoftware);
+
+
+
+            PlcBlockGroup preset_group = plcSoftware.BlockGroup.Groups.Find("Preset");
+            if (preset_group == null)
+            {
+                MessageBox.Show("No group named Preset found for PLC " + plcSoftware.Name);
+                return;
+            }
+
+            foreach (string group_name in preset_group_info.Keys)
+            {
+                string preset_db_name = "sDB_Preset_" + group_name;
+                PlcBlock preset_db = preset_group.Blocks.Find(preset_db_name);
+                if (preset_db == null)
+                {
+                    MessageBox.Show("No block named " + preset_db_name + " found for PLC " + plcSoftware.Name);
+                    return;
+                }
+                XmlDocument doc;
+                try
+                {
+                    doc = TIAutils.ExportPlcBlockXML(preset_db);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to export block " + preset_db_name + ": " + ex.Message);
+                    return;
+                }
+
+                if (doc.DocumentElement.SelectSingleNode("/Document/SW.Blocks.GlobalDB//if:Section[@Name='Static']", XMLUtil.nameSpaces) is XmlElement static_elem)
+                {
+                  
+                    var infos = preset_group_info[group_name];
+                    foreach (PresetInfo info in infos)
+                    {
+                        PresetValueParser.SetPresetValue(static_elem, info.tag.tagPath, constants, info.values);
+                        PresetValueParser.SetPresetEnabled(static_elem, info.tag.tagPath, constants, info.enabled);
+                       
+                    }
+                    PresetValueParser.SetPresetNames(static_elem, constants, preset_names[group_name]);
+                }
+                else
+                {
+                    MessageBox.Show("No static section found for " + preset_db_name);
+                    return;
+                }
+                try
+                {
+                    var group = (Siemens.Engineering.SW.Blocks.PlcBlockGroup)preset_db.Parent;
+                    var name = group.Name;
+                    TIAutils.ImportPlcBlockXML(doc, group);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to import block " + preset_db_name + ": " + ex.Message);
+                    return;
+                }
+
+            }
+        }
+      
+
+        private void btn_preset_import_Click(object sender, EventArgs e)
+        {
+            PlcSoftware plc = null;
+            if (!find_plc(projectTreeView.Nodes, ref plc))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            if (plc == null)
+            {
+                MessageBox.Show("No PLC is selected");
+                return;
+            }
+            if (loadPresetList.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                Dictionary<string, List<PresetInfo>> preset_groups;
+                Dictionary<string, string[]> preset_names;
+                try
+                {
+                    PresetDocument.Load(loadPresetList.FileName, out preset_groups, out preset_names, culture);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to load presets from file "+ loadPresetList.FileName+": " + ex.Message);
+                    return;
+                }
+                UpdatePresetValues(plc, preset_groups, preset_names);
+             
+            }
+        }
+
     }
 }

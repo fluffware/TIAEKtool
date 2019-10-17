@@ -39,6 +39,11 @@ namespace TIAEKtool
             }
         }
 
+        public bool TryGetText(string culture, out string text)
+        {
+            return texts.TryGetValue(culture, out text);
+        }
+
         public string [] Cultures { get
             {
                 Dictionary<string, string>.KeyCollection keys = texts.Keys;
@@ -46,5 +51,39 @@ namespace TIAEKtool
                 keys.CopyTo(cultures, 0);
                 return cultures;
             } }
+
+
+        public void AddMissingCultures(IEnumerable<String> cultures, string default_culture)
+        {
+            Dictionary<string, string> new_texts = new Dictionary<string, string>();
+            foreach (string culture in cultures)
+            {
+                if (texts.TryGetValue(culture, out string value))
+                {
+                    new_texts.Add(culture, value);
+                } else {
+                    if (texts.TryGetValue(default_culture, out value))
+                    {
+                        new_texts.Add(culture, value);
+                    }
+                    else
+                    {
+                        // Use an arbitrary culture
+                        IEnumerator<string> s = texts.Values.GetEnumerator();
+                        if (s.MoveNext())
+                        {
+                            new_texts.Add(culture, s.Current);
+                        }
+                        else
+                        {
+                            new_texts.Add(culture, "");
+                        }
+
+                    }
+
+                }
+            }
+            texts = new_texts;
+        }
     }
 }

@@ -38,8 +38,7 @@ namespace TIAEKtool
                     {
                         if (entry.Key.StartsWith("PresetNumber"))
                         {
-                            int value;
-                            if (int.TryParse(entry.Value.value, out value))
+                            if (int.TryParse(entry.Value.value, out int value))
                             {
                                 table.AddIntegerConstant(entry.Key, value);
                             }

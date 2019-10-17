@@ -74,6 +74,10 @@ namespace TIAEKtool
                         }
                         TIAutils.ImportHMITagTableXML(table_doc, folder);
                     }
+                    else
+                    {
+                        LogMessage(MessageLog.Severity.Warning, "No tag table named '" + tableName + "' was found, skipping.");
+                    }
                 }
                 catch (Exception ex)
                 {

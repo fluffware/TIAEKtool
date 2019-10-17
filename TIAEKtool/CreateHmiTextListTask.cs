@@ -6,6 +6,7 @@ using Siemens.Engineering.SW.Blocks;
 using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using TIAEKtool.Properties;
 
@@ -17,6 +18,8 @@ namespace TIAEKtool
         TextListComposition text_lists;
         string list_name;
         IDictionary<int, MultilingualText> texts;
+        private readonly IEnumerable<String> cultures;
+       
 
 
         public CreateHmiTextListTask(TiaPortal portal, string list_name, TextListComposition text_lists, IDictionary<int, MultilingualText> texts)
@@ -25,6 +28,11 @@ namespace TIAEKtool
             this.text_lists = text_lists;
             this.list_name = list_name;
             this.texts = texts;
+
+            Project proj = portal.Projects[0];
+            LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
+            cultures = langs.Select(l => l.Culture.Name);
+
 
             Description = "Create HMI text list " + list_name;
         }
@@ -105,6 +113,17 @@ namespace TIAEKtool
                     name_attr.InnerText = list_name;
 
                     XmlElement entry_list = doc.SelectSingleNode("/Document/Hmi.TextGraphicList.TextList/ObjectList") as XmlElement;
+
+
+                    {
+                        MultilingualText text = new MultilingualText();
+                        foreach (string culture in cultures)
+                        {
+                            text.AddText(culture, "?");
+                        }
+                        XmlElement entry = ListEntry(doc, 0, true, text);
+
+                    }
 
                     List<int> keys = new List<int>(texts.Keys);
                     keys.Sort();

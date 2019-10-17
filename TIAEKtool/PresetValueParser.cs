@@ -1,6 +1,7 @@
 ﻿using PLC.Types;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,8 +57,7 @@ namespace TIAEKtool
             }
             if (path is MemberComponent member_path)
             {
-                XmlElement child_elem = elem.SelectSingleNode("./if:Member[@Name='"+member_path.Name+ "'] | ./if:Sections/if:Section/if:Member[@Name='" + member_path.Name + "']", XMLUtil.nameSpaces) as XmlElement;
-                if (child_elem == null)
+                if (!(elem.SelectSingleNode("./if:Member[@Name='" + member_path.Name + "'] | ./if:Sections/if:Section/if:Member[@Name='" + member_path.Name + "']", XMLUtil.nameSpaces) is XmlElement child_elem))
                 {
                     throw new Exception("Unable to find path " + member_path + " in element " + (elem?.GetAttribute("Name") ?? "<Unknown>"));
                 }
@@ -254,22 +254,113 @@ namespace TIAEKtool
             }
             Array array = Array.CreateInstance(array_type, lengths, lower);
             
+            
             foreach (XmlElement start_value in start_values)
             {
                 string subpath = ((XmlElement)start_value.ParentNode).GetAttribute("Path");
                 int[] indices = subpath.Split(new char[] { ',' }).Select(x=> int.Parse(x)).ToArray();
                 string value_str = start_value.InnerText.Trim(new char[1] { '\'' });
                 Object value = ParseValue(value_str, value_type);
-                try
-                {
-                    array.SetValue(value, indices);
+
+                if (indices.Length != limits.Count) {
+                    throw new IndexOutOfRangeException("Wrong number of dimensions for " + path
+                        + " (expected " + limits.Count + " got " + indices.Length);
                 }
-                catch (IndexOutOfRangeException )
-                {
-                    // Ignore invalid indices
+                int i;
+                // Check if indices are within limits
+                for (i = 0; i < indices.Length; i++) {
+                    if (indices[i] < limits[i].Low || indices[i] > limits[i].High) break;
+                }
+
+                if (i == indices.Length) {
+                    array.SetValue(value, indices);
                 }
             }
             return array;
+        }
+
+        public static void SetStartValues(XmlElement value_element, object [] values, DataType value_type, 
+                    int[] indices, List<Limits> limits, int dim, ref int v_index)
+        {
+            int low = limits.ElementAt(dim).Low;
+            int high = limits.ElementAt(dim).High;
+            
+
+            if (dim == limits.Count() - 1)
+            {
+
+               
+                for (int i = low; i <= high; i++)
+                {
+                    indices[dim] = i;
+                    if (v_index >= values.Length)
+                    {
+                        return;
+                    }
+                    object value = values[v_index];
+                    if (value != null)
+                    {
+                        string index_str = string.Join(",", indices);
+                        Console.WriteLine(".//if:Subelement[@Path='" + index_str + "']");
+                        XmlElement sub_elem = (XmlElement)value_element.SelectSingleNode(".//if:Subelement[@Path='" + index_str + "']", XMLUtil.nameSpaces);
+                        if (sub_elem == null)
+                        {
+                            sub_elem = (XmlElement)value_element.AppendChild(value_element.OwnerDocument.CreateElement("Subelement",XMLUtil.InterfaceNS));
+                            sub_elem.SetAttribute("Path", index_str);
+                        }
+
+                        XmlElement start_value_elem = (XmlElement)sub_elem.SelectSingleNode("./if:StartValue", XMLUtil.nameSpaces);
+                        if (start_value_elem == null)
+                        {
+                            start_value_elem = (XmlElement)sub_elem.AppendChild(value_element.OwnerDocument.CreateElement("StartValue", XMLUtil.InterfaceNS));
+                        }
+                        string value_str;
+                        if (value_type is Float && (value is double || value is float || value is int))
+                        {
+                            value_str = ((double)value).ToString("F6", CultureInfo.InvariantCulture);
+                        } else if (value_type is PLC.Types.STRING && value is string) {
+                            value_str = "'" + value.ToString() + "'";
+                        }
+                        else
+                        {
+                            value_str = value.ToString();
+                        }
+                        start_value_elem.InnerText = value_str;
+                    }
+                    v_index++;
+                }
+            }
+            else
+            {
+                for (int i = low; i <= high; i++)
+                {
+                    indices[dim] = i;
+                    SetStartValues(value_element, values, value_type, indices,limits, dim+1, ref v_index);
+                }
+            }
+        }
+
+        public static void SetPathValues(XmlElement tag_element, PathComponent path, ConstantLookup constants, object [] values)
+        {
+            List<Limits> limits = new List<Limits>();
+            XmlElement elem = GetPathElement(tag_element, ref limits, path, constants);
+            
+            int[] lengths = limits.Select(x => (x.High - x.Low + 1)).ToArray();
+            int[] lower = limits.Select(x => x.Low).ToArray();
+            if (limits.Count < values.Rank)
+            {
+                throw new Exception("Path " + path + " has " + limits.Count + " indices but the supplied values has " + values.Rank);
+            }
+
+
+            DataType value_type = DataTypeParser.Parse(elem.GetAttribute("Datatype"), out string _);
+            if (value_type is ARRAY value_array)
+            {
+                value_type = value_array.MemberType;
+            }
+            int[] indices = new int[lengths.Count()];
+            int v_index = 0;
+            SetStartValues(elem, values, value_type, indices, limits, 0, ref v_index);
         }
 
         public static string[] GetPresetNames(XmlElement tag_element, ConstantLookup constants)
@@ -286,6 +377,18 @@ namespace TIAEKtool
             return FlattenArray<string>(array);
         }
 
+        public static void SetPresetNames(XmlElement tag_element, ConstantLookup constants, string[] values)
+        {
+            ARRAY name_array = new ARRAY
+            {
+                MemberType = new STRUCT()
+            };
+            MemberComponent name_tag = new MemberComponent("Names", name_array);
+            
+
+            SetPathValues(tag_element, name_tag, constants, values);
+        }
+
         public static object[] GetPresetValue(XmlElement tag_element, PathComponent path, ConstantLookup constants)
         {
 
@@ -298,7 +401,21 @@ namespace TIAEKtool
             Array array = GetPathValues(tag_element, value_path, constants);
             return FlattenArray<object>(array); 
         }
-        public static bool[] GetPresetEnabled(XmlElement tag_element, PathComponent path, ConstantLookup constants)
+
+        public static void SetPresetValue(XmlElement tag_element, PathComponent path, ConstantLookup constants, object[] values)
+        {
+
+            ARRAY preset_array = new ARRAY
+            {
+                MemberType = new STRUCT()
+            };
+            MemberComponent preset_tag = new MemberComponent("Preset", preset_array);
+            PathComponent value_path = path.PrependPath(preset_tag);
+          
+           SetPathValues(tag_element, value_path, constants, values);
+        }
+
+        public static bool?[] GetPresetEnabled(XmlElement tag_element, PathComponent path, ConstantLookup constants)
         {
 
             ARRAY enable_array = new ARRAY
@@ -308,7 +425,21 @@ namespace TIAEKtool
             MemberComponent enable_tag = new MemberComponent("Enable", enable_array);
             PathComponent value_path = path.PrependPath(enable_tag);
             Array array = GetPathValues(tag_element, value_path, constants);
-            return FlattenArray<bool>(array);
+            return FlattenArray<bool?>(array);
+        }
+
+        public static void SetPresetEnabled(XmlElement tag_element, PathComponent path, ConstantLookup constants, bool?[] values)
+        {
+
+            ARRAY enable_array = new ARRAY
+            {
+                MemberType = new STRUCT()
+            };
+            MemberComponent enable_tag = new MemberComponent("Enable", enable_array);
+            PathComponent value_path = path.PrependPath(enable_tag);
+
+            object [] obj_values = values.Select(x => (object)x).ToArray();
+            SetPathValues(tag_element, value_path, constants, obj_values);
         }
     }
 }

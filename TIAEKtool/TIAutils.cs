@@ -17,6 +17,16 @@ namespace TIAEKtool
 {
     static class TIAutils
     {
+        static XmlDocument LoadDoc(string file_name)
+        {
+            XmlDocument doc = new XmlDocument();
+            using (var fs = File.Open(file_name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                doc.Load(fs);
+            }
+            return doc;
+        }
+
         static public XmlDocument ExportPlcBlockXML(PlcBlock block)
         {
 
@@ -27,8 +37,7 @@ namespace TIAEKtool
             {
                
                 block.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally
@@ -81,8 +90,7 @@ namespace TIAEKtool
             {
 
                 type.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally
@@ -135,8 +143,7 @@ namespace TIAEKtool
             {
 
                 popup.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally
@@ -188,8 +195,7 @@ namespace TIAEKtool
             {
 
                 template.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally
@@ -240,8 +246,7 @@ namespace TIAEKtool
             {
 
                 tag_table.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally
@@ -293,8 +298,7 @@ namespace TIAEKtool
             {
 
                 text_list.Export(path, ExportOptions.WithDefaults);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path.ToString());
+                XmlDocument doc = LoadDoc(path.ToString());
                 return doc;
             }
             finally

@@ -9,40 +9,6 @@
       <Name>Textlist</Name>
     </AttributeList>
     <ObjectList>
-      <Hmi.TextGraphicList.TextListEntry ID="4" CompositionName="Entries">
-        <AttributeList>
-          <DefaultEntry>true</DefaultEntry>
-          <EntryType>SingleValue</EntryType>
-          <From>0</From>
-          <To>0</To>
-        </AttributeList>
-        <ObjectList>
-          <MultilingualText ID="5" CompositionName="Text">
-            <ObjectList>
-              <MultilingualTextItem ID="6" CompositionName="Items">
-                <AttributeList>
-                  <Culture>sv-SE</Culture>
-                  <Text>
-                    <body>
-                      <p>?</p>
-                    </body>
-                  </Text>
-                </AttributeList>
-              </MultilingualTextItem>
-              <MultilingualTextItem ID="7" CompositionName="Items">
-                <AttributeList>
-                  <Culture>en-US</Culture>
-                  <Text>
-                    <body>
-                      <p>?</p>
-                    </body>
-                  </Text>
-                </AttributeList>
-              </MultilingualTextItem>
-            </ObjectList>
-          </MultilingualText>
-        </ObjectList>
-      </Hmi.TextGraphicList.TextListEntry>
     </ObjectList>
   </Hmi.TextGraphicList.TextList>
 </Document>
