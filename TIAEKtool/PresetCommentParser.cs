@@ -21,11 +21,12 @@ namespace TIAEKtool
                     string group = data.Substring(0, p).Trim();
                     if (group == "") group = "main";
                     string label = data.Substring(p + 1).Trim();
-                    if (preset.presetGroup != null && !preset.presetGroup.Equals(group))
+                    String[] groups = group.Split(',');
+                    if (preset.presetGroups != null && !preset.presetGroups.Equals(groups))
                     {
                         group = "<inconsistent>";
                     }
-                    preset.presetGroup = group;
+                    preset.presetGroups = groups;
                     if (preset.labels == null)
                     {
                         preset.labels = new MultilingualText(culture, label);

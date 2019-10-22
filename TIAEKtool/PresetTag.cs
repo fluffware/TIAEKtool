@@ -9,7 +9,7 @@ namespace TIAEKtool
     public class PresetTag : IComparable
     {
         public PathComponent tagPath;
-        public String presetGroup;
+        public String[] presetGroups;
         public MultilingualText labels;
         public string defaultValue;
         public bool noStore;

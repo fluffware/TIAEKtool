@@ -174,14 +174,16 @@ namespace TIAEKtool
             foreach (PresetTagList.Row r in presets)
             {
                 List<PresetTag> tags;
-                if (!tag_groups.TryGetValue(r.Tag.presetGroup, out tags))
-                {
-                    tags = new List<PresetTag>();
+                // Add the tags to all groups in the tag
+                foreach (string group_name in r.Tag.presetGroups) {
+                    if (!tag_groups.TryGetValue(group_name, out tags))
+                    {
+                        tags = new List<PresetTag>();
+                    }
+                    tags.Add(r.Tag);
+                    tags.Sort();
+                    tag_groups[group_name] = tags;
                 }
-                tags.Add(r.Tag);
-                tags.Sort();
-                tag_groups[r.Tag.presetGroup] = tags;
-
 
             }
             return tag_groups;
