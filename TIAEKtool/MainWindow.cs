@@ -605,7 +605,15 @@ namespace TIAtool
                     MessageBox.Show("Failed to load presets from file "+ loadPresetList.FileName+": " + ex.Message);
                     return;
                 }
-                UpdatePresetValues(plc, preset_groups, preset_names);
+                try
+                {
+                    UpdatePresetValues(plc, preset_groups, preset_names);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to update presets loaded from file "+ loadPresetList.FileName+": " + ex.Message);
+                    return;
+                }
              
             }
         }
