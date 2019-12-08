@@ -20,6 +20,23 @@ namespace TIAEKtool
             public bool?[] enabled;
         }
 
+        public class PresetGroup
+        {
+            public string[] preset_names;
+            public int[] preset_colors;
+            public List<PresetInfo> presets;
+
+            public PresetGroup()
+            {
+            }
+
+            public PresetGroup(int preset_count)
+            {
+                preset_names = new string[preset_count];
+                preset_colors = new int[preset_count];
+                presets = new List<PresetInfo>();
+            }
+        }
 
         protected static string PathType(PathComponent path)
         {
@@ -56,7 +73,7 @@ namespace TIAEKtool
         }
 
         const int N_PROPERTIES = 8;
-        static public void Save(string file, Dictionary<string, List<PresetInfo>> preset_groups, Dictionary<string, string[]> preset_names, string culture)
+        static public void Save(string file, Dictionary<string, PresetGroup> preset_groups, string culture)
         {
 
             int npresets = 20;
@@ -81,7 +98,7 @@ namespace TIAEKtool
                 rangePresetIndexHeader.Merge();
                 rangePresetIndexHeader.Style.Font.Bold = true;
                 rangePresetIndexHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                for (int i = 1; i <= preset_group.Value[0].values.Count(); i++)
+                for (int i = 1; i <= preset_group.Value.presets.Count(); i++)
                 {
                     var cell = ws.Cell(row_index, i + N_PROPERTIES);
                     cell.Value = i;
@@ -94,7 +111,16 @@ namespace TIAEKtool
                 rangePresetNameHeader.Style.Font.Bold = true;
                 rangePresetNameHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
 
-                var rangePresetName = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_names[preset_group.Key], true);
+                var rangePresetName = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_group.Value.preset_names, true);
+                row_index++;
+
+                var rangePresetColorHeader = ws.Range(row_index, 1, row_index, N_PROPERTIES);
+                rangePresetColorHeader.FirstCell().Value = "Color index";
+                rangePresetColorHeader.Merge();
+                rangePresetColorHeader.Style.Font.Bold = true;
+                rangePresetColorHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+                var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_group.Value.preset_colors, true);
                 row_index++;
 
                 var rangeHeader = ws.Cell(row_index, 1).InsertData(headers, true);
@@ -103,7 +129,7 @@ namespace TIAEKtool
                 row_index++;
 
 
-                foreach (PresetInfo info in preset_group.Value)
+                foreach (PresetInfo info in preset_group.Value.presets)
                 {
                     int col_index = 1;
 
@@ -153,18 +179,16 @@ namespace TIAEKtool
 
 
 
-        static public void Load(string file,
-            out Dictionary<string, List<PresetInfo>> preset_groups,
-            out Dictionary<string, string[]> preset_names, string culture)
+        static public void Load(string file, out Dictionary<string, PresetGroup> preset_groups, string culture)
         {
-            preset_groups = new Dictionary<string, List<PresetInfo>>();
-            preset_names = new Dictionary<string, string[]>();
-           
+            preset_groups = new Dictionary<string, PresetGroup>();
+          
             XLWorkbook wb = new XLWorkbook(file);
             foreach (var ws in wb.Worksheets)
             {
                 string group_name = ws.Name.Substring(6);
-                preset_groups[group_name] = new List<PresetInfo>();
+               
+
                 List<int?> preset_indices = new List<int?>();
                 var preset_index_cell = ws.Column(1).FirstCellUsed(XLCellsUsedOptions.Contents, c => c.Value as string == "Preset index");
                 if (preset_index_cell == null)
@@ -190,6 +214,8 @@ namespace TIAEKtool
                 }
 
                 row_index++;
+
+               
                 var preset_name_cell = ws.Cell(row_index, 1);
                 if (preset_name_cell.Value as string != "Preset name")
                 {
@@ -197,10 +223,23 @@ namespace TIAEKtool
                 }
                 var name_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
                 string[] names = name_range.Cells().Select(x => x.Value as string).ToArray<string>();
-                preset_names.Add(group_name, names);
-                row_index+=2;
+                var group = new PresetGroup();
+                group.preset_names = names;
 
+                row_index += 1;
 
+                var preset_color_cell = ws.Cell(row_index, 1);
+                if (preset_color_cell.Value as string != "Color index")
+                {
+                    throw new Exception("Failed to find row starting with 'Color index' in worksheet " + ws.Name);
+                }
+                var color_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
+                int[] colors = color_range.Cells().Select(x => x.GetValue<int>()).ToArray<int>();
+                group.preset_colors = colors;
+
+                row_index += 2;
+
+                group.presets = new List<PresetInfo>();
                 while (ws.Cell(row_index, 3).Value is string path_str) {
                     if (path_str.Length == 0) break;
                     PresetInfo info = new PresetInfo();
@@ -225,6 +264,7 @@ namespace TIAEKtool
                     info.tag.tagPath.Type = value_type;
                     info.values = new object[max_preset_index];
                     info.enabled = new bool?[max_preset_index];
+                    
                     for (int i = 0; i <= last_value_column - first_value_column; i++)
                     {
                         if (!(preset_indices[i] is null))
@@ -271,11 +311,13 @@ namespace TIAEKtool
                             }
                             
                         }
+
                     }
+                    group.presets.Add(info);
                     row_index++;
-                    preset_groups[group_name].Add(info);
+                   
                 }
-                
+                preset_groups[group_name] = group;
             }
                 
         }

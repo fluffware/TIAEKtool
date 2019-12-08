@@ -19,6 +19,7 @@ using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Types;
 using Siemens.Engineering.Hmi.TextGraphicList;
+using static TIAEKtool.PresetDocument;
 
 namespace TIAEKtool
 {
@@ -240,6 +241,8 @@ namespace TIAEKtool
                 task_dialog.AddTask(new CreatePresetStoreBlockTask(tiaPortal, tags, resultGroup, store_block_name, store_enabled_block_name, value_type_name, enable_type_name));
             }
 
+            task_dialog.AddTask(new CreatePlcCompileTask(tiaPortal, plcSoftware));
+
             foreach (HmiTarget hmi in hmiTargets)
             {
                // Create HMI tags
@@ -259,7 +262,16 @@ namespace TIAEKtool
 
                 foreach (HmiTarget hmi in hmiTargets)
                 {
-
+                    string popup_name = "PresetPopup_" + group_name;
+                    ScreenPopupFolder popup_folder = hmi.ScreenPopupFolder;
+                    ScreenPopup popup = popup_folder.ScreenPopups.Find(popup_name);
+                    if (popup == null)
+                    {
+                        task_dialog.AddTask(new MessageTask("Skipping preset group " + group_name + " for HMI " + hmi.Name,
+                            MessageLog.Severity.Info, 
+                            "Assuming preset group " + group_name + " is not used by this HMI since the pop-up screen "+popup_name+" was not found"));
+                        continue;
+                    }
                     // Create text lists 
                     TextListComposition hmi_text_lists = hmi.TextLists;
                     int count = 1;
@@ -323,11 +335,6 @@ namespace TIAEKtool
                         XmlDocument templates = TIAutils.ExportScreenTemplateXML(obj_templ);
 
                         // Create popups
-                        string popup_name = "PresetPopup_" + group_name;
-
-                        ScreenPopupFolder popup_folder = hmi.ScreenPopupFolder;
-
-
                         task_dialog.AddTask(new CreatePresetScreenPopupTask(tiaPortal, tags, popup_folder, templates, popup_name, group_name));
                     }
                     else
@@ -379,19 +386,20 @@ namespace TIAEKtool
 
                     Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
 
-                    PlcBlockGroup preset_group = plcSoftware.BlockGroup.Groups.Find("Preset");
-                    if (preset_group == null)
+                    PlcBlockGroup plc_preset_group = plcSoftware.BlockGroup.Groups.Find("Preset");
+                    if (plc_preset_group == null)
                     {
                         MessageBox.Show("No group named Preset found for PLC " + plcSoftware.Name);
                         return;
                     }
+                    Dictionary<string, PresetGroup> preset_groups = new Dictionary<string, PresetGroup>();
 
-                    Dictionary<string, string[]> preset_names = new Dictionary<string, string[]>();
-                    Dictionary<string, List<PresetDocument.PresetInfo>> preset_values = new Dictionary<string, List<PresetDocument.PresetInfo>>();
+
                     foreach (string group_name in tag_groups.Keys)
                     {
+                        PresetGroup group = new PresetGroup();
                         string preset_db_name = "sDB_Preset_" + group_name;
-                        PlcBlock preset_db = preset_group.Blocks.Find(preset_db_name);
+                        PlcBlock preset_db = plc_preset_group.Blocks.Find(preset_db_name);
                         if (preset_db == null)
                         {
                             MessageBox.Show("No block named " + preset_db_name + " found for PLC " + plcSoftware.Name);
@@ -411,31 +419,31 @@ namespace TIAEKtool
 
                         if (doc.DocumentElement.SelectSingleNode("/Document/SW.Blocks.GlobalDB//if:Section[@Name='Static']", XMLUtil.nameSpaces) is XmlElement static_elem)
                         {
-                            preset_names[group_name] = PresetValueParser.GetPresetNames(static_elem, constants);
-
-                            preset_values[group_name] = new List<PresetDocument.PresetInfo>();
+                            group.preset_names = PresetValueParser.GetPresetNames(static_elem, constants);
+                            group.preset_colors = PresetValueParser.GetPresetColors(static_elem, constants);
+                            group.presets = new List<PresetDocument.PresetInfo>();
                             var tags = tag_groups[group_name];
                             foreach (var tag in tags)
                             {
                                 var values = PresetValueParser.GetPresetValue(static_elem, tag.tagPath, constants);
                                 var enabled = PresetValueParser.GetPresetEnabled(static_elem, tag.tagPath, constants);
                                 Console.WriteLine(tag.tagPath + ":" + (string.Join(",", values)));
-                                preset_values[group_name].Add(new PresetDocument.PresetInfo(){ tag = tag, values = values, enabled = enabled});
+                                group.presets.Add(new PresetDocument.PresetInfo(){ tag = tag, values = values, enabled = enabled});
                             }
 
-
+                            preset_groups[group_name] = group;
                         }
                         else
                         {
                             MessageBox.Show("No static section found for " + preset_db_name);
                             return;
                         }
-
+                        
                     }
                    
 
 
-                    PresetDocument.Save(savePresetList.FileName, preset_values,preset_names, cultureComboBox.SelectedItem.ToString());
+                    PresetDocument.Save(savePresetList.FileName, preset_groups, cultureComboBox.SelectedItem.ToString());
                 }
                 catch (Exception ex)
                 {

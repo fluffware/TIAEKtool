@@ -508,8 +508,7 @@ namespace TIAtool
 
         void UpdatePresetValues(
             PlcSoftware plcSoftware, 
-            Dictionary<string, List<PresetInfo>> preset_group_info, 
-            Dictionary<string, string[]> preset_names)
+            Dictionary<string, PresetGroup> preset_groups)
         {
             ConstantLookup constants = new ConstantLookup();
             constants.Populate(tiaPortal, plcSoftware);
@@ -523,7 +522,7 @@ namespace TIAtool
                 return;
             }
 
-            foreach (string group_name in preset_group_info.Keys)
+            foreach (string group_name in preset_groups.Keys)
             {
                 string preset_db_name = "sDB_Preset_" + group_name;
                 PlcBlock preset_db = preset_group.Blocks.Find(preset_db_name);
@@ -547,14 +546,15 @@ namespace TIAtool
                 if (doc.DocumentElement.SelectSingleNode("/Document/SW.Blocks.GlobalDB//if:Section[@Name='Static']", XMLUtil.nameSpaces) is XmlElement static_elem)
                 {
                   
-                    var infos = preset_group_info[group_name];
+                    var infos = preset_groups[group_name].presets;
                     foreach (PresetInfo info in infos)
                     {
                         PresetValueParser.SetPresetValue(static_elem, info.tag.tagPath, constants, info.values);
                         PresetValueParser.SetPresetEnabled(static_elem, info.tag.tagPath, constants, info.enabled);
                        
                     }
-                    PresetValueParser.SetPresetNames(static_elem, constants, preset_names[group_name]);
+                    PresetValueParser.SetPresetNames(static_elem, constants, preset_groups[group_name].preset_names);
+                    PresetValueParser.SetPresetColors(static_elem, constants, preset_groups[group_name].preset_colors);
                 }
                 else
                 {
@@ -594,11 +594,10 @@ namespace TIAtool
             }
             if (loadPresetList.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                Dictionary<string, List<PresetInfo>> preset_groups;
-                Dictionary<string, string[]> preset_names;
+                Dictionary<string, PresetGroup> preset_groups;
                 try
                 {
-                    PresetDocument.Load(loadPresetList.FileName, out preset_groups, out preset_names, culture);
+                    PresetDocument.Load(loadPresetList.FileName, out preset_groups, culture);
                 }
                 catch (Exception ex)
                 {
@@ -607,7 +606,7 @@ namespace TIAtool
                 }
                 try
                 {
-                    UpdatePresetValues(plc, preset_groups, preset_names);
+                    UpdatePresetValues(plc, preset_groups);
                 }
                 catch (Exception ex)
                 {

@@ -389,6 +389,32 @@ namespace TIAEKtool
             SetPathValues(tag_element, name_tag, constants, values);
         }
 
+        public static int[] GetPresetColors(XmlElement tag_element, ConstantLookup constants)
+        {
+            ARRAY name_array = new ARRAY();
+            MemberComponent name_tag = new MemberComponent("Colors", name_array);
+            Array array = GetPathValues(tag_element, name_tag, constants);
+            if (array.Rank != 1)
+            {
+                throw new Exception("Names tag must be one dimensional");
+            }
+
+
+            return FlattenArray<int>(array);
+        }
+
+        public static void SetPresetColors(XmlElement tag_element, ConstantLookup constants, int[] values)
+        {
+            ARRAY name_array = new ARRAY
+            {
+                MemberType = new STRUCT()
+            };
+            MemberComponent name_tag = new MemberComponent("Colors", name_array);
+
+            var objs = values.Select<int, object>(x => (object)x).ToArray<object>();
+            SetPathValues(tag_element, name_tag, constants, objs);
+        }
+
         public static object[] GetPresetValue(XmlElement tag_element, PathComponent path, ConstantLookup constants)
         {
 

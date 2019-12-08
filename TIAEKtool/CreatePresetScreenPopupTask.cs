@@ -53,21 +53,31 @@ namespace TIAEKtool
                             if (tag.state_labels != null)
                             {
                                 template = "PresetGroupState";
-                            } else if (type is Integer || type is BitString || type is REAL || type is LREAL) {
-                                    template = "PresetGroupNumber";
-                            } else if (type is BOOL) {
+                            }
+                            else if (type is Integer || type is BitString || type is REAL || type is LREAL)
+                            {
+                                template = "PresetGroupNumber";
+                            }
+                            else if (type is BOOL)
+                            {
                                 template = "PresetGroupBool";
-                            } else {
+                            }
+                            else
+                            {
                                 template = "PresetGroupNoValue";
                             }
 
-                             
+
                             editor.AddEnableSelection(template, groupName, index, tag.labels, tag.unit, tag.precision);
                             index++;
                         }
 
 
                         TIAutils.ImportScreenPopupXML(popup_doc, folder);
+                    }
+                    else
+                    {
+                        LogMessage(MessageLog.Severity.Info, "Couldn't find popup " + popupName+", skipping.");
                     }
                 }
                 catch (Exception ex)

@@ -109,6 +109,8 @@
     <Compile Include="BrowseDialog.Designer.cs">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CreatePlcCompileTask.cs" />
+    <Compile Include="MessageTask.cs" />
     <Compile Include="PresetDocument.cs" />
     <Compile Include="PresetStoreEnabledSCL.cs" />
     <Compile Include="PresetValueParser.cs" />
