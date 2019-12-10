@@ -76,12 +76,13 @@ namespace TIAEKtool
         static public void Save(string file, Dictionary<string, PresetGroup> preset_groups, string culture)
         {
 
-            int npresets = 20;
+           
             var wb = new XLWorkbook();
 
 
             foreach (var preset_group in preset_groups)
             {
+                int npresets = preset_group.Value.presets[0].values.Count();
                 var ws = wb.Worksheets.Add("Group " + preset_group.Key);
                 string[] headers = new string[N_PROPERTIES] { "Decription", "Order", "Tag", "Type", "Unit", "Min", "Max", "Precision" };
                 int row_index = 1;
@@ -98,7 +99,7 @@ namespace TIAEKtool
                 rangePresetIndexHeader.Merge();
                 rangePresetIndexHeader.Style.Font.Bold = true;
                 rangePresetIndexHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                for (int i = 1; i <= preset_group.Value.presets.Count(); i++)
+                for (int i = 1; i <= npresets; i++)
                 {
                     var cell = ws.Cell(row_index, i + N_PROPERTIES);
                     cell.Value = i;
