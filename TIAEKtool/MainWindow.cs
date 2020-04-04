@@ -323,6 +323,28 @@ namespace TIAtool
             return true;
         }
 
+        private void find_plcs(TreeNodeCollection nodes, ref List<PlcSoftware> plcs)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                find_plcs(n.Nodes, ref plcs);
+                if (!n.Checked) continue;
+                if (!(n.Tag is DeviceItem)) continue;
+                SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
+
+                if (sw_cont != null)
+                {
+                    if (sw_cont.Software is PlcSoftware controller)
+                    {
+                        plcs.Add(controller);
+                        
+                    }
+
+                }
+
+            }
+           
+        }
         private bool find_hmi(TreeNodeCollection nodes, ref HmiTarget hmi)
         {
             foreach (TreeNode n in nodes)
@@ -617,5 +639,14 @@ namespace TIAtool
             }
         }
 
+        private void btn_compile_download_Click(object sender, EventArgs e)
+        {
+            var plcs = new List<PlcSoftware>();
+            find_plcs(projectTreeView.Nodes, ref plcs);
+            
+            var hmis = new List<HmiTarget>();
+            
+            
+        }
     }
 }

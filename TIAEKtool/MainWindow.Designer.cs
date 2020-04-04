@@ -46,11 +46,12 @@
             this.btn_connect = new System.Windows.Forms.Button();
             this.btn_disconnect = new System.Windows.Forms.Button();
             this.btn_preset = new System.Windows.Forms.Button();
+            this.btn_preset_import = new System.Windows.Forms.Button();
             this.btn_hmi_tags = new System.Windows.Forms.Button();
             this.btn_copy = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.btn_preset_import = new System.Windows.Forms.Button();
             this.loadPresetList = new System.Windows.Forms.OpenFileDialog();
+            this.btn_compile_download = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -162,6 +163,7 @@
             this.flowLayoutPanel1.Controls.Add(this.btn_preset_import);
             this.flowLayoutPanel1.Controls.Add(this.btn_hmi_tags);
             this.flowLayoutPanel1.Controls.Add(this.btn_copy);
+            this.flowLayoutPanel1.Controls.Add(this.btn_compile_download);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(283, 3);
@@ -199,6 +201,16 @@
             this.btn_preset.UseVisualStyleBackColor = true;
             this.btn_preset.Click += new System.EventHandler(this.btn_preset_Click);
             // 
+            // btn_preset_import
+            // 
+            this.btn_preset_import.Location = new System.Drawing.Point(3, 90);
+            this.btn_preset_import.Name = "btn_preset_import";
+            this.btn_preset_import.Size = new System.Drawing.Size(100, 23);
+            this.btn_preset_import.TabIndex = 5;
+            this.btn_preset_import.Text = "Import Preset";
+            this.btn_preset_import.UseVisualStyleBackColor = true;
+            this.btn_preset_import.Click += new System.EventHandler(this.btn_preset_import_Click);
+            // 
             // btn_hmi_tags
             // 
             this.btn_hmi_tags.Location = new System.Drawing.Point(3, 119);
@@ -235,20 +247,20 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(392, 363);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
-            // btn_preset_import
-            // 
-            this.btn_preset_import.Location = new System.Drawing.Point(3, 90);
-            this.btn_preset_import.Name = "btn_preset_import";
-            this.btn_preset_import.Size = new System.Drawing.Size(100, 23);
-            this.btn_preset_import.TabIndex = 5;
-            this.btn_preset_import.Text = "Import Preset";
-            this.btn_preset_import.UseVisualStyleBackColor = true;
-            this.btn_preset_import.Click += new System.EventHandler(this.btn_preset_import_Click);
-            // 
             // loadPresetList
             // 
             this.loadPresetList.DefaultExt = "xlsx";
             this.loadPresetList.FileName = "Preset.xlsx";
+            // 
+            // btn_compile_download
+            // 
+            this.btn_compile_download.Location = new System.Drawing.Point(3, 177);
+            this.btn_compile_download.Name = "btn_compile_download";
+            this.btn_compile_download.Size = new System.Drawing.Size(100, 23);
+            this.btn_compile_download.TabIndex = 6;
+            this.btn_compile_download.Text = "Compl/Dld";
+            this.btn_compile_download.UseVisualStyleBackColor = true;
+            this.btn_compile_download.Click += new System.EventHandler(this.btn_compile_download_Click);
             // 
             // MainForm
             // 
@@ -294,6 +306,7 @@
         private System.Windows.Forms.ToolStripMenuItem startSyncTIAOpToolStripMenuItem;
         private System.Windows.Forms.Button btn_preset_import;
         private System.Windows.Forms.OpenFileDialog loadPresetList;
+        private System.Windows.Forms.Button btn_compile_download;
     }
 }
 
