@@ -53,7 +53,8 @@ namespace TIAEKtool
             XmlNodeList tag_elems = p_elem.SelectNodes("hmitag");
             if (existing_fields && tag_elems.Count != fields.Count)
             {
-                throw new Exception("All languages must have the same number of <hmitag> elements.");
+                throw new Exception("All languages must have the same number of <hmitag> elements. Failed for '"+text+"'. "+
+                    "Expected "+ fields.Count + " tags, found "+ tag_elems.Count);
             }
             foreach (XmlNode tag_node in tag_elems) {
                 XmlElement tag_elem = (XmlElement)tag_node;
@@ -82,7 +83,7 @@ namespace TIAEKtool
                     refno = fields.IndexOf(field);
                     if (refno < 0)
                     {
-                        throw new Exception("All languages must have compatible <hmitag> elements.");
+                        throw new Exception("All languages must have compatible <hmitag> elements. Failed for '" + text + "'.");
                     }
                 }
                 else
