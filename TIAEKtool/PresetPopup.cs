@@ -350,15 +350,15 @@ namespace TIAEKtool
                 }
             }
         }
-        public Boolean RemoveEnableSelection(string preset_group, int index)
+        public String RemoveEnableSelection(string preset_group, int index)
         {
             string name_suffix = preset_group + "_" + index.ToString();
             string group_name = GROUP_PREFIX + name_suffix;
 
             XmlElement old_group = screen_objects.SelectSingleNode("Hmi.Screen.ScreenLayer//Hmi.Screen.Group[AttributeList/ObjectName/text()='" + group_name + "']") as XmlElement;
-            if (old_group != null) return false;
+            if (old_group == null) return null;
             old_group.ParentNode.RemoveChild(old_group);
-            return true;
+            return group_name;
         }
     }
 }

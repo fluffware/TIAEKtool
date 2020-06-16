@@ -72,8 +72,12 @@ namespace TIAEKtool
                             index++;
                         }
                         // Remove extra groups 
-                        while (editor.RemoveEnableSelection(groupName, index))
+                        
+                        while (true)
                         {
+                            String deleted = editor.RemoveEnableSelection(groupName, index);
+                            if (deleted == null) break;
+                            LogMessage(MessageLog.Severity.Info, "Deleted entry group " + deleted);
                             index++;
                         }
 
