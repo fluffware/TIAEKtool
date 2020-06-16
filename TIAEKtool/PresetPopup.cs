@@ -92,7 +92,7 @@ namespace TIAEKtool
         }
         BoundingBox CalculateBoundingBox(XmlElement obj)
         {
-           
+
             if (obj.Name == "Hmi.Screen.Group")
             {
                 XmlElement list = obj.SelectSingleNode("ObjectList") as XmlElement;
@@ -119,7 +119,7 @@ namespace TIAEKtool
             else
             {
                 XmlElement attrs = obj.SelectSingleNode("AttributeList") as XmlElement;
-               
+
                 if (attrs != null)
                 {
                     int top;
@@ -151,7 +151,7 @@ namespace TIAEKtool
             }
         }
 
-        static readonly char[] digits = new [] {'0', '1', '2', '3','4','5','6','7','8','9'};
+        static readonly char[] digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
         void SetObjectNameSuffix(XmlElement obj, string suffix)
         {
             XmlElement name_elem = obj.SelectSingleNode("AttributeList/ObjectName") as XmlElement;
@@ -213,13 +213,13 @@ namespace TIAEKtool
         }
 
 
-     
+
         public void AddEnableSelection(string template, string preset_group, int index, MultilingualText description, string unit, int precision)
         {
 
             XmlElement template_group = template_objects.SelectSingleNode("Hmi.Screen.ScreenLayer/ObjectList/Hmi.Screen.Group[AttributeList/ObjectName/text()='" + template + "']") as XmlElement;
-            if (template_group == null) throw new Exception("No group named "+template + "was found in ObjectTemplate");
-            XmlElement new_group = doc.ImportNode(template_group,true) as XmlElement;
+            if (template_group == null) throw new Exception("No group named " + template + "was found in ObjectTemplate");
+            XmlElement new_group = doc.ImportNode(template_group, true) as XmlElement;
             BoundingBox new_bbox = CalculateBoundingBox(new_group);
             if (new_bbox == null) throw new Exception("Failed to calculate bounding box of new preset group");
 
@@ -236,19 +236,19 @@ namespace TIAEKtool
                 if (old_bbox == null) throw new Exception("Failed to calculate bounding box of old preset group");
                 MoveChildren(new_group, old_bbox.Left - new_bbox.Left, old_bbox.Top - new_bbox.Top);
 
-               old_group.ParentNode.ReplaceChild(new_group, old_group);
-               
+                old_group.ParentNode.ReplaceChild(new_group, old_group);
+
             }
             else
             {
-                string prev_group_name = GROUP_PREFIX + preset_group + "_" + (index-1).ToString();
+                string prev_group_name = GROUP_PREFIX + preset_group + "_" + (index - 1).ToString();
                 XmlElement prev_group = screen_objects.SelectSingleNode("Hmi.Screen.ScreenLayer//Hmi.Screen.Group[AttributeList/ObjectName/text()='" + prev_group_name + "']") as XmlElement;
                 if (prev_group != null)
                 {
                     BoundingBox prev_bbox = CalculateBoundingBox(prev_group);
                     MoveChildren(new_group, prev_bbox.Left - new_bbox.Left, prev_bbox.Bottom - new_bbox.Top);
                     prev_group.ParentNode.InsertAfter(new_group, prev_group);
-                   
+
                 }
                 else
                 {
@@ -265,7 +265,7 @@ namespace TIAEKtool
             if (description_field == null)
             {
                 throw new Exception("No text field named " + field_name + " found in group " + group_name);
-               
+
             }
             List<ParseText.FieldInfo> fields = null;
             foreach (string culture in description.Cultures)
@@ -284,7 +284,7 @@ namespace TIAEKtool
             {
                 throw new Exception("No switch named " + enable_name + " found in group " + group_name);
             }
-           
+
             XmlElement tag_name_elem = enable_switch.SelectSingleNode("ObjectList/Hmi.Screen.Property/ObjectList/Hmi.Dynamic.TagConnectionDynamic/LinkList/Tag/Name") as XmlElement;
             if (tag_name_elem != null)
             {
@@ -349,6 +349,16 @@ namespace TIAEKtool
                     text_list_elem.InnerText = "PresetTextList_" + name_suffix;
                 }
             }
+        }
+        public Boolean RemoveEnableSelection(string preset_group, int index)
+        {
+            string name_suffix = preset_group + "_" + index.ToString();
+            string group_name = GROUP_PREFIX + name_suffix;
+
+            XmlElement old_group = screen_objects.SelectSingleNode("Hmi.Screen.ScreenLayer//Hmi.Screen.Group[AttributeList/ObjectName/text()='" + group_name + "']") as XmlElement;
+            if (old_group != null) return false;
+            old_group.ParentNode.RemoveChild(old_group);
+            return true;
         }
     }
 }

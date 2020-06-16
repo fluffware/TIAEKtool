@@ -71,7 +71,11 @@ namespace TIAEKtool
                             editor.AddEnableSelection(template, groupName, index, tag.labels, tag.unit, tag.precision);
                             index++;
                         }
-
+                        // Remove extra groups 
+                        while (editor.RemoveEnableSelection(groupName, index))
+                        {
+                            index++;
+                        }
 
                         TIAutils.ImportScreenPopupXML(popup_doc, folder);
                     }

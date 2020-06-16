@@ -272,18 +272,37 @@ namespace TIAEKtool
                             "Assuming preset group " + group_name + " is not used by this HMI since the pop-up screen "+popup_name+" was not found"));
                         continue;
                     }
-                    // Create text lists 
+
+                    String list_prefix = "PresetTextList_" + group_name + "_";
                     TextListComposition hmi_text_lists = hmi.TextLists;
+
+                    // Text list that are candidates for deletion
+                    List<String> delete_lists = new List<string>();
+                    // Find all preset text lists
+                    foreach (var list in hmi_text_lists)
+                    {
+                        if (list.Name.StartsWith(list_prefix))
+                        {
+                            delete_lists.Add(list.Name);
+                        }
+                    }
+                    
+                    // Create text lists 
+                    
                     int count = 1;
                     foreach (PresetTag tag in tags)
                     {
                         if (tag.state_labels != null)
                         {
-                            string list_name = "PresetTextList_" + group_name + "_" + count;
+                            string list_name = list_prefix + count;
+                            delete_lists.Remove(list_name); // Don't delete this list
                             task_dialog.AddTask(new CreateHmiTextListTask(tiaPortal, list_name, hmi_text_lists, tag.state_labels));
                         }
                         count++;
                     }
+
+                    // Delete old textlists
+                    task_dialog.AddTask(new DeleteHmiTextListTask(tiaPortal, list_prefix, hmi_text_lists, delete_lists));
 
                     // Get number of presets configured
                     string count_entry_name = "PresetCount_" + group_name;
