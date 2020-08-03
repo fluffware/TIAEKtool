@@ -11,7 +11,7 @@ namespace TIAEKtool
     {
         static readonly public XmlNamespaceManager nameSpaces;
         public MessageLog Log = null;
-        public const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v3";
+        public const string InterfaceNS = "http://www.siemens.com/automation/Openness/SW/Interface/v4";
         static XMLUtil()
         {
             NameTable nt = new NameTable();

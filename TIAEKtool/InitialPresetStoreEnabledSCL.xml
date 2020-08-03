@@ -9,7 +9,7 @@
       <HeaderFamily />
       <HeaderName />
       <HeaderVersion>0.1</HeaderVersion>
-      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v3">
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
   <Section Name="Input">
     <Member Name="Enable" Datatype='"PresetEnableType"' Accessibility="Public">
       <Sections>

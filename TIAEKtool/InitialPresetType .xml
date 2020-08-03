@@ -7,7 +7,7 @@
   <SW.Types.PlcStruct ID="0">
     <AttributeList>
       <Interface>
-        <Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v3">
+        <Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
           <Section Name="None">
           </Section>
         </Sections>
