@@ -126,12 +126,10 @@ namespace TIAEKtool.Properties {
         ///      &lt;Name&gt;Textlist&lt;/Name&gt;
         ///    &lt;/AttributeList&gt;
         ///    &lt;ObjectList&gt;
-        ///      &lt;Hmi.TextGraphicList.TextListEntry ID=&quot;4&quot; CompositionName=&quot;Entries&quot;&gt;
-        ///        &lt;AttributeList&gt;
-        ///          &lt;DefaultEntry&gt;true&lt;/DefaultEntry&gt;
-        ///          &lt;EntryType&gt;SingleValue&lt;/EntryType&gt;
-        ///          &lt;From&gt;0&lt;/From&gt;
-        ///    [rest of string was truncated]&quot;;.
+        ///    &lt;/ObjectList&gt;
+        ///  &lt;/Hmi.TextGraphicList.TextList&gt;
+        ///&lt;/Document&gt;
+        ///.
         /// </summary>
         internal static string InitialHMITextList {
             get {
