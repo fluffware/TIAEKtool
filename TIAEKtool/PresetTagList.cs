@@ -41,8 +41,8 @@ namespace TIAEKtool
             public bool NoStore { get => _tag.noStore; }
             public string Unit { get => _tag.unit; }
             public int Precision { get => _tag.precision; }
-            public float Min { get => _tag.min; }
-            public float Max { get => _tag.max; }
+            public float? Min { get => _tag.min; }
+            public float? Max { get => _tag.max; }
             public int Order { get => _tag.order; }
             public PresetTag Tag { get => _tag; }
             public Row(StringBuilder culture, PresetTag tag)

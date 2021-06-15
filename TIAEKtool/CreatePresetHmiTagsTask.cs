@@ -54,7 +54,7 @@ namespace TIAEKtool
                         foreach (var tag in tags)
                         {
                             editor.AddIndexedTag("PresetEnable_" + groupName + "_", index, tag.tagPath.PrependPath(enable_selected).ToString());
-                            editor.AddIndexedTag("PresetValue_" + groupName + "_", index, tag.tagPath.PrependPath(preset_selected).ToString(), tag.tagPath.Type);
+                            editor.AddIndexedTag("PresetValue_" + groupName + "_", index, tag.tagPath.PrependPath(preset_selected).ToString(), tag.tagPath.Type, tag.min, tag.max);
 
                             index++;
                         }

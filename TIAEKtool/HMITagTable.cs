@@ -27,7 +27,7 @@ namespace TIAEKtool
         /// <param name="prefix">Start of tag name. Typically ends with '_'</param>
         /// <param name="index">Index added to end of name</param>
         /// <param name="plc_tag">PLC tag to connect to</param>
-        public void AddIndexedTag(string prefix, int index, string plc_tag, DataType type = null)
+        public void AddIndexedTag(string prefix, int index, string plc_tag, DataType type = null, double? min = null, double? max = null)
         {
             string tag_name = prefix + index.ToString();
             XmlElement tag = tag_list.SelectSingleNode("Hmi.Tag.Tag[AttributeList/Name/text()='" + tag_name+"']") as XmlElement;
@@ -68,7 +68,33 @@ namespace TIAEKtool
                 }
             }
 
-            
+
+            XmlElement upper_elem = attr_list.SelectSingleNode("LimitUpper2") as XmlElement;
+            if (upper_elem != null)
+            {
+                attr_list.RemoveChild(upper_elem);
+            }
+            if (max is double max_limit)
+            {
+                upper_elem = attr_list.OwnerDocument.CreateElement("LimitUpper2");
+                upper_elem.SetAttribute("Type", "Siemens.Engineering.Hmi.ConstValue");
+                upper_elem.InnerText = max_limit.ToString();
+                attr_list.AppendChild(upper_elem);
+            }
+
+            XmlElement lower_elem = attr_list.SelectSingleNode("LimitLower2") as XmlElement;
+            if (lower_elem != null)
+            {
+                attr_list.RemoveChild(lower_elem);
+            }
+            if (min is double min_limit)
+            {
+                lower_elem = attr_list.OwnerDocument.CreateElement("LimitLower2");
+                lower_elem.SetAttribute("Type", "Siemens.Engineering.Hmi.ConstValue");
+                lower_elem.InnerText = min_limit.ToString();
+                attr_list.AppendChild(lower_elem);
+            }
+
             XmlElement link_list = tag.SelectSingleNode("LinkList") as XmlElement;
             XmlElement hmi_type_elem = link_list.SelectSingleNode("HmiDataType") as XmlElement;
             if (hmi_type_elem != null)
