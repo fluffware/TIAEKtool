@@ -36,6 +36,10 @@ namespace TIAEKtool
                         preset.labels.AddText(culture, label);
                     }
                 }
+                else if (type == "preset_recall_tag")
+                {
+                    preset.writeTagPath = PathComponentUtils.ParsePath(data.Trim()).PrependPath(preset.readTagPath.Parent);
+                }
                 else if (type == "preset_default")
                 {
                     preset.defaultValue = data.Trim();

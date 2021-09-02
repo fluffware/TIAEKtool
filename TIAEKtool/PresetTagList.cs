@@ -33,10 +33,10 @@ namespace TIAEKtool
             }
 
             public string Culture { get => _culture.ToString(); }
-            public string Path { get => _tag.tagPath.ToString(); }
+            public string Path { get => _tag.readTagPath.ToString(); }
             public string Group { get => string.Join(",",_tag.presetGroups); set => _tag.presetGroups = value.Split(','); }
             public string Label { get => (_tag.labels != null) ? _tag.labels[_culture.ToString()] : ""; set { if (_tag.labels != null) _tag.labels[_culture.ToString()] = value; } }
-            public string Type { get => PathType(_tag.tagPath); }
+            public string Type { get => PathType(_tag.readTagPath); }
             public string DefaultValue { get => _tag.defaultValue; }
             public bool NoStore { get => _tag.noStore; }
             public string Unit { get => _tag.unit; }

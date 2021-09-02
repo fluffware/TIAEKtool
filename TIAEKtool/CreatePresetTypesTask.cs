@@ -45,7 +45,7 @@ namespace TIAEKtool
                     }
                     foreach (var tag in tags)
                     {
-                        preset_type.AddValueType(tag.tagPath, tag.labels, tag.defaultValue);
+                        preset_type.AddValueType(tag.readTagPath, tag.labels, tag.defaultValue);
                     }
                     TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
 
@@ -64,7 +64,7 @@ namespace TIAEKtool
                     }
                     foreach (var tag in tags)
                     {
-                        preset_type.AddEnableType(tag.tagPath);
+                        preset_type.AddEnableType(tag.readTagPath);
                     }
                     TIAutils.ImportPlcTypeXML(preset_type.Document, typeGroup);
                 }

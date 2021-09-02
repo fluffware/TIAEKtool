@@ -142,10 +142,10 @@ namespace TIAEKtool
                     ws.Cell(row_index, col_index).Value = tag.order;
                     col_index++;
                     // PLC tag
-                    ws.Cell(row_index, col_index).Value = tag.tagPath.ToString();
+                    ws.Cell(row_index, col_index).Value = tag.readTagPath.ToString();
                     col_index++;
                     // Value type
-                    ws.Cell(row_index, col_index).Value = PathType(tag.tagPath);
+                    ws.Cell(row_index, col_index).Value = PathType(tag.readTagPath);
                     col_index++;
                     // Value unit
                     ws.Cell(row_index, col_index).Value = tag.unit;
@@ -247,7 +247,7 @@ namespace TIAEKtool
                     info.tag = new PresetTag();
                     try
                     {
-                        info.tag.tagPath = PathComponentUtils.ParsePath(path_str);
+                        info.tag.readTagPath = PathComponentUtils.ParsePath(path_str);
                     }
                     catch (Exception ex)
                     {
@@ -262,7 +262,7 @@ namespace TIAEKtool
                     {
                         throw new Exception("Failed to parse type "+type_str+" for tag " + path_str + " in " + ws.Name);
                     }
-                    info.tag.tagPath.Type = value_type;
+                    info.tag.readTagPath.Type = value_type;
                     info.values = new object[max_preset_index];
                     info.enabled = new bool?[max_preset_index];
                     

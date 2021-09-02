@@ -8,8 +8,9 @@ namespace TIAEKtool
 
     public class PresetTag : IComparable
     {
-        public PathComponent tagPath;
-        public String[] presetGroups;
+        public PathComponent readTagPath;  // Tag that represents the current value for this preset.
+        public PathComponent writeTagPath;  // Tag to write when setting this preset. Usually the same as readTagPath.
+        public String[] presetGroups; // Groups that this preset belongs to
         public MultilingualText labels;
         public string defaultValue;
         public bool noStore;

@@ -571,8 +571,8 @@ namespace TIAtool
                     var infos = preset_groups[group_name].presets;
                     foreach (PresetInfo info in infos)
                     {
-                        PresetValueParser.SetPresetValue(static_elem, info.tag.tagPath, constants, info.values);
-                        PresetValueParser.SetPresetEnabled(static_elem, info.tag.tagPath, constants, info.enabled);
+                        PresetValueParser.SetPresetValue(static_elem, info.tag.readTagPath, constants, info.values);
+                        PresetValueParser.SetPresetEnabled(static_elem, info.tag.readTagPath, constants, info.enabled);
                        
                     }
                     PresetValueParser.SetPresetNames(static_elem, constants, preset_groups[group_name].preset_names);

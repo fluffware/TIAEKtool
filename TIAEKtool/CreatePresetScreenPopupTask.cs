@@ -48,7 +48,7 @@ namespace TIAEKtool
 
                         foreach (var tag in tags)
                         {
-                            DataType type = tag.tagPath.Type;
+                            DataType type = tag.readTagPath.Type;
                             string template;
                             if (tag.state_labels != null)
                             {

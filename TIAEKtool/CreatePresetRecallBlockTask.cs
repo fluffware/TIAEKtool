@@ -36,7 +36,7 @@ namespace TIAEKtool
                     PresetRecallSCL scl = new PresetRecallSCL(blockName, valueTypeName, enableTypeName, null);
                     foreach (var tag in tags)
                     {
-                        scl.AddRecall(tag.tagPath);
+                        scl.AddRecall(tag.readTagPath, tag.writeTagPath);
                     }
                     TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);
                 }

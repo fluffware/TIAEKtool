@@ -33,7 +33,7 @@ namespace TIAEKtool
 
 
         
-        public void AddRecall(PathComponent comp)
+        public void AddRecall(PathComponent comp, PathComponent write_comp)
         {
             builder.Push(structured_text);
 
@@ -63,7 +63,7 @@ namespace TIAEKtool
             builder.Down();
             builder.Symbol();
             builder.Down();
-            builder.SymbolAddComponents(comp);
+            builder.SymbolAddComponents(write_comp);
             builder.Pop();
             builder.Pop();
             

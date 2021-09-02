@@ -44,8 +44,8 @@ namespace TIAEKtool
                     {
                         if (!tag.noStore)
                         {
-                            scl.AddStore(tag.tagPath);
-                            enabled_scl.AddStore(tag.tagPath);
+                            scl.AddStore(tag.readTagPath);
+                            enabled_scl.AddStore(tag.readTagPath);
                         }
                     }
                     TIAutils.ImportPlcBlockXML(scl.Document, resultGroup);

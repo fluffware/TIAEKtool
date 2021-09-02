@@ -53,8 +53,8 @@ namespace TIAEKtool
                         int index = 1;
                         foreach (var tag in tags)
                         {
-                            editor.AddIndexedTag("PresetEnable_" + groupName + "_", index, tag.tagPath.PrependPath(enable_selected).ToString());
-                            editor.AddIndexedTag("PresetValue_" + groupName + "_", index, tag.tagPath.PrependPath(preset_selected).ToString(), tag.tagPath.Type, tag.min, tag.max);
+                            editor.AddIndexedTag("PresetEnable_" + groupName + "_", index, tag.readTagPath.PrependPath(enable_selected).ToString());
+                            editor.AddIndexedTag("PresetValue_" + groupName + "_", index, tag.readTagPath.PrependPath(preset_selected).ToString(), tag.readTagPath.Type, tag.min, tag.max);
 
                             index++;
                         }

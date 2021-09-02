@@ -139,17 +139,22 @@ namespace TIAEKtool
 
         public void HandleTag(object source, TagParser.HandleTagEventArgs ev)
         {
-            PresetTag preset = new PresetTag() { tagPath = ev.Path };
+            PresetTag preset = new PresetTag() { readTagPath = ev.Path };
            
             foreach (string c in ev.Comment.Cultures)
             {
                 PresetCommentParser.Parse(ev.Comment[c], c, preset);
              
             }
+            if (preset.writeTagPath == null)
+            {
+                preset.writeTagPath = preset.readTagPath;
+            }
             if (preset.labels != null)
             {
                 presetList.AddTag(preset);
             }
+          
         }
 
         public void ParseDone(object source, TagParser.ParseDoneEventArgs ev)
@@ -444,9 +449,9 @@ namespace TIAEKtool
                             var tags = tag_groups[group_name];
                             foreach (var tag in tags)
                             {
-                                var values = PresetValueParser.GetPresetValue(static_elem, tag.tagPath, constants);
-                                var enabled = PresetValueParser.GetPresetEnabled(static_elem, tag.tagPath, constants);
-                                Console.WriteLine(tag.tagPath + ":" + (string.Join(",", values)));
+                                var values = PresetValueParser.GetPresetValue(static_elem, tag.readTagPath, constants);
+                                var enabled = PresetValueParser.GetPresetEnabled(static_elem, tag.readTagPath, constants);
+                                Console.WriteLine(tag.readTagPath + ":" + (string.Join(",", values)));
                                 group.presets.Add(new PresetDocument.PresetInfo(){ tag = tag, values = values, enabled = enabled});
                             }
 
