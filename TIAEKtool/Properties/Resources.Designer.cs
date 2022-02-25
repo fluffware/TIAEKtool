@@ -19,7 +19,7 @@ namespace TIAEKtool.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -152,7 +152,7 @@ namespace TIAEKtool.Properties {
         ///      &lt;HeaderName /&gt;
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
         ///      &lt;Interface&gt;
-        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v4&quot;&gt;
         ///          &lt;Section Name=&quot;Static&quot;&gt;
         ///          &lt;/Section&gt;
         ///        &lt;/Sections&gt;
@@ -176,7 +176,7 @@ namespace TIAEKtool.Properties {
         ///      &lt;HeaderFamily /&gt;
         ///      &lt;HeaderName /&gt;
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
-        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v4&quot;&gt;
         ///  &lt;Section Name=&quot;Input&quot;&gt;
         ///    &lt;Member Name=&quot;Value&quot; Datatype=&apos;&quot;PresetValueType&quot;&apos; Accessibility=&quot;Public&quot;&gt;
         ///      &lt;Sections&gt;
@@ -200,7 +200,7 @@ namespace TIAEKtool.Properties {
         ///      &lt;HeaderFamily /&gt;
         ///      &lt;HeaderName /&gt;
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
-        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v4&quot;&gt;
         ///  &lt;Section Name=&quot;Input&quot;&gt;
         ///    &lt;Member Name=&quot;Enable&quot; Datatype=&apos;&quot;PresetEnableType&quot;&apos; Accessibility=&quot;Public&quot;&gt;
         ///      &lt;Sections&gt;
@@ -224,7 +224,7 @@ namespace TIAEKtool.Properties {
         ///      &lt;HeaderFamily /&gt;
         ///      &lt;HeaderName /&gt;
         ///      &lt;HeaderVersion&gt;0.1&lt;/HeaderVersion&gt;
-        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///      &lt;Interface&gt;&lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v4&quot;&gt;
         ///  &lt;Section Name=&quot;Input&quot;&gt;
         ///  &lt;/Section&gt;
         ///        &lt;Section Name=&quot;Output&quot;&gt;
@@ -246,7 +246,7 @@ namespace TIAEKtool.Properties {
         ///  &lt;SW.Types.PlcStruct ID=&quot;0&quot;&gt;
         ///    &lt;AttributeList&gt;
         ///      &lt;Interface&gt;
-        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v3&quot;&gt;
+        ///        &lt;Sections xmlns=&quot;http://www.siemens.com/automation/Openness/SW/Interface/v4&quot;&gt;
         ///          &lt;Section Name=&quot;None&quot;&gt;
         ///          &lt;/Section&gt;
         ///        &lt;/Sections&gt;

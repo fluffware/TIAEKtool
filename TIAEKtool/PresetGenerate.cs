@@ -20,6 +20,7 @@ using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Types;
 using Siemens.Engineering.Hmi.TextGraphicList;
 using static TIAEKtool.PresetDocument;
+using Siemens.Engineering.HmiUnified;
 
 namespace TIAEKtool
 {
@@ -83,10 +84,11 @@ namespace TIAEKtool
         PlcSoftware plcSoftware;
 
         IList<HmiTarget> hmiTargets;
+        IList<HmiSoftware> hmiSoftware;
         TaskDialog task_dialog;
         TiaPortal tiaPortal;
         MessageLog log = new MessageLog();
-        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiTarget> hmiTargets, string culture)
+        public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiTarget> hmiTargets, List<HmiSoftware> hmiSoftware, string culture)
         {
             InitializeComponent();
             tiaPortal = portal;
@@ -122,6 +124,7 @@ namespace TIAEKtool
                 typeGroup = plcSoftware.TypeGroup.Groups.Create("Preset");
             }
             this.hmiTargets = hmiTargets;
+            this.hmiSoftware = hmiSoftware;
 
             Project proj = tiaPortal.Projects[0];
             LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
@@ -265,6 +268,35 @@ namespace TIAEKtool
                 string db_name = PRESET_DB_PREFIX + group_name;
                 string hmi_db_name = PRESET_HMI_DB_PREFIX + group_name;
 
+                // Get number of presets configured
+                string count_entry_name = "PresetCount_" + group_name;
+                ConstantLookup.Entry count_entry = constants.Lookup(count_entry_name);
+                if (count_entry == null)
+                {
+                    throw new Exception("Global constant " + count_entry_name + " not found");
+                }
+
+
+                int nPresets = int.Parse(count_entry.value);
+
+                Dictionary<int, MultilingualText> preset_names = new Dictionary<int, MultilingualText>();
+                // Create preset name list
+
+
+                {
+                    for (int p = 1; p <= nPresets; p++)
+                    {
+                        string name_string = "<hmitag length='20' type='Text' name='PresetName_" + group_name + "_" + p + "'>Preset " + p + "</hmitag>";
+                        MultilingualText text = new MultilingualText();
+                        foreach (string c in cultures)
+                        {
+                            text.AddText(c, name_string);
+                        }
+                        preset_names.Add(p, text);
+                    }
+
+                   
+                }
                 foreach (HmiTarget hmi in hmiTargets)
                 {
                     string popup_name = "PresetPopup_" + group_name;
@@ -308,34 +340,7 @@ namespace TIAEKtool
 
                     // Delete old textlists
                     task_dialog.AddTask(new DeleteHmiTextListTask(tiaPortal, list_prefix, hmi_text_lists, delete_lists));
-
-                    // Get number of presets configured
-                    string count_entry_name = "PresetCount_" + group_name;
-                    ConstantLookup.Entry count_entry = constants.Lookup(count_entry_name);
-                    if (count_entry == null)
                     {
-                        throw new Exception("Global constant " + count_entry_name + " not found");
-                    }
-
-                    
-                    int nPresets = int.Parse(count_entry.value);
-
-                    Dictionary<int, MultilingualText> preset_names = new Dictionary<int, MultilingualText>();
-                    // Create preset name list
-                  
-                 
-                    {
-                        for (int p = 1; p <= nPresets; p++)
-                        {
-                            string name_string = "<hmitag length='20' type='Text' name='PresetName_" + group_name + "_" + p + "'>Preset " + p + "</hmitag>";
-                            MultilingualText text = new MultilingualText();
-                            foreach (string c in cultures)
-                            {
-                                text.AddText(c, name_string);
-                            }
-                            preset_names.Add(p, text);
-                        }
-
                         string list_name = "PresetNameList_" + group_name;
                         task_dialog.AddTask(new CreateHmiTextListTask(tiaPortal, list_name, hmi_text_lists, preset_names));
                     }
@@ -367,6 +372,17 @@ namespace TIAEKtool
                     }
                 }
 
+                foreach (HmiSoftware hmi in hmiSoftware)
+                {
+                    // Create HMI tags
+
+
+                    var preset_tag_table = hmi.TagTables;
+                    string table_name = "Preset_" + group_name;
+                    task_dialog.AddTask(new CreatePresetUnifiedHmiTagsTask(tiaPortal, tags, preset_tag_table, table_name, group_name, db_name, hmi_db_name, presetList.Culture));
+                    string popup_name = "PresetSettingsPopup_" + group_name;
+                    task_dialog.AddTask(new CreatePresetUnifiedSettingsPopupTask(tiaPortal, tags, hmi.Screens, popup_name, group_name, presetList.Culture));
+                }
             }
            
 

@@ -62,13 +62,17 @@ namespace TIAEKtool
                         ARRAY name_array = new ARRAY();
                         name_array.MemberType = new STRING();
                         PathComponent preset_names = new MemberComponent("Names", name_array, new MemberComponent(dbName, new STRUCT()));
+                        for (int p = 1; p <= nPresets; p++)
+                        {
+                            PathComponent name = new IndexComponent(new int[1] { p }, new STRING(), preset_names);
+                            editor.AddIndexedTag("PresetName_" + groupName + "_", p, name.ToString());
+                        }
+
                         ARRAY color_array = new ARRAY();
                         color_array.MemberType = INT.Type;
                         PathComponent preset_colors = new MemberComponent("Colors", color_array, new MemberComponent(dbName, new STRUCT()));
                         for (int p = 1; p <= nPresets; p++)
                         {
-                            PathComponent name = new IndexComponent(new int[1] { p }, new STRING(), preset_names);
-                            editor.AddIndexedTag("PresetName_" + groupName + "_", p, name.ToString());
                             PathComponent color = new IndexComponent(new int[1] { p }, INT.Type, preset_colors);
                             editor.AddIndexedTag("PresetColor_" + groupName + "_", p, color.ToString());
                         }

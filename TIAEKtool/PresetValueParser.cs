@@ -365,54 +365,53 @@ namespace TIAEKtool
 
         public static string[] GetPresetNames(XmlElement tag_element, ConstantLookup constants)
         {
-            ARRAY name_array = new ARRAY();
-            MemberComponent name_tag = new MemberComponent("Names", name_array);
-            Array array = GetPathValues(tag_element, name_tag, constants);
-            if (array.Rank != 1)
-            {
-                throw new Exception("Names tag must be one dimensional");
+            List<string> names = new List<string>();
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Name']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            foreach (XmlElement v in start_values) {
+                names.Add(v.InnerText.Trim('\''));
             }
-
-
-            return FlattenArray<string>(array);
+            return names.ToArray();
         }
 
         public static void SetPresetNames(XmlElement tag_element, ConstantLookup constants, string[] values)
         {
-            ARRAY name_array = new ARRAY
+            List<string> names = new List<string>();
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Name']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            if (start_values.Count < values.Length)
             {
-                MemberType = new STRUCT()
-            };
-            MemberComponent name_tag = new MemberComponent("Names", name_array);
-            
-
-            SetPathValues(tag_element, name_tag, constants, values);
-        }
-
-        public static int[] GetPresetColors(XmlElement tag_element, ConstantLookup constants)
-        {
-            ARRAY name_array = new ARRAY();
-            MemberComponent name_tag = new MemberComponent("Colors", name_array);
-            Array array = GetPathValues(tag_element, name_tag, constants);
-            if (array.Rank != 1)
-            {
-                throw new Exception("Names tag must be one dimensional");
+                throw new Exception("More preset names in file than in PLC database");
             }
+            for (int i = 0; i < values.Length; i++)
+            {
+                start_values[i].InnerText = "'" + values[i] + "'";
 
-
-            return FlattenArray<int>(array);
+            }
         }
 
-        public static void SetPresetColors(XmlElement tag_element, ConstantLookup constants, int[] values)
+        public static uint[] GetPresetColors(XmlElement tag_element, ConstantLookup constants)
         {
-            ARRAY name_array = new ARRAY
+            List<uint> colors = new List<uint>();
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Color']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            foreach (XmlElement v in start_values)
             {
-                MemberType = new STRUCT()
-            };
-            MemberComponent name_tag = new MemberComponent("Colors", name_array);
+                colors.Add(uint.Parse(v.InnerText.Replace("_", String.Empty)));
+            }
+            return colors.ToArray();
+        }
 
-            var objs = values.Select<int, object>(x => (object)x).ToArray<object>();
-            SetPathValues(tag_element, name_tag, constants, objs);
+        public static void SetPresetColors(XmlElement tag_element, ConstantLookup constants, uint[] values)
+        {
+            List<uint> names = new List<uint>();
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Color']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            if (start_values.Count < values.Length)
+            {
+                throw new Exception("More preset colors in file than in PLC database");
+            }
+            for (int i = 0; i < values.Length; i++)
+            {
+                start_values[i].InnerText = values[i].ToString();
+
+            }
         }
 
         public static object[] GetPresetValue(XmlElement tag_element, PathComponent path, ConstantLookup constants)

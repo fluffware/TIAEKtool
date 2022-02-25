@@ -23,7 +23,7 @@ namespace TIAEKtool
         public class PresetGroup
         {
             public string[] preset_names;
-            public int[] preset_colors;
+            public uint[] preset_colors;
             public List<PresetInfo> presets;
 
             public PresetGroup()
@@ -33,7 +33,7 @@ namespace TIAEKtool
             public PresetGroup(int preset_count)
             {
                 preset_names = new string[preset_count];
-                preset_colors = new int[preset_count];
+                preset_colors = new uint[preset_count];
                 presets = new List<PresetInfo>();
             }
         }
@@ -72,18 +72,39 @@ namespace TIAEKtool
             return res.ToString();
         }
 
-        const int N_PROPERTIES = 8;
+        static bool TagValueAsInt(object value, out int i)
+        {
+            if (value is int v)
+            {
+                i = v;
+                return true;
+            }
+            if (value is bool b)
+            {
+                i = b ? 1 : 0;
+                return true;
+            }
+            i = 0;
+            return false;
+        }
+
+        const int N_PROPERTIES = 8; // Number of properties for for each tag not including the state values
         static public void Save(string file, Dictionary<string, PresetGroup> preset_groups, string culture)
         {
 
-           
+        
+
             var wb = new XLWorkbook();
+            var scratch_ws = wb.Worksheets.Add("Scratch");
+            scratch_ws.Hide();
+            var scratch_next_col = 1;
 
 
             foreach (var preset_group in preset_groups)
             {
                 int npresets = preset_group.Value.presets[0].values.Count();
                 var ws = wb.Worksheets.Add("Group " + preset_group.Key);
+              
                 string[] headers = new string[N_PROPERTIES] { "Decription", "Order", "Tag", "Type", "Unit", "Min", "Max", "Precision" };
                 int row_index = 1;
 
@@ -116,12 +137,22 @@ namespace TIAEKtool
                 row_index++;
 
                 var rangePresetColorHeader = ws.Range(row_index, 1, row_index, N_PROPERTIES);
-                rangePresetColorHeader.FirstCell().Value = "Color index";
+                rangePresetColorHeader.FirstCell().Value = "Color";
                 rangePresetColorHeader.Merge();
                 rangePresetColorHeader.Style.Font.Bold = true;
                 rangePresetColorHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
 
                 var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_group.Value.preset_colors, true);
+                for (int i = 0; i < npresets; i++)
+                {
+                    int a = (int)preset_group.Value.preset_colors[i] >> 24 & 0xff;
+                    int r = (int)preset_group.Value.preset_colors[i] >> 16 & 0xff;
+                    int g = (int)preset_group.Value.preset_colors[i] >> 8 & 0xff;
+                    int b = (int)preset_group.Value.preset_colors[i] & 0xff;
+                    int grey = r *30 + g * 59 + b * 11;
+                    ws.Cell(row_index, i + N_PROPERTIES + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(a, r, g, b);
+                    ws.Cell(row_index, i + N_PROPERTIES + 1).Style.Font.FontColor = grey > 128 * 100 ? XLColor.Black : XLColor.White;
+                }
                 row_index++;
 
                 var rangeHeader = ws.Cell(row_index, 1).InsertData(headers, true);
@@ -129,7 +160,31 @@ namespace TIAEKtool
 
                 row_index++;
 
+                Dictionary<string, IXLRange> state_lists = new Dictionary<string, IXLRange>();
+                foreach (PresetInfo info in preset_group.Value.presets)
+                {
+                    PresetTag tag = info.tag;
+              
+                    if (tag.state_labels != null && tag.state_labels.Count > 0)
+                    {
+                        List<string> list = new List<string>();
+                        int list_row = 1;
+                        foreach (KeyValuePair<int, MultilingualText> state in tag.state_labels)
+                        {
+                            if (state.Value.TryGetText(culture, out string text))
+                            {
+                                var list_cell = scratch_ws.Cell(list_row, scratch_next_col);
+                                list_cell.Value = state.Key.ToString() + ":" + ResolveLabelTags(text);
+                                list_row++;
+                            }
+                        }
+                        var range = scratch_ws.Range(1, scratch_next_col, list_row - 1, scratch_next_col);
+                        state_lists.Add(tag.readTagPath.ToString(), range);
+                        scratch_next_col++;
+                    }
 
+
+                }
                 foreach (PresetInfo info in preset_group.Value.presets)
                 {
                     int col_index = 1;
@@ -160,10 +215,28 @@ namespace TIAEKtool
                     ws.Cell(row_index, col_index).Value = tag.precision;
 
                     col_index++;
+
+                    
                     for (int i = 0; i < info.values.Count(); i++)
                     {
                         var cell = ws.Cell(row_index, col_index);
                         cell.Value = info.values[i];
+                      
+                         
+                        if (state_lists.TryGetValue(tag.readTagPath.ToString(), out IXLRange range))
+                        {
+                            cell.DataValidation.List(range);
+                        }
+                        if (TagValueAsInt(info.values[i], out int value))
+                        {
+                            if (tag.state_labels != null && tag.state_labels.TryGetValue(value, out MultilingualText state_text))
+                            {
+                                if (state_text.TryGetText(culture, out string text))
+                                {
+                                    cell.Value = value.ToString() + ":" + ResolveLabelTags(text);
+                                }
+                            }
+                        }
                         if (info.enabled[i] == true)
                         {
                             cell.Style.Fill.PatternType = XLFillPatternValues.Solid;
@@ -187,6 +260,7 @@ namespace TIAEKtool
             XLWorkbook wb = new XLWorkbook(file);
             foreach (var ws in wb.Worksheets)
             {
+                if (!ws.Name.StartsWith("Group ")) continue;
                 string group_name = ws.Name.Substring(6);
                
 
@@ -230,12 +304,12 @@ namespace TIAEKtool
                 row_index += 1;
 
                 var preset_color_cell = ws.Cell(row_index, 1);
-                if (preset_color_cell.Value as string != "Color index")
+                if (preset_color_cell.Value as string != "Color")
                 {
                     throw new Exception("Failed to find row starting with 'Color index' in worksheet " + ws.Name);
                 }
                 var color_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
-                int[] colors = color_range.Cells().Select(x => x.GetValue<int>()).ToArray<int>();
+                uint[] colors = color_range.Cells().Select(x => x.GetValue<uint>()).ToArray<uint>();
                 group.preset_colors = colors;
 
                 row_index += 2;
@@ -282,7 +356,11 @@ namespace TIAEKtool
                                 {
                                     info.values[preset_index] = (long)v;
                                 }
-                                else
+                                else if (cell_value is string str)
+                                {
+                                    var parts = str.Split(new char[] { ':' });
+                                    info.values[preset_index] = long.Parse(parts[0]);
+                                } else
                                 {
                                     throw new Exception("Invalid integer in cell " + cell.Address.ToString() + " in " + ws.Name);
                                 }
@@ -292,6 +370,11 @@ namespace TIAEKtool
                                 if (cell_value is double v)
                                 {
                                     info.values[preset_index] = (double)v;
+                                }
+                                else if (cell_value is string str)
+                                {
+                                    var parts = str.Split(new char[] { ':' });
+                                    info.values[preset_index] = double.Parse(parts[0]);
                                 }
                                 else
                                 {
@@ -303,6 +386,11 @@ namespace TIAEKtool
                                 if (cell_value is bool v)
                                 {
                                     info.values[preset_index] = v;
+                                }
+                                else if (cell_value is string str)
+                                {
+                                    var parts = str.Split(new char[] { ':' });
+                                    info.values[preset_index] = long.Parse(parts[0]) != 0;
                                 }
                                 else
                                 {

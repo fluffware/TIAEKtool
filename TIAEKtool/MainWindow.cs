@@ -15,6 +15,7 @@ using Siemens.Engineering.HW.Features;
 using System.Threading;
 using static TIAEKtool.PresetDocument;
 using System.Xml;
+using Siemens.Engineering.HmiUnified;
 
 namespace TIAtool
 {
@@ -370,6 +371,7 @@ namespace TIAtool
             return true;
         }
 
+     
         private void find_hmis(TreeNodeCollection nodes, ref List<HmiTarget> hmis)
         {
             foreach (TreeNode n in nodes)
@@ -390,6 +392,23 @@ namespace TIAtool
             }
         }
 
+        private void find_unified_hmis(TreeNodeCollection nodes, ref List<HmiSoftware> hmis)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                find_unified_hmis(n.Nodes, ref hmis);
+                if (!n.Checked) continue;
+                if (!(n.Tag is DeviceItem)) continue;
+                SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
+                if (sw_cont != null)
+                {
+                    if (sw_cont.Software is HmiSoftware hmi_sw)
+                    {
+                        hmis.Add(hmi_sw);
+                    }
+                }
+            }
+        }
         private void btn_preset_Click(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
@@ -406,7 +425,9 @@ namespace TIAtool
             }
             List<HmiTarget> hmis = new List<HmiTarget>();
             find_hmis(projectTreeView.Nodes, ref hmis);
-            presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, hmis, culture);
+            List<HmiSoftware> unified_hmis = new List<HmiSoftware>();
+            find_unified_hmis(projectTreeView.Nodes, ref unified_hmis);
+            presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, hmis, unified_hmis, culture);
             presetGenerate.ShowDialog();
 
 

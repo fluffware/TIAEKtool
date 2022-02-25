@@ -32,6 +32,10 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Threading;
 using TIAEKtool;
+using Siemens.Engineering.HmiUnified;
+using Siemens.Engineering.HmiUnified.UI.Screens;
+using Siemens.Engineering.HmiUnified.UI.Base;
+using Siemens.Engineering.HmiUnified.HmiTags;
 
 namespace TIAtool
 {
@@ -490,6 +494,50 @@ namespace TIAtool
             }
         }
 
+        // Unified screens
+        private static void handleUnifiedScreens(NodeHandler handler, HmiScreenComposition screens)
+        {
+            NodeHandler screen_handler = handler.Enter(screens, "Screens");
+            if (screen_handler != null)
+            {
+                foreach (HmiScreen screen in screens)
+                {
+                    var item_handler = screen_handler.Enter(screen, screen.Name);
+                    if (item_handler != null)
+                    {
+                        HmiScreenItemBaseComposition items = screen.ScreenItems;
+                        foreach (HmiScreenItemBase screen_item in items)
+                        {
+                            item_handler.Enter(screen_item, screen_item.Name);
+                            item_handler.Exit(screen_item);
+                        }
+                    }
+                    screen_handler.Exit(screen);
+                }
+            }
+            handler.Exit(screens);
+        }
+        private static void handleUnifiedTagTables(NodeHandler handler, HmiTagTableComposition tag_tables)
+        {
+            NodeHandler tables_handler = handler.Enter(tag_tables, "Tag tables");
+            if (tables_handler != null)
+            {
+                foreach (HmiTagTable table in tag_tables) {
+                    NodeHandler table_handler = handler.Enter(table, table.Name);
+                    if (table_handler != null)
+                    {
+                        HmiTagComposition tags = table.Tags;
+                        foreach (HmiTag tag in tags)
+                        {
+                            table_handler.Enter(tag, tag.Name);
+                            table_handler.Exit(tag);
+                        }
+                    }
+                    handler.Exit(table);
+                }
+            }
+        }
+
         // Device items
         private static void handleDeviceItem(NodeHandler handler, DeviceItem item)
         {
@@ -499,8 +547,7 @@ namespace TIAtool
                 SoftwareContainer sw_cont = item.GetService<SoftwareContainer>();
                 if (sw_cont != null)
                 {
-                    PlcSoftware controller = sw_cont.Software as PlcSoftware;
-                    if (controller != null)
+                    if (sw_cont.Software is PlcSoftware controller)
                     {
                         NodeHandler block_handler = child_handler.Enter(controller.BlockGroup, "Blocks");
                         if (block_handler != null)
@@ -519,8 +566,7 @@ namespace TIAtool
                     }
 
 
-                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
-                    if (hmi_target != null)
+                    if (sw_cont.Software is HmiTarget hmi_target)
                     {
                         //Console.WriteLine("HMI target");
                         NodeHandler screen_handler = child_handler.Enter(hmi_target.ScreenFolder, "Screens");
@@ -550,7 +596,7 @@ namespace TIAtool
                             iterScreenPopupFolder(template_handler, hmi_target.ScreenPopupFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenPopupFolder);
-                        
+
                         NodeHandler connection_handler = child_handler.Enter(hmi_target.Connections, "Connections");
                         if (connection_handler != null)
                         {
@@ -563,6 +609,13 @@ namespace TIAtool
                         }
                         child_handler.Exit(hmi_target.Connections);
 
+                    }
+                    if (sw_cont.Software is HmiSoftware hmi_software)
+                    {
+                        HmiScreenComposition screens = hmi_software.Screens;
+                        handleUnifiedScreens(child_handler, screens);
+                        HmiTagTableComposition tags = hmi_software.TagTables;
+                        handleUnifiedTagTables(child_handler, tags);
                     }
                 }
 

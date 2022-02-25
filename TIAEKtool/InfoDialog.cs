@@ -13,6 +13,7 @@ using Siemens.Engineering.HW;
 using Siemens.Engineering.SW;
 using System.Threading;
 using TIAEKtool;
+using Siemens.Engineering.HmiUnified.HmiTags;
 
 namespace TIAtool
 {
@@ -87,24 +88,40 @@ namespace TIAtool
             try
             {
                 TreeNode node = blockTree.SelectedNode;
-                if (node.Tag is IEngineeringObject)
+               
+                attrList.Items.Clear();
+                if (node.Tag is HmiTag hmi_tag)
                 {
-                    attrList.Items.Clear();
-                    IEngineeringObject ie = node.Tag as IEngineeringObject;
-                    foreach (EngineeringAttributeInfo ai in ie.GetAttributeInfos())
+                    attrList.Items.Add(new ListViewItem(new String[] { "DataType", hmi_tag.DataType }));
+                    attrList.Items.Add(new ListViewItem(new String[] { "Connection", hmi_tag.Connection }));
+                    attrList.Items.Add(new ListViewItem(new String[] { "HmiDataType", hmi_tag.HmiDataType }));
+                    attrList.Items.Add(new ListViewItem(new String[] { "PlcName", hmi_tag.PlcName }));
+                    attrList.Items.Add(new ListViewItem(new String[] { "PlcTag", hmi_tag.PlcTag }));
+                }
+                else if (node.Tag is IEngineeringObject ie)
+                {
+                    try
                     {
-                        Object value = ie.GetAttribute(ai.Name);
-                        String valStr;
-                        if (value != null)
+                        foreach (EngineeringAttributeInfo ai in ie.GetAttributeInfos())
                         {
-                            valStr = value.ToString();
-                        }
-                        else
-                        {
-                            valStr = "(null)";
-                        }
-                        attrList.Items.Add(new ListViewItem(new String[] { ai.Name, valStr }));
+                            Object value = ie.GetAttribute(ai.Name);
+                            String valStr;
+                            if (value != null)
+                            {
+                                valStr = value.ToString();
+                            }
+                            else
+                            {
+                                valStr = "(null)";
+                            }
+                            attrList.Items.Add(new ListViewItem(new String[] { ai.Name, valStr }));
 
+                        }
+                        attrList.Items.Add(new ListViewItem(new String[] {"Parent", ie.Parent.ToString() }));
+                    }
+                    catch (Exception ex)
+                    {
+                        attrList.Items.Add(new ListViewItem(new String[] { "Exception", ex.ToString() }));
                     }
                 }
                 if (node.Tag is Siemens.Engineering.SW.Blocks.PlcBlock

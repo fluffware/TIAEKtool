@@ -7,12 +7,13 @@
     <ProjectGuid>{B3D78D33-58BC-465C-A5AF-60517D160ACB}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>TIAEKtool</RootNamespace>
-    <AssemblyName>TIAEKtool_V16</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <AssemblyName>TIAEKtool_V17</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>H:\Program\TIAEKtool\V16\</PublishUrl>
+    <TargetFrameworkProfile />
+    <PublishUrl>H:\Program\TIAEKtool\V17\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -22,7 +23,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationRevision>19</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -75,13 +76,13 @@
     <Reference Include="FastMember, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FastMember.1.3.0\lib\net45\FastMember.dll</HintPath>
     </Reference>
-    <Reference Include="Siemens.Engineering, Version=15.1.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
+    <Reference Include="Siemens.Engineering, Version=16.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Siemens\Automation\Portal V16\PublicAPI\V16\Siemens.Engineering.dll</HintPath>
+      <HintPath>C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll</HintPath>
     </Reference>
-    <Reference Include="Siemens.Engineering.Hmi, Version=15.1.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
+    <Reference Include="Siemens.Engineering.Hmi, Version=16.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Siemens\Automation\Portal V16\PublicAPI\V16\Siemens.Engineering.Hmi.dll</HintPath>
+      <HintPath>C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.Hmi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -109,6 +110,8 @@
     <Compile Include="BrowseDialog.Designer.cs">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CreatePresetUnifiedSettingsPopupTask.cs" />
+    <Compile Include="CreatePresetUnifiedHmiTagsTask.cs" />
     <Compile Include="DeleteHmiTextListTask.cs" />
     <Compile Include="CreatePlcCompileTask.cs" />
     <Compile Include="MessageTask.cs" />
@@ -246,6 +249,7 @@
     <EmbeddedResource Include="WaitConnection.resx">
       <DependentUpon>WaitConnection.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

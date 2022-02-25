@@ -151,12 +151,18 @@ namespace PLC.Types
             else if (type is STRING)
             {
                 STRING string_type = new STRING();
-                if (!MatchSymbol("[", str, out str)) return null;
-                Constant capacity = ParseConstant(str, out str);
-                if (capacity == null) return null;
-                if (!MatchSymbol("]", str, out str)) return null;
-                left = str;
-                string_type.Capacity = capacity;
+                if (!MatchSymbol("[", str, out str))
+                {
+                    string_type.Capacity = new IntegerLiteral(254);
+                }
+                else
+                {
+                    Constant capacity = ParseConstant(str, out str);
+                    if (capacity == null) return null;
+                    if (!MatchSymbol("]", str, out str)) return null;
+                    left = str;
+                    string_type.Capacity = capacity;
+                }
                 return string_type;
             }
             else if (type is STRUCT)

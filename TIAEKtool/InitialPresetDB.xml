@@ -12,7 +12,7 @@
       <HeaderName />
       <HeaderVersion>0.1</HeaderVersion>
       <Interface>
-        <Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
+        <Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
           <Section Name="Static">
           </Section>
         </Sections>
