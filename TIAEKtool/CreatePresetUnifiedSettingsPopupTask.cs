@@ -33,7 +33,7 @@ namespace TIAEKtool
             popupName = popup_name;
             groupName = group_name;
             this.culture = culture;
-            Description = "Create preset popup screen " + popupName;
+            Description = TIAutils.FindParentDeviceName(folder) + ": Create preset popup screen " + popupName;
            
         }
 

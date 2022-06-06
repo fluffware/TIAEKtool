@@ -2,6 +2,7 @@
 using Siemens.Engineering.Hmi.Screen;
 using Siemens.Engineering.Hmi.Tag;
 using Siemens.Engineering.Hmi.TextGraphicList;
+using Siemens.Engineering.HW;
 using Siemens.Engineering.SW.Blocks;
 using Siemens.Engineering.SW.Types;
 using System;
@@ -341,7 +342,23 @@ namespace TIAEKtool
             }
         }
 
+        static public string FindParentDeviceName(IEngineeringInstance node)
+        {
+            while (node != null)
+            {
+                
+                if (node is Device dev)
+                {
+                    return dev.Name;
+                }
+                
+                node = node.Parent;
+             
+            }
+            return "<unknown>";
+        }
     }
+
 }
 
 

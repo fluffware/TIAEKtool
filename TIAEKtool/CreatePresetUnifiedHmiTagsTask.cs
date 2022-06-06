@@ -30,7 +30,7 @@ namespace TIAEKtool
             dbName = db_name;
             hmiDbName = hmi_db_name;
             this.culture = culture;
-            Description = "Create HMI tag table " + tableName;
+            Description = TIAutils.FindParentDeviceName(tag_tables) + ": Create HMI tag table " + tableName;
         }
         private HmiTag modify_tag(HmiTagComposition tags, string name, string plc_tag, string plc_connection)
         {

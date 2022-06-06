@@ -28,7 +28,7 @@ namespace TIAEKtool
             dbName = db_name;
             hmiDbName = hmi_db_name;
             this.nPresets = nPresets;
-            Description = "Create HMI tag table " + tableName;
+            Description = TIAutils.FindParentDeviceName(folder) + ":Create HMI tag table " + tableName;
         }
 
         protected override void DoWork()
