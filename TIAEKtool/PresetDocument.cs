@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using PLC.Types;
 using System.Globalization;
 using ClosedXML.Excel;
+using System.Drawing;
 
 namespace TIAEKtool
 {
 
-    abstract class PresetDocument
+    public abstract class PresetDocument
     {
         public class PresetInfo
         {
@@ -141,8 +142,8 @@ namespace TIAEKtool
                 rangePresetColorHeader.Merge();
                 rangePresetColorHeader.Style.Font.Bold = true;
                 rangePresetColorHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
-                var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_group.Value.preset_colors, true);
+               
+               //var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(hexcolors, true);
                 for (int i = 0; i < npresets; i++)
                 {
                     int a = (int)preset_group.Value.preset_colors[i] >> 24 & 0xff;
@@ -150,8 +151,10 @@ namespace TIAEKtool
                     int g = (int)preset_group.Value.preset_colors[i] >> 8 & 0xff;
                     int b = (int)preset_group.Value.preset_colors[i] & 0xff;
                     int grey = r *30 + g * 59 + b * 11;
-                    ws.Cell(row_index, i + N_PROPERTIES + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(a, r, g, b);
-                    ws.Cell(row_index, i + N_PROPERTIES + 1).Style.Font.FontColor = grey > 128 * 100 ? XLColor.Black : XLColor.White;
+                    IXLCell cell = ws.Cell(row_index, i + N_PROPERTIES + 1);
+                    cell.Style.Fill.BackgroundColor = XLColor.FromArgb(a, r, g, b);
+                    cell.Style.Font.FontColor = grey > 128 * 100 ? XLColor.Black : XLColor.White;
+                    cell.Value = "#" + r.ToString("X2") + g.ToString("X2") + b.ToString("X2");
                 }
                 row_index++;
 
@@ -251,7 +254,17 @@ namespace TIAEKtool
             }
         }
 
-
+        static public string TimespanToPLCValue(TimeSpan t)
+        {
+            string str = "T#";
+            if (t.TotalMilliseconds == 0) return str + "0s";
+            if (t.Days > 0) str += t.Days + "d";
+            if (t.Hours > 0) str += t.Hours + "h";
+            if (t.Minutes > 0) str += t.Minutes + "m";
+            if (t.Seconds > 0) str += t.Seconds + "s";
+            if (t.Milliseconds > 0) str += t.Milliseconds + "ms";
+            return str;
+        }
 
         static public void Load(string file, out Dictionary<string, PresetGroup> preset_groups, string culture)
         {
@@ -298,27 +311,62 @@ namespace TIAEKtool
                 }
                 var name_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
                 string[] names = name_range.Cells().Select(x => x.Value as string).ToArray<string>();
-                var group = new PresetGroup();
-                group.preset_names = names;
+                var group = new PresetGroup
+                {
+                    preset_names = names
+                };
 
                 row_index += 1;
 
                 var preset_color_cell = ws.Cell(row_index, 1);
                 if (preset_color_cell.Value as string != "Color")
                 {
-                    throw new Exception("Failed to find row starting with 'Color index' in worksheet " + ws.Name);
+                    throw new Exception("Failed to find row starting with 'Color' in worksheet " + ws.Name);
                 }
                 var color_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
-                uint[] colors = color_range.Cells().Select(x => x.GetValue<uint>()).ToArray<uint>();
-                group.preset_colors = colors;
+                List<uint> colors = new List<uint>();
+                foreach (IXLCell cell in color_range.Cells()) {
+                    string color_str = cell.GetValue<string>().Trim();
+                    uint color = (uint)0xff << 24; //Opaque
+                    if (color_str.Length > 0)
+                    {
+                        if (color_str[0] != '#') throw new Exception("Color must start with '#' in cell " + cell.Address.ToString() + " in " + ws.Name);
+                        color |= Convert.ToUInt32(color_str.Substring(1, 2), 16) << 16;
+                        color |= Convert.ToUInt32(color_str.Substring(3, 2), 16) << 8;
+                        color |= Convert.ToUInt32(color_str.Substring(5, 2), 16);
+                        
+                       
+                    } else
+                    {
+                        Color cell_color = Color.Black;
+                        switch (cell.Style.Fill.BackgroundColor.ColorType)
+                        {
+                            case XLColorType.Theme:
+                                cell_color = wb.Theme.ResolveThemeColor(cell.Style.Fill.BackgroundColor.ThemeColor).Color;
+                                break;
+                            case XLColorType.Color:
+                                cell_color = cell.Style.Fill.BackgroundColor.Color;
+                                break;
+                            case XLColorType.Indexed:
+                                cell_color = XLColor.FromIndex(cell.Style.Fill.BackgroundColor.Indexed).Color;
+                                break;
+                        }
+                        color |= ((uint)cell_color.R << 16) | ((uint)cell_color.G << 8) | cell_color.B;
+                    }
+                    colors.Add(color);
+                }
+
+                group.preset_colors = colors.ToArray();
 
                 row_index += 2;
 
                 group.presets = new List<PresetInfo>();
                 while (ws.Cell(row_index, 3).Value is string path_str) {
                     if (path_str.Length == 0) break;
-                    PresetInfo info = new PresetInfo();
-                    info.tag = new PresetTag();
+                    PresetInfo info = new PresetInfo
+                    {
+                        tag = new PresetTag()
+                    };
                     try
                     {
                         info.tag.readTagPath = PathComponentUtils.ParsePath(path_str);
@@ -332,11 +380,7 @@ namespace TIAEKtool
                         throw new Exception("Invalid type for tag " + path_str + " in " + ws.Name);
                     }
                     DataType value_type = DataTypeParser.Parse(type_str, out string left);
-                    if (value_type == null)
-                    {
-                        throw new Exception("Failed to parse type "+type_str+" for tag " + path_str + " in " + ws.Name);
-                    }
-                    info.tag.readTagPath.Type = value_type;
+                    info.tag.readTagPath.Type = value_type ?? throw new Exception("Failed to parse type "+type_str+" for tag " + path_str + " in " + ws.Name);
                     info.values = new object[max_preset_index];
                     info.enabled = new bool?[max_preset_index];
                     
@@ -350,6 +394,21 @@ namespace TIAEKtool
                             info.enabled[preset_index] = bg.A == 255 && bg.R * 11 < bg.G * 10 && bg.B * 11 < bg.G * 10;
 
                             object cell_value = cell.Value;
+
+
+                            if (value_type is PLC.Types.TIME)
+                            {
+                                if (cell_value is string ts)
+                                {
+                                    info.values[preset_index] = ts;
+                                }
+                                else
+                                {
+                                    throw new Exception("Invalid time in cell " + cell.Address.ToString() + " in " + ws.Name);
+                                }
+
+                            }
+                            else
                             if (value_type is PLC.Types.Integer || value_type is PLC.Types.BitString)
                             {
                                 if (cell_value is double v)
@@ -360,7 +419,8 @@ namespace TIAEKtool
                                 {
                                     var parts = str.Split(new char[] { ':' });
                                     info.values[preset_index] = long.Parse(parts[0]);
-                                } else
+                                }
+                                else
                                 {
                                     throw new Exception("Invalid integer in cell " + cell.Address.ToString() + " in " + ws.Name);
                                 }
@@ -398,7 +458,11 @@ namespace TIAEKtool
                                 }
 
                             }
-                            
+                            else if (value_type is PLC.Types.STRING)
+                            {
+                                info.values[preset_index] = cell_value.ToString();
+                            }
+
                         }
 
                     }

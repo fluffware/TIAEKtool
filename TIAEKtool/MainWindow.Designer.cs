@@ -83,7 +83,7 @@
             this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
             this.quitToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
             this.quitToolStripMenuItem.Text = "Quit";
-            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
+            this.quitToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
             // 
             // tIAPortalToolStripMenuItem
             // 
@@ -100,21 +100,21 @@
             this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
             this.connectToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.connectToolStripMenuItem.Text = "Connect";
-            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
+            this.connectToolStripMenuItem.Click += new System.EventHandler(this.ConnectToolStripMenuItemClick);
             // 
             // disconnectToolStripMenuItem
             // 
             this.disconnectToolStripMenuItem.Name = "disconnectToolStripMenuItem";
             this.disconnectToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.disconnectToolStripMenuItem.Text = "Disconnect";
-            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.disconnectToolStripMenuItem_Click);
+            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.DisconnectToolStripMenuItemClick);
             // 
             // browseToolStripMenuItem
             // 
             this.browseToolStripMenuItem.Name = "browseToolStripMenuItem";
             this.browseToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.browseToolStripMenuItem.Text = "Browse";
-            this.browseToolStripMenuItem.Click += new System.EventHandler(this.browseToolStripMenuItem_Click);
+            this.browseToolStripMenuItem.Click += new System.EventHandler(this.BrowseToolStripMenuItem_Click);
             // 
             // languageToolStripMenuItem
             // 
@@ -136,14 +136,14 @@
             this.startTIAOpToolStripMenuItem.Name = "startTIAOpToolStripMenuItem";
             this.startTIAOpToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.startTIAOpToolStripMenuItem.Text = "Start TIA op";
-            this.startTIAOpToolStripMenuItem.Click += new System.EventHandler(this.startTIAOpToolStripMenuItem_Click);
+            this.startTIAOpToolStripMenuItem.Click += new System.EventHandler(this.StartTIAOpToolStripMenuItem_Click);
             // 
             // startSyncTIAOpToolStripMenuItem
             // 
             this.startSyncTIAOpToolStripMenuItem.Name = "startSyncTIAOpToolStripMenuItem";
             this.startSyncTIAOpToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.startSyncTIAOpToolStripMenuItem.Text = "Start sync TIA op";
-            this.startSyncTIAOpToolStripMenuItem.Click += new System.EventHandler(this.startSyncTIAOpToolStripMenuItem_Click);
+            this.startSyncTIAOpToolStripMenuItem.Click += new System.EventHandler(this.StartSyncTIAOpToolStripMenuItemClick);
             // 
             // projectTreeView
             // 
@@ -179,7 +179,7 @@
             this.btn_connect.TabIndex = 0;
             this.btn_connect.Text = "Connect";
             this.btn_connect.UseVisualStyleBackColor = true;
-            this.btn_connect.Click += new System.EventHandler(this.btn_connect_Click);
+            this.btn_connect.Click += new System.EventHandler(this.BtnConnectClick);
             // 
             // btn_disconnect
             // 
@@ -189,7 +189,7 @@
             this.btn_disconnect.TabIndex = 1;
             this.btn_disconnect.Text = "Disconnect";
             this.btn_disconnect.UseVisualStyleBackColor = true;
-            this.btn_disconnect.Click += new System.EventHandler(this.btn_disconnect_Click);
+            this.btn_disconnect.Click += new System.EventHandler(this.BtnDisconnectClick);
             // 
             // btn_preset
             // 
@@ -199,7 +199,7 @@
             this.btn_preset.TabIndex = 2;
             this.btn_preset.Text = "Preset";
             this.btn_preset.UseVisualStyleBackColor = true;
-            this.btn_preset.Click += new System.EventHandler(this.btn_preset_Click);
+            this.btn_preset.Click += new System.EventHandler(this.BtnPresetClick);
             // 
             // btn_preset_import
             // 
@@ -209,7 +209,7 @@
             this.btn_preset_import.TabIndex = 5;
             this.btn_preset_import.Text = "Import Preset";
             this.btn_preset_import.UseVisualStyleBackColor = true;
-            this.btn_preset_import.Click += new System.EventHandler(this.btn_preset_import_Click);
+            this.btn_preset_import.Click += new System.EventHandler(this.BtnPresetImportClick);
             // 
             // btn_hmi_tags
             // 
@@ -219,7 +219,7 @@
             this.btn_hmi_tags.TabIndex = 3;
             this.btn_hmi_tags.Text = "HMI tags";
             this.btn_hmi_tags.UseVisualStyleBackColor = true;
-            this.btn_hmi_tags.Click += new System.EventHandler(this.btn_hmi_tags_Click);
+            this.btn_hmi_tags.Click += new System.EventHandler(this.BtnHmiTagsClick);
             // 
             // btn_copy
             // 
@@ -229,7 +229,7 @@
             this.btn_copy.TabIndex = 4;
             this.btn_copy.Text = "Copy";
             this.btn_copy.UseVisualStyleBackColor = true;
-            this.btn_copy.Click += new System.EventHandler(this.btn_copy_Click);
+            this.btn_copy.Click += new System.EventHandler(this.BtnCopyClick);
             // 
             // tableLayoutPanel1
             // 
@@ -260,7 +260,7 @@
             this.btn_compile_download.TabIndex = 6;
             this.btn_compile_download.Text = "Compl/Dld";
             this.btn_compile_download.UseVisualStyleBackColor = true;
-            this.btn_compile_download.Click += new System.EventHandler(this.btn_compile_download_Click);
+            this.btn_compile_download.Click += new System.EventHandler(this.BtnCompileDownloadClick);
             // 
             // MainForm
             // 

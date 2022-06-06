@@ -14,10 +14,10 @@ namespace TIAEKtool
 {
     public class CreateHmiTextListTask : SequentialTask
     {
-        TiaPortal portal;
-        TextListComposition text_lists;
-        string list_name;
-        IDictionary<int, MultilingualText> texts;
+        readonly TiaPortal portal;
+        readonly TextListComposition text_lists;
+        readonly string list_name;
+        readonly IDictionary<int, MultilingualText> texts;
         private readonly IEnumerable<String> cultures;
        
 

@@ -124,6 +124,11 @@ namespace TIAtool
                         attrList.Items.Add(new ListViewItem(new String[] { "Exception", ex.ToString() }));
                     }
                 }
+                else if (node.Tag is Siemens.Engineering.Hmi.TextGraphicList.TextList text_list)
+                {
+
+                    attrList.Items.Add(new ListViewItem(new String[] { "Name", text_list.Name }));
+                }
                 if (node.Tag is Siemens.Engineering.SW.Blocks.PlcBlock
                     || node.Tag is Siemens.Engineering.Hmi.Screen.Screen
                     || node.Tag is Siemens.Engineering.Hmi.Screen.ScreenTemplate

@@ -29,7 +29,7 @@ namespace TIAEKtool
         static class FindHMI
         {
             // Device items
-            private static void handleDeviceItem(IList<HmiTarget> hmi, DeviceItem item)
+            private static void HandleDeviceItem(IList<HmiTarget> hmi, DeviceItem item)
             {
 
                 SoftwareContainer sw_cont = item.GetService<SoftwareContainer>();
@@ -46,7 +46,7 @@ namespace TIAEKtool
             {
                 foreach (DeviceItem item in items)
                 {
-                    handleDeviceItem(hmi, item);
+                    HandleDeviceItem(hmi, item);
                 }
             }
 
@@ -78,16 +78,16 @@ namespace TIAEKtool
             }
         }
         protected PresetTagList presetList;
-        TagParser parser;
-        PlcBlockGroup resultGroup;
-        PlcTypeGroup typeGroup;
-        PlcSoftware plcSoftware;
+        readonly TagParser parser;
+        readonly PlcBlockGroup resultGroup;
+        readonly PlcTypeGroup typeGroup;
+        readonly PlcSoftware plcSoftware;
 
-        IList<HmiTarget> hmiTargets;
-        IList<HmiSoftware> hmiSoftware;
+        readonly IList<HmiTarget> hmiTargets;
+        readonly IList<HmiSoftware> hmiSoftware;
         TaskDialog task_dialog;
-        TiaPortal tiaPortal;
-        MessageLog log = new MessageLog();
+        readonly TiaPortal tiaPortal;
+        readonly MessageLog log = new MessageLog();
         public PresetGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiTarget> hmiTargets, List<HmiSoftware> hmiSoftware, string culture)
         {
             InitializeComponent();
@@ -177,15 +177,15 @@ namespace TIAEKtool
 
         }
 
-        private Dictionary<string, List<PresetTag>> tagGroups(PresetTagList presets)
+        private Dictionary<string, List<PresetTag>> TagGroups(PresetTagList presets)
         {
             Dictionary<string, List<PresetTag>> tag_groups = new Dictionary<string, List<PresetTag>>();
             foreach (PresetTagList.Row r in presets)
             {
-                List<PresetTag> tags;
                 // Add the tags to all groups in the tag
-                foreach (string group_name in r.Tag.presetGroups) {
-                    if (!tag_groups.TryGetValue(group_name, out tags))
+                foreach (string group_name in r.Tag.presetGroups)
+                {
+                    if (!tag_groups.TryGetValue(group_name, out List<PresetTag> tags))
                     {
                         tags = new List<PresetTag>();
                     }
@@ -224,7 +224,7 @@ namespace TIAEKtool
                 }
             }
             // Sort the groups into separate lists of tags
-            Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
+            Dictionary<string, List<PresetTag>> tag_groups = TagGroups(presetList);
           
 
             ConstantLookup constants = new ConstantLookup();
@@ -389,20 +389,20 @@ namespace TIAEKtool
             task_dialog.Show();
         }
 
-        private PlcBlock findPlcBlockName(string name, PlcBlockGroup blocks)
+        private PlcBlock FindPlcBlockName(string name, PlcBlockGroup blocks)
         {
             PlcBlock block = blocks.Blocks.Find(name);
             if (block == null)
             {
                 foreach (PlcBlockGroup group in blocks.Groups)
                 {
-                    block = findPlcBlockName(name, group);
+                    block = FindPlcBlockName(name, group);
                     if (block != null) break;
                 }
             }
             return block;
         }
-        private PlcBlock findPlcBlock(PathComponent path, PlcBlockGroup blocks)
+        private PlcBlock FindPlcBlock(PathComponent path, PlcBlockGroup blocks)
         {
             while (path.Parent != null)
             {
@@ -411,10 +411,10 @@ namespace TIAEKtool
             if (!(path is MemberComponent)) return null;
             string name = ((MemberComponent)path).Name;
             Console.WriteLine("Name "+name);
-            return findPlcBlockName(name,blocks);
+            return FindPlcBlockName(name,blocks);
         }
 
-        private void exportButton_Click(object sender, EventArgs e)
+        private void ExportButton_Click(object sender, EventArgs e)
         {
 
             if (savePresetList.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -424,7 +424,7 @@ namespace TIAEKtool
                     ConstantLookup constants = new ConstantLookup();
                     constants.Populate(tiaPortal, plcSoftware);
 
-                    Dictionary<string, List<PresetTag>> tag_groups = tagGroups(presetList);
+                    Dictionary<string, List<PresetTag>> tag_groups = TagGroups(presetList);
 
                     PlcBlockGroup plc_preset_group = plcSoftware.BlockGroup.Groups.Find("Preset");
                     if (plc_preset_group == null)
@@ -493,7 +493,7 @@ namespace TIAEKtool
             }
         }
 
-        private void cultureComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void CultureComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             presetList.Culture = cultureComboBox.SelectedItem.ToString();
         }

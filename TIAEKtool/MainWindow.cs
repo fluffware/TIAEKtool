@@ -57,23 +57,22 @@ namespace TIAtool
             return sw_cont != null;
         }
 
-        protected void langClicked(object sender, EventArgs e)
+        protected void LangClicked(object sender, EventArgs e)
         {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-            if (item != null)
+            if (sender is ToolStripMenuItem item)
             {
                 culture = (string)item.Tag;
             }
         }
 
-        protected void langDropDownOpened(object sender, EventArgs e)
+        protected void LangDropDownOpened(object sender, EventArgs e)
         {
             if (sender is ToolStripMenuItem)
             {
                 foreach (ToolStripDropDownItem item in ((ToolStripDropDownItem)sender).DropDownItems)
                 {
-                    ToolStripMenuItem menu_item = item as ToolStripMenuItem;
-                    if (menu_item != null)
+            
+                    if (item is ToolStripMenuItem menu_item)
                     {
                         menu_item.Checked = (culture.Equals(item.Tag));
                     }
@@ -95,7 +94,7 @@ namespace TIAtool
         }
 
         // After a tree node's Checked property is changed, all its child nodes are updated to the same value.
-        private void node_AfterCheck(object sender, TreeViewEventArgs e)
+        private void NodeAfterCheck(object sender, TreeViewEventArgs e)
         {
             // The code only executes if the user caused the checked state to change.
             if (e.Action != TreeViewAction.Unknown)
@@ -115,7 +114,7 @@ namespace TIAtool
             builder.Leaf = ProjectLeaf;
 
             projectTreeView.Nodes.Clear();
-            projectTreeView.AfterCheck += node_AfterCheck;
+            projectTreeView.AfterCheck += NodeAfterCheck;
             builder.StartBuild(projectTreeView.Nodes);
 
             if (tiaPortal.Projects.Count > 0)
@@ -126,13 +125,16 @@ namespace TIAtool
                 culture = proj.LanguageSettings.EditingLanguage.Culture.Name;
                 foreach (Language l in langs)
                 {
-                    ToolStripMenuItem item = new ToolStripMenuItem(l.Culture.Name);
-                    item.Tag = l.Culture.Name;
-                    item.Click += langClicked;
+                    ToolStripMenuItem item = new ToolStripMenuItem(l.Culture.Name)
+                    {
+                        Text = l.Culture.Name,
+
+                    };
+                    item.Click += LangClicked;
 
                     languageToolStripMenuItem.DropDownItems.Add(item);
                 }
-                languageToolStripMenuItem.DropDownOpened += langDropDownOpened;
+                languageToolStripMenuItem.DropDownOpened += LangDropDownOpened;
 
             }
 
@@ -199,7 +201,7 @@ namespace TIAtool
             }
         }
         PortalSelect select_dialog = null;
-        private void connectToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ConnectToolStripMenuItemClick(object sender, EventArgs e)
         {
 
 
@@ -238,7 +240,7 @@ namespace TIAtool
 
         }
 
-        private void disconnectToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DisconnectToolStripMenuItemClick(object sender, EventArgs e)
         {
             if (tiaPortal != null)
             {
@@ -260,16 +262,17 @@ namespace TIAtool
 
 
         InfoDialog browse_dialog;
-        private void browseToolStripMenuItem_Click(object sender, EventArgs e)
+        private void BrowseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tiaPortal != null)
             {
                 if (browse_dialog == null)
                 {
-                    browse_dialog = new InfoDialog(tiaThread, tiaPortal);
-
-                    browse_dialog.AutoExpandMaxChildren = 1;
-                    browse_dialog.Text = "Browse TIA portal";
+                    browse_dialog = new InfoDialog(tiaThread, tiaPortal)
+                    {
+                        AutoExpandMaxChildren = 1,
+                        Text = "Browse TIA portal"
+                    };
                 }
                 if (browse_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
@@ -280,28 +283,28 @@ namespace TIAtool
         PresetGenerate presetGenerate;
 
 
-        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
         }
 
 
-        private void btn_connect_Click(object sender, EventArgs e)
+        private void BtnConnectClick(object sender, EventArgs e)
         {
-            connectToolStripMenuItem_Click(sender, e);
+            ConnectToolStripMenuItemClick(sender, e);
         }
 
-        private void btn_disconnect_Click(object sender, EventArgs e)
+        private void BtnDisconnectClick(object sender, EventArgs e)
         {
-            disconnectToolStripMenuItem_Click(sender, e);
+            DisconnectToolStripMenuItemClick(sender, e);
         }
 
 
-        private bool find_plc(TreeNodeCollection nodes, ref PlcSoftware plc)
+        private bool FindPlc(TreeNodeCollection nodes, ref PlcSoftware plc)
         {
             foreach (TreeNode n in nodes)
             {
-                if (!find_plc(n.Nodes, ref plc)) return false;
+                if (!FindPlc(n.Nodes, ref plc)) return false;
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
@@ -324,11 +327,11 @@ namespace TIAtool
             return true;
         }
 
-        private void find_plcs(TreeNodeCollection nodes, ref List<PlcSoftware> plcs)
+        private void FindPlcs(TreeNodeCollection nodes, ref List<PlcSoftware> plcs)
         {
             foreach (TreeNode n in nodes)
             {
-                find_plcs(n.Nodes, ref plcs);
+                FindPlcs(n.Nodes, ref plcs);
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
@@ -346,19 +349,18 @@ namespace TIAtool
             }
            
         }
-        private bool find_hmi(TreeNodeCollection nodes, ref HmiTarget hmi)
+        private bool FindHmi(TreeNodeCollection nodes, ref HmiTarget hmi)
         {
             foreach (TreeNode n in nodes)
             {
-                if (!find_hmi(n.Nodes, ref hmi)) return false;
+                if (!FindHmi(n.Nodes, ref hmi)) return false;
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
 
                 if (sw_cont != null)
                 {
-                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
-                    if (hmi_target != null)
+                    if (sw_cont.Software is HmiTarget hmi_target)
                     {
                         if (hmi != null)
                         {
@@ -372,19 +374,18 @@ namespace TIAtool
         }
 
      
-        private void find_hmis(TreeNodeCollection nodes, ref List<HmiTarget> hmis)
+        private void FindHmis(TreeNodeCollection nodes, ref List<HmiTarget> hmis)
         {
             foreach (TreeNode n in nodes)
             {
-                find_hmis(n.Nodes, ref hmis);
+                FindHmis(n.Nodes, ref hmis);
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
 
                 if (sw_cont != null)
                 {
-                    HmiTarget hmi_target = sw_cont.Software as HmiTarget;
-                    if (hmi_target != null)
+                    if (sw_cont.Software is HmiTarget hmi_target)
                     {
                         hmis.Add(hmi_target);
                     }
@@ -392,11 +393,11 @@ namespace TIAtool
             }
         }
 
-        private void find_unified_hmis(TreeNodeCollection nodes, ref List<HmiSoftware> hmis)
+        private void FindUnifiedHmis(TreeNodeCollection nodes, ref List<HmiSoftware> hmis)
         {
             foreach (TreeNode n in nodes)
             {
-                find_unified_hmis(n.Nodes, ref hmis);
+                FindUnifiedHmis(n.Nodes, ref hmis);
                 if (!n.Checked) continue;
                 if (!(n.Tag is DeviceItem)) continue;
                 SoftwareContainer sw_cont = ((DeviceItem)n.Tag).GetService<SoftwareContainer>();
@@ -409,10 +410,10 @@ namespace TIAtool
                 }
             }
         }
-        private void btn_preset_Click(object sender, EventArgs e)
+        private void BtnPresetClick(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
-            if (!find_plc(projectTreeView.Nodes, ref plc))
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
             {
                 MessageBox.Show("More than one PLC is selected");
                 return;
@@ -424,19 +425,19 @@ namespace TIAtool
                 return;
             }
             List<HmiTarget> hmis = new List<HmiTarget>();
-            find_hmis(projectTreeView.Nodes, ref hmis);
+            FindHmis(projectTreeView.Nodes, ref hmis);
             List<HmiSoftware> unified_hmis = new List<HmiSoftware>();
-            find_unified_hmis(projectTreeView.Nodes, ref unified_hmis);
+            FindUnifiedHmis(projectTreeView.Nodes, ref unified_hmis);
             presetGenerate = new PresetGenerate(tiaPortal, plc.BlockGroup, hmis, unified_hmis, culture);
             presetGenerate.ShowDialog();
 
 
         }
 
-        private void btn_hmi_tags_Click(object sender, EventArgs e)
+        private void BtnHmiTagsClick(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
-            if (!find_plc(projectTreeView.Nodes, ref plc))
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
             {
                 MessageBox.Show("More than one PLC is selected");
                 return;
@@ -449,7 +450,7 @@ namespace TIAtool
             }
 
             HmiTarget hmi = null;
-            if (!find_hmi(projectTreeView.Nodes, ref hmi))
+            if (!FindHmi(projectTreeView.Nodes, ref hmi))
             {
                 MessageBox.Show("More than one HMI device is selected");
                 return;
@@ -476,17 +477,17 @@ namespace TIAtool
             hmi_tags.ShowDialog();
         }
 
-        private void btn_copy_Click(object sender, EventArgs e)
+        private void BtnCopyClick(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
-            if (!find_plc(projectTreeView.Nodes, ref plc))
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
             {
                 MessageBox.Show("More than one PLC is selected");
                 return;
             }
 
             HmiTarget hmi = null;
-            if (!find_hmi(projectTreeView.Nodes, ref hmi))
+            if (!FindHmi(projectTreeView.Nodes, ref hmi))
             {
                 MessageBox.Show("More than one HMI device is selected");
                 return;
@@ -529,13 +530,13 @@ namespace TIAtool
 
 
         }
-        private void startTIAOpToolStripMenuItem_Click(object sender, EventArgs e)
+        private void StartTIAOpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             TIAAsyncWrapper.Task task = new TaskDebug();
             tiaThread.RunAsync(task);
         }
 
-        private void startSyncTIAOpToolStripMenuItem_Click(object sender, EventArgs e)
+        private void StartSyncTIAOpToolStripMenuItemClick(object sender, EventArgs e)
         {
             object res = tiaThread.RunSync((object arg) =>
             {
@@ -621,10 +622,10 @@ namespace TIAtool
         }
       
 
-        private void btn_preset_import_Click(object sender, EventArgs e)
+        private void BtnPresetImportClick(object sender, EventArgs e)
         {
             PlcSoftware plc = null;
-            if (!find_plc(projectTreeView.Nodes, ref plc))
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
             {
                 MessageBox.Show("More than one PLC is selected");
                 return;
@@ -660,12 +661,12 @@ namespace TIAtool
             }
         }
 
-        private void btn_compile_download_Click(object sender, EventArgs e)
+        private void BtnCompileDownloadClick(object sender, EventArgs e)
         {
             var plcs = new List<PlcSoftware>();
-            find_plcs(projectTreeView.Nodes, ref plcs);
+            FindPlcs(projectTreeView.Nodes, ref plcs);
             
-            var hmis = new List<HmiTarget>();
+            //var hmis = new List<HmiTarget>();
             
             
         }

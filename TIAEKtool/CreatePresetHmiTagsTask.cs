@@ -10,14 +10,14 @@ namespace TIAEKtool
 {
     public class CreatePresetHmiTagsTask : SequentialTask
     {
-        TiaPortal portal;
-        TagFolder folder;
-        string tableName;
-        string groupName;
-        string dbName;
-        string hmiDbName;
-        int nPresets;
-        IList<PresetTag> tags;
+        readonly TiaPortal portal;
+        readonly TagFolder folder;
+        readonly string tableName;
+        readonly string groupName;
+        readonly string dbName;
+        readonly string hmiDbName;
+        readonly int nPresets;
+        readonly IList<PresetTag> tags;
         public CreatePresetHmiTagsTask(TiaPortal portal, IList<PresetTag> tags, TagFolder folder, string table_name, string group_name, string db_name, string hmi_db_name, int nPresets)
         {
             this.portal = portal;
@@ -59,8 +59,10 @@ namespace TIAEKtool
                             index++;
                         }
 
-                        ARRAY name_array = new ARRAY();
-                        name_array.MemberType = new STRING();
+                        ARRAY name_array = new ARRAY
+                        {
+                            MemberType = new STRING()
+                        };
                         PathComponent preset_names = new MemberComponent("Names", name_array, new MemberComponent(dbName, new STRUCT()));
                         for (int p = 1; p <= nPresets; p++)
                         {
@@ -68,8 +70,10 @@ namespace TIAEKtool
                             editor.AddIndexedTag("PresetName_" + groupName + "_", p, name.ToString());
                         }
 
-                        ARRAY color_array = new ARRAY();
-                        color_array.MemberType = INT.Type;
+                        ARRAY color_array = new ARRAY
+                        {
+                            MemberType = INT.Type
+                        };
                         PathComponent preset_colors = new MemberComponent("Colors", color_array, new MemberComponent(dbName, new STRUCT()));
                         for (int p = 1; p <= nPresets; p++)
                         {

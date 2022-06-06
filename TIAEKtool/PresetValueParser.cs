@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
 namespace TIAEKtool
 {
-    class PresetValueParser
+    public class PresetValueParser
     {
        
         public MessageLog Log = null;
@@ -167,15 +168,57 @@ namespace TIAEKtool
             return value;
         }
 
+        public static TimeSpan ParseTimeValue(string str)
+        {
+            Match m = Regex.Match(str, @"^(T|TIME)#((?<value>\d+)(?<unit>ms|d|h|m|s)_?)+$");
+            if (!m.Success) throw new Exception("Illegal time vale: " + str);
+
+          
+            Int32 days = 0;
+            Int32 hours = 0;
+            Int32 minutes = 0;
+            Int32 seconds = 0;
+            Int32 milliseconds = 0;
+            var values = m.Groups["value"].Captures;
+            var units = m.Groups["unit"].Captures;
+            for (int i = 0; i < values.Count; i++)
+            {
+
+                int v = Int32.Parse(values[i].Value);
+                switch (units[i].Value)
+                {
+                    case "d":
+                        days = v;
+                        break;
+                    case "h":
+                        hours = v;
+                        break;
+                    case "m":
+                        minutes = v;
+                        break;
+                    case "s":
+                        seconds = v;
+                        break;
+                    case "ms":
+                        milliseconds = v;
+                        break;
+                }
+            }
+
+            return new TimeSpan(days,hours,minutes,seconds,milliseconds);
+        }
         static readonly char[] string_trim = { '\'' };
         public static Object ParseValue(string str, DataType type)
         {
             Object value;
 
 
-            if (type is BitString bits)
+            if (type is BitString)
             {
                 value = ParseInteger(str);
+            } else if (type is TIME)
+            {
+                value = str;
             }
             else if (type is Integer)
             {
@@ -231,6 +274,9 @@ namespace TIAEKtool
             if (value_type is BitString bits)
             {
                 array_type = typeof(int);
+            } else if (value_type is TIME)
+            {
+                array_type = typeof(string);
             }
             else if (value_type is Integer)
             {
@@ -363,19 +409,45 @@ namespace TIAEKtool
             SetStartValues(elem, values, value_type, indices, limits, 0, ref v_index);
         }
 
+        static int GetArrayEndIndex(XmlElement tag_element, string member_name, ConstantLookup constants)
+        {
+            XmlNodeList datatype_nodes = tag_element.SelectNodes(".//if:Member[@Name='Info']/@Datatype", XMLUtil.nameSpaces);
+            if (datatype_nodes.Count != 1)
+            {
+                throw new Exception("Info member has no type");
+            }
+            if (datatype_nodes[0] is XmlAttribute attr)
+            {
+                string datatype = attr.Value;
+                int start = datatype.IndexOf("..\"");
+                if (start < 0) throw new Exception("Info member is not an array");
+                start += 3;
+                int end = datatype.IndexOf("\"]", start);
+                if (end < 0) throw new Exception("Array range does not end with ]");
+                return int.Parse(constants.Lookup(datatype.Substring(start, end - start)).value);
+            } else
+            {
+                throw new Exception("Invalid attribute");
+            }
+        }
         public static string[] GetPresetNames(XmlElement tag_element, ConstantLookup constants)
         {
             List<string> names = new List<string>();
+            int npresets = GetArrayEndIndex(tag_element, "Info", constants);
             XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Name']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
             foreach (XmlElement v in start_values) {
                 names.Add(v.InnerText.Trim('\''));
+            }
+            while(names.Count < npresets)
+            {
+                names.Add("");
             }
             return names.ToArray();
         }
 
         public static void SetPresetNames(XmlElement tag_element, ConstantLookup constants, string[] values)
         {
-            List<string> names = new List<string>();
+          
             XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Name']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
             if (start_values.Count < values.Length)
             {
@@ -390,18 +462,22 @@ namespace TIAEKtool
 
         public static uint[] GetPresetColors(XmlElement tag_element, ConstantLookup constants)
         {
+            int npresets = GetArrayEndIndex(tag_element, "Info", constants);
             List<uint> colors = new List<uint>();
             XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Color']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
             foreach (XmlElement v in start_values)
             {
                 colors.Add(uint.Parse(v.InnerText.Replace("_", String.Empty)));
             }
+            while (colors.Count < npresets)
+            {
+                colors.Add(0);
+            }
             return colors.ToArray();
         }
 
         public static void SetPresetColors(XmlElement tag_element, ConstantLookup constants, uint[] values)
         {
-            List<uint> names = new List<uint>();
             XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Color']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
             if (start_values.Count < values.Length)
             {

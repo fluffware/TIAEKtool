@@ -11,12 +11,12 @@ namespace TIAEKtool
 {
     public class CreatePresetScreenPopupTask : SequentialTask
     {
-        TiaPortal portal;
-       ScreenPopupFolder folder;
-        string popupName;
-        string groupName;
-        XmlDocument templates;
-        IList<PresetTag> tags;
+        readonly TiaPortal portal;
+        readonly ScreenPopupFolder folder;
+        readonly string popupName;
+        readonly string groupName;
+        readonly XmlDocument templates;
+        readonly IList<PresetTag> tags;
         public CreatePresetScreenPopupTask(TiaPortal portal, IList<PresetTag> tags, ScreenPopupFolder folder, XmlDocument templates, string popup_name, string group_name)
         {
             this.portal = portal;

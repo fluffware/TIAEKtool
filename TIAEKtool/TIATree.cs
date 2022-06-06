@@ -2,35 +2,15 @@
 using Siemens.Engineering;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
-using Siemens.Engineering.HW.Utilities;
 using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Blocks;
-using Siemens.Engineering.SW.TechnologicalObjects;
-using Siemens.Engineering.SW.TechnologicalObjects.Motion;
-using Siemens.Engineering.SW.ExternalSources;
-using Siemens.Engineering.SW.Tags;
 using Siemens.Engineering.SW.Types;
 using Siemens.Engineering.Hmi;
-using Siemens.Engineering.Hmi.Tag;
 using Siemens.Engineering.Hmi.Screen;
-using Siemens.Engineering.Hmi.Cycle;
 using Siemens.Engineering.Hmi.Communication;
-using Siemens.Engineering.Hmi.Globalization;
-using Siemens.Engineering.Hmi.TextGraphicList;
-using Siemens.Engineering.Hmi.RuntimeScripting;
 using System.Collections.Generic;
-using Siemens.Engineering.Online;
-using Siemens.Engineering.Compiler;
-using Siemens.Engineering.Library;
-using Siemens.Engineering.Library.Types;
-using Siemens.Engineering.Library.MasterCopies;
-using Siemens.Engineering.Compare;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Threading;
 using TIAEKtool;
 using Siemens.Engineering.HmiUnified;
 using Siemens.Engineering.HmiUnified.UI.Screens;
@@ -79,8 +59,8 @@ namespace TIAtool
 
         public class TreeNodeBuilder
         {
-            public TiaPortal TIA;
-            TIAAsyncWrapper thread;
+            public readonly TiaPortal TIA;
+            readonly TIAAsyncWrapper thread;
 
             public Filter Descend = AlwaysTrue; // Examine child items
             public Filter Leaf = AlwaysTrue; // Include this item even if no child item is included
@@ -90,9 +70,9 @@ namespace TIAtool
           
             class Handler : NodeHandler
             {
-                TreeNodeCollection parent = null;
+                readonly TreeNodeCollection parent = null;
                 TreeNode node = null;
-                TreeNodeBuilder builder;
+                readonly TreeNodeBuilder builder;
                 public Handler(TreeNodeBuilder builder, TreeNodeCollection nodes) {
                     parent = nodes;
                     this.builder = builder;
@@ -140,15 +120,15 @@ namespace TIAtool
 
             class BuildTask : TIAAsyncWrapper.Task
             {
-                TiaPortal TIA;
-                Stack<TreeNode> stack = new Stack<TreeNode>();
-                TreeNodeBuilder builder;
+                readonly TiaPortal TIA;
+                readonly Stack<TreeNode> stack = new Stack<TreeNode>();
+                readonly TreeNodeBuilder builder;
                 private readonly TreeNodeCollection nodes;
-                HandlerAsync handler;
+                readonly HandlerAsync handler;
 
                 class HandlerAsync : NodeHandler
                 {
-                    BuildTask task;
+                    readonly BuildTask task;
 
                     public HandlerAsync(BuildTask task)
                     {
@@ -211,12 +191,13 @@ namespace TIAtool
 
                 public override void Result(object result)
                 {
-                    HandlerAsync.EnterArgs enterArgs = result as HandlerAsync.EnterArgs;
-                    if (enterArgs != null)
+                    if (result is HandlerAsync.EnterArgs enterArgs)
                     {
 
-                        TreeNode node = new TreeNode(enterArgs.name);
-                        node.Tag = enterArgs.obj;
+                        TreeNode node = new TreeNode(enterArgs.name)
+                        {
+                            Tag = enterArgs.obj
+                        };
                         stack.Push(node);
                         Console.WriteLine("Enter: " + node.Text);
                     }
@@ -316,7 +297,7 @@ namespace TIAtool
             handler.Exit(block);
         }
 
-        private static void iterDataBlock(NodeHandler handler, PlcBlockComposition blocks)
+        private static void IterDataBlock(NodeHandler handler, PlcBlockComposition blocks)
         {
             foreach (PlcBlock block in blocks)
             {
@@ -327,13 +308,13 @@ namespace TIAtool
         {
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null) {       
-                iterDataBlock(child_handler, folder.Blocks);
-                iterBlockFolder(child_handler, folder.Groups); 
+                IterDataBlock(child_handler, folder.Blocks);
+                IterBlockFolder(child_handler, folder.Groups); 
             }
             handler.Exit(folder);
         }
 
-        private static void iterBlockFolder(NodeHandler handler, PlcBlockUserGroupComposition folders)
+        private static void IterBlockFolder(NodeHandler handler, PlcBlockUserGroupComposition folders)
         {
             foreach (PlcBlockUserGroup folder in folders)
             {    
@@ -348,7 +329,7 @@ namespace TIAtool
             handler.Exit(type);
         }
 
-        private static void iterType(NodeHandler handler, PlcTypeComposition types)
+        private static void IterType(NodeHandler handler, PlcTypeComposition types)
         {
             foreach (PlcType type in types)
             {
@@ -360,13 +341,13 @@ namespace TIAtool
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null)
             {
-                iterType(child_handler, folder.Types);
-                iterTypeFolder(child_handler, folder.Groups);
+                IterType(child_handler, folder.Types);
+                IterTypeFolder(child_handler, folder.Groups);
             }
             handler.Exit(folder);
         }
 
-        private static void iterTypeFolder(NodeHandler handler, PlcTypeUserGroupComposition folders)
+        private static void IterTypeFolder(NodeHandler handler, PlcTypeUserGroupComposition folders)
         {
             foreach (PlcTypeUserGroup folder in folders)
             {
@@ -381,7 +362,7 @@ namespace TIAtool
             handler.Exit(template);
         }
 
-        private static void iterScreenTemplate(NodeHandler handler,  ScreenTemplateComposition templates)
+        private static void IterScreenTemplate(NodeHandler handler,  ScreenTemplateComposition templates)
         {
             foreach (Siemens.Engineering.Hmi.Screen.ScreenTemplate template in templates)
             {
@@ -389,24 +370,24 @@ namespace TIAtool
             }
         }
 
-        private static void handleScreenTemplateFolder(NodeHandler handler, ScreenTemplateFolder folder)
+        private static void HandleScreenTemplateFolder(NodeHandler handler, ScreenTemplateFolder folder)
         {
             Console.WriteLine("handleScreenTemplateFolder");
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null)
             {
-                iterScreenTemplate(child_handler, folder.ScreenTemplates);
-                iterScreenTemplateFolder(child_handler, folder.Folders);
+                IterScreenTemplate(child_handler, folder.ScreenTemplates);
+                IterScreenTemplateFolder(child_handler, folder.Folders);
             }
             handler.Exit(folder);
         }
 
-        private static void iterScreenTemplateFolder(NodeHandler handler, ScreenTemplateUserFolderComposition folders)
+        private static void IterScreenTemplateFolder(NodeHandler handler, ScreenTemplateUserFolderComposition folders)
         {
             Console.WriteLine("iterScreenTemplateFolder");
             foreach (ScreenTemplateFolder folder in folders)
             {
-                handleScreenTemplateFolder(handler, folder);
+                HandleScreenTemplateFolder(handler, folder);
             }
         }
         // Popups
@@ -416,7 +397,7 @@ namespace TIAtool
             handler.Exit(popup);
         }
 
-        private static void iterScreenPopup(NodeHandler handler, ScreenPopupComposition popups)
+        private static void IterScreenPopup(NodeHandler handler, ScreenPopupComposition popups)
         {
             foreach (Siemens.Engineering.Hmi.Screen.ScreenPopup popup in popups)
             {
@@ -424,24 +405,24 @@ namespace TIAtool
             }
         }
 
-        private static void handleScreenPopupFolder(NodeHandler handler, ScreenPopupFolder folder)
+        private static void HandleScreenPopupFolder(NodeHandler handler, ScreenPopupFolder folder)
         {
             Console.WriteLine("handleScreenPopupFolder");
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null)
             {
-                iterScreenPopup(child_handler, folder.ScreenPopups);
-                iterScreenPopupFolder(child_handler, folder.Folders);
+                IterScreenPopup(child_handler, folder.ScreenPopups);
+                IterScreenPopupFolder(child_handler, folder.Folders);
             }
             handler.Exit(folder);
         }
 
-        private static void iterScreenPopupFolder(NodeHandler handler, ScreenPopupUserFolderComposition folders)
+        private static void IterScreenPopupFolder(NodeHandler handler, ScreenPopupUserFolderComposition folders)
         {
             Console.WriteLine("iterScreenPopupFolder");
             foreach (ScreenPopupFolder folder in folders)
             {
-                handleScreenPopupFolder(handler, folder);
+                HandleScreenPopupFolder(handler, folder);
             }
         }
 
@@ -452,7 +433,7 @@ namespace TIAtool
             handler.Enter(screen, screen.Name);
             handler.Exit(screen);
         }
-        private static void iterScreen(NodeHandler handler, ScreenComposition screens)
+        private static void IterScreen(NodeHandler handler, ScreenComposition screens)
         {
             foreach (Siemens.Engineering.Hmi.Screen.Screen screen in screens)
             {
@@ -460,24 +441,24 @@ namespace TIAtool
             }
         }
 
-        private static void handleScreenFolder(NodeHandler handler, ScreenFolder folder)
+        private static void HandleScreenFolder(NodeHandler handler, ScreenFolder folder)
         {
             Console.WriteLine("handleScreenFolder");
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null)
             {
-                iterScreen(child_handler, folder.Screens);
-                iterScreenFolder(child_handler, folder.Folders);
+                IterScreen(child_handler, folder.Screens);
+                IterScreenFolder(child_handler, folder.Folders);
             }
             handler.Exit(folder);
         }
 
-        private static void iterScreenFolder(NodeHandler handler, ScreenUserFolderComposition folders)
+        private static void IterScreenFolder(NodeHandler handler, ScreenUserFolderComposition folders)
         {
             Console.WriteLine("iterScreenFolder");
             foreach (ScreenFolder folder in folders)
             {
-                handleScreenFolder(handler, folder);
+                HandleScreenFolder(handler, folder);
             }
         }
 
@@ -495,7 +476,7 @@ namespace TIAtool
         }
 
         // Unified screens
-        private static void handleUnifiedScreens(NodeHandler handler, HmiScreenComposition screens)
+        private static void HandleUnifiedScreens(NodeHandler handler, HmiScreenComposition screens)
         {
             NodeHandler screen_handler = handler.Enter(screens, "Screens");
             if (screen_handler != null)
@@ -517,7 +498,7 @@ namespace TIAtool
             }
             handler.Exit(screens);
         }
-        private static void handleUnifiedTagTables(NodeHandler handler, HmiTagTableComposition tag_tables)
+        private static void HandleUnifiedTagTables(NodeHandler handler, HmiTagTableComposition tag_tables)
         {
             NodeHandler tables_handler = handler.Enter(tag_tables, "Tag tables");
             if (tables_handler != null)
@@ -535,11 +516,13 @@ namespace TIAtool
                     }
                     handler.Exit(table);
                 }
+                handler.Exit(tag_tables);
             }
+            handler.Exit(tag_tables);
         }
 
         // Device items
-        private static void handleDeviceItem(NodeHandler handler, DeviceItem item)
+        private static void HandleDeviceItem(NodeHandler handler, DeviceItem item)
         {
             NodeHandler child_handler = handler.Enter(item, item.Name);
             if (child_handler != null)
@@ -552,15 +535,15 @@ namespace TIAtool
                         NodeHandler block_handler = child_handler.Enter(controller.BlockGroup, "Blocks");
                         if (block_handler != null)
                         {
-                            iterDataBlock(block_handler, controller.BlockGroup.Blocks);
-                            iterBlockFolder(block_handler, controller.BlockGroup.Groups);
+                            IterDataBlock(block_handler, controller.BlockGroup.Blocks);
+                            IterBlockFolder(block_handler, controller.BlockGroup.Groups);
                         }
                         child_handler.Exit(controller.BlockGroup);
                         NodeHandler type_handler = child_handler.Enter(controller.TypeGroup, "Types");
                         if (type_handler != null)
                         {
-                            iterType(type_handler, controller.TypeGroup.Types);
-                            iterTypeFolder(block_handler, controller.TypeGroup.Groups);
+                            IterType(type_handler, controller.TypeGroup.Types);
+                            IterTypeFolder(block_handler, controller.TypeGroup.Groups);
                         }
                         child_handler.Exit(controller.TypeGroup);
                     }
@@ -573,8 +556,8 @@ namespace TIAtool
                         if (screen_handler != null)
                         {
                             //Console.WriteLine("Iterating screens");
-                            iterScreen(screen_handler, hmi_target.ScreenFolder.Screens);
-                            iterScreenFolder(screen_handler, hmi_target.ScreenFolder.Folders);
+                            IterScreen(screen_handler, hmi_target.ScreenFolder.Screens);
+                            IterScreenFolder(screen_handler, hmi_target.ScreenFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenFolder);
 
@@ -582,8 +565,8 @@ namespace TIAtool
                         if (template_handler != null)
                         {
                             //Console.WriteLine("Iterating templates");
-                            iterScreenTemplate(template_handler, hmi_target.ScreenTemplateFolder.ScreenTemplates);
-                            iterScreenTemplateFolder(template_handler, hmi_target.ScreenTemplateFolder.Folders);
+                            IterScreenTemplate(template_handler, hmi_target.ScreenTemplateFolder.ScreenTemplates);
+                            IterScreenTemplateFolder(template_handler, hmi_target.ScreenTemplateFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenTemplateFolder);
 
@@ -592,8 +575,8 @@ namespace TIAtool
                         if (popup_handler != null)
                         {
                             //Console.WriteLine("Iterating popups");
-                            iterScreenPopup(template_handler, hmi_target.ScreenPopupFolder.ScreenPopups);
-                            iterScreenPopupFolder(template_handler, hmi_target.ScreenPopupFolder.Folders);
+                            IterScreenPopup(template_handler, hmi_target.ScreenPopupFolder.ScreenPopups);
+                            IterScreenPopupFolder(template_handler, hmi_target.ScreenPopupFolder.Folders);
                         }
                         child_handler.Exit(hmi_target.ScreenPopupFolder);
 
@@ -613,9 +596,9 @@ namespace TIAtool
                     if (sw_cont.Software is HmiSoftware hmi_software)
                     {
                         HmiScreenComposition screens = hmi_software.Screens;
-                        handleUnifiedScreens(child_handler, screens);
+                        HandleUnifiedScreens(child_handler, screens);
                         HmiTagTableComposition tags = hmi_software.TagTables;
-                        handleUnifiedTagTables(child_handler, tags);
+                        HandleUnifiedTagTables(child_handler, tags);
                     }
                 }
 
@@ -636,7 +619,7 @@ namespace TIAtool
         {
             foreach (DeviceItem item in items)
             {
-                handleDeviceItem(handler, item);
+                HandleDeviceItem(handler, item);
             }
         }
 
@@ -673,8 +656,6 @@ namespace TIAtool
         private static void HandleDeviceFolder(NodeHandler handler, DeviceUserGroup folder)
         {
 
-            TreeNode node = new TreeNode(folder.Name);
-            node.Tag = folder;
             NodeHandler child_handler = handler.Enter(folder, folder.Name);
             if (child_handler != null)
             {
@@ -718,8 +699,6 @@ namespace TIAtool
         private static void HandleProject(NodeHandler handler, Project proj)
         {
             FileInfo path = proj.Path;
-            TreeNode node = new TreeNode(path.Name);
-            node.Tag = proj;
             NodeHandler child_handler = handler.Enter(proj, path.Name);
             if (child_handler != null)
             {

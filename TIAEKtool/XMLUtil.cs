@@ -72,8 +72,7 @@ namespace TIAEKtool
             if (top.HasAttribute("ID"))
             {
                 string id_str = top.GetAttribute("ID");
-                int id;
-                if (int.TryParse(id_str, System.Globalization.NumberStyles.HexNumber, null, out id))
+                if (int.TryParse(id_str, System.Globalization.NumberStyles.HexNumber, null, out int id))
                 {
                     idset.Add(id);
 
@@ -81,9 +80,9 @@ namespace TIAEKtool
             }
             foreach (var child in top.ChildNodes)
             {
-                if (child is XmlElement)
+                if (child is XmlElement c)
                 {
-                    CollectID((XmlElement)child, idset);
+                    CollectID(c, idset);
                 }
             }
         }
@@ -98,9 +97,9 @@ namespace TIAEKtool
             }
             foreach (var child in top.ChildNodes)
             {
-                if (child is XmlElement)
+                if (child is XmlElement c)
                 {
-                    ReplaceID((XmlElement)child, idset);
+                    ReplaceID(c, idset);
                 }
             }
         }

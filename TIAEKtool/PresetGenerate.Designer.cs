@@ -224,7 +224,7 @@
             this.exportButton.TabIndex = 1;
             this.exportButton.Text = "Export";
             this.exportButton.UseVisualStyleBackColor = true;
-            this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
+            this.exportButton.Click += new System.EventHandler(this.ExportButton_Click);
             // 
             // savePresetList
             // 
@@ -243,7 +243,7 @@
             this.cultureComboBox.Name = "cultureComboBox";
             this.cultureComboBox.Size = new System.Drawing.Size(121, 21);
             this.cultureComboBox.TabIndex = 2;
-            this.cultureComboBox.SelectedIndexChanged += new System.EventHandler(this.cultureComboBox_SelectedIndexChanged);
+            this.cultureComboBox.SelectedIndexChanged += new System.EventHandler(this.CultureComboBox_SelectedIndexChanged);
             // 
             // PresetGenerate
             // 

@@ -12,9 +12,9 @@ namespace TIAEKtool
 {
     public class CreateHmiPresetConstantTagsTask : SequentialTask
     {
-        TiaPortal portal;
-        TagFolder folder;
-        ConstantLookup constants;
+        readonly TiaPortal portal;
+        readonly TagFolder folder;
+        readonly ConstantLookup constants;
         const string PRESET_CONSTANT_TABLE_NAME = "PresetConstants";
         public CreateHmiPresetConstantTagsTask(TiaPortal portal, TagFolder folder, ConstantLookup constants)
         {
