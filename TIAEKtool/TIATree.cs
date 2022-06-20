@@ -516,7 +516,6 @@ namespace TIAtool
                     }
                     handler.Exit(table);
                 }
-                handler.Exit(tag_tables);
             }
             handler.Exit(tag_tables);
         }
