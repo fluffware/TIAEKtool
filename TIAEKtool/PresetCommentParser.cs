@@ -24,7 +24,7 @@ namespace TIAEKtool
                     String[] groups = group.Split(',');
                     if (preset.presetGroups != null && !preset.presetGroups.Equals(groups))
                     {
-                        group = "<inconsistent>";
+                        groups = new string [] { "<inconsistent>"};
                     }
                     preset.presetGroups = groups;
                     if (preset.labels == null)
@@ -54,32 +54,28 @@ namespace TIAEKtool
                 }
                 else if (type == "preset_precision")
                 {
-                    int value;
-                    if (int.TryParse(data, out value) && value >= 0)
+                    if (int.TryParse(data, out int value) && value >= 0)
                     {
                         preset.precision = value;
                     }
                 }
                 else if (type == "preset_min")
                 {
-                    float value;
-                    if (float.TryParse(data, out value))
+                    if (float.TryParse(data, out float value))
                     {
                         preset.min = value;
                     }
                 }
                 else if (type == "preset_max")
                 {
-                    float value;
-                    if (float.TryParse(data, out value))
+                    if (float.TryParse(data, out float value))
                     {
                         preset.max = value;
                     }
                 }
                 else if (type == "preset_order")
                 {
-                    int value;
-                    if (int.TryParse(data, out value))
+                    if (int.TryParse(data, out int value))
                     {
                         preset.order = value;
                     }
@@ -97,8 +93,7 @@ namespace TIAEKtool
                         {
                             preset.state_labels = new Dictionary<int, MultilingualText>();
                         }
-                        MultilingualText label;
-                        if (preset.state_labels.TryGetValue(value, out label))
+                        if (preset.state_labels.TryGetValue(value, out MultilingualText label))
                         {
                             label.AddText(culture, label_str);
 

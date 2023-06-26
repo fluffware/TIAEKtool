@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TIAEKtool
 {
-    public abstract class PathComponent
+    public abstract class PathComponent :IComparable<PathComponent>, IEquatable<PathComponent>
 
     {
         public PathComponent Parent { get; protected set; }
@@ -50,6 +50,40 @@ namespace TIAEKtool
         public static PathComponent operator + (PathComponent a, PathComponent b) {
             return b.CloneComponent().PrependPath(a.CloneComponent());
         }
+
+        public List<PathComponent> Path()
+        {
+            List<PathComponent> path = new List<PathComponent>();
+            PathComponent c = this;
+            while (c != null)
+            {
+                path.Prepend(c);
+                c = c.Parent;
+            }
+            return path;
+        }
+        public abstract int CompareComponent(PathComponent other);
+        public int CompareTo(PathComponent other)
+        {
+            var other_path = other.Path();
+            var path = Path();
+            // Search for a component that differs
+            foreach (var c in Enumerable.Zip(path, other_path, (a, b) => a.CompareComponent(b))) {
+                if (c != 0)
+                {
+                    return c;
+                }
+            }
+            // Shortest path is smaller
+            return path.Count() - other_path.Count();
+        }
+        public abstract string ToHmiTagName();
+
+        public bool Equals(PathComponent other)
+        {
+            return CompareTo(other) == 0;
+        }
+
     }
 
 
@@ -79,9 +113,28 @@ namespace TIAEKtool
         {
             return ((Parent != null) ? Parent.ToString() + "." : "") + EscapeName(Name);
         }
+        public override string ToHmiTagName()
+        {
+            return ((Parent != null) ? Parent.ToString() + "_" : "") + Name;
+        }
+
         public override PathComponent CloneComponent()
         {
             return new MemberComponent(Name, Type, Parent);
+        }
+
+        public override int CompareComponent(PathComponent other)
+        {
+            if (other is MemberComponent other_member)
+            {
+                return Name.CompareTo(other_member.Name);
+            }
+            return 1; // Members are greater than indices
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode() + ((Parent != null) ? Parent.GetHashCode() : 0);
         }
     }
 
@@ -111,10 +164,45 @@ namespace TIAEKtool
             str.Append("]");
             return str.ToString();
         }
-
+        public override string ToHmiTagName()
+        {
+            StringBuilder str = new StringBuilder(Parent.ToString());
+            str.Append("{");
+            if (Indices.Length >= 1)
+            {
+                str.Append(Indices[0]);
+                for (int i = 1; i < Indices.Length; i++)
+                {
+                    str.Append(",");
+                    str.Append(Indices[i]);
+                }
+            }
+            str.Append("}");
+            return str.ToString();
+        }
         public override PathComponent CloneComponent()
         {
             return new IndexComponent(Indices, Type, Parent);
+        }
+
+        public override int CompareComponent(PathComponent other)
+        {
+            if (other is IndexComponent other_index)
+            {
+                foreach (var c in Enumerable.Zip(Indices, other_index.Indices, (a, b) => a.CompareTo(b)))
+                {
+                    if (c != 0)
+                    {
+                        return c;
+                    }
+                }
+                return Indices.Count() - other_index.Indices.Count();
+            }
+            return -1; // Members are greater than indices
+        }
+
+        public override int GetHashCode() { 
+          return  Indices.Aggregate(0, (int a,int b) => a+b) +  ((Parent != null) ? Parent.GetHashCode() : 0);
         }
     }
     public class PathComponentUtils

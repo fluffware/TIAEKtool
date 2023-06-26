@@ -599,6 +599,7 @@ namespace TIAtool
                     }
                     PresetValueParser.SetPresetNames(static_elem, constants, preset_groups[group_name].preset_names);
                     PresetValueParser.SetPresetColors(static_elem, constants, preset_groups[group_name].preset_colors);
+                    PresetValueParser.SetPresetSymbols(static_elem, constants, preset_groups[group_name].preset_symbols);
                 }
                 else
                 {
@@ -669,6 +670,26 @@ namespace TIAtool
             //var hmis = new List<HmiTarget>();
             
             
+        }
+        AlarmGenerate alarmGenerate;
+        private void BtnAlarmClick(object sender, EventArgs e)
+        {
+            PlcSoftware plc = null;
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            if (plc == null)
+            {
+                MessageBox.Show("No PLC is selected");
+                return;
+            }
+            List<HmiSoftware> unified_hmis = new List<HmiSoftware>();
+            FindUnifiedHmis(projectTreeView.Nodes, ref unified_hmis);
+            alarmGenerate = new AlarmGenerate(tiaPortal, plc.BlockGroup, unified_hmis, culture);
+            alarmGenerate.ShowDialog();
         }
     }
 }

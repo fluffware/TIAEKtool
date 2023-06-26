@@ -23,7 +23,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>23</ApplicationRevision>
+    <ApplicationRevision>25</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -38,6 +38,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -62,6 +64,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\EK.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClosedXML, Version=0.94.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -104,6 +109,20 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alarms\AlarmGenerate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Alarms\AlarmGenerate.Designer.cs">
+      <DependentUpon>AlarmGenerate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Alarms\AlarmCommentParser.cs" />
+    <Compile Include="Alarms\AlarmSink.cs" />
+    <Compile Include="Alarms\AlarmSinkTag.cs" />
+    <Compile Include="Alarms\AlarmTag.cs" />
+    <Compile Include="Alarms\AlarmSinkList.cs" />
+    <Compile Include="Alarms\AlarmTagList.cs" />
+    <Compile Include="Alarms\CreateAlarmUnifiedHmiAlarmsTask.cs" />
+    <Compile Include="Alarms\CreateAlarmUnifiedHmiTagsTask.cs" />
     <Compile Include="BrowseDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -115,6 +134,7 @@
     <Compile Include="DeleteHmiTextListTask.cs" />
     <Compile Include="CreatePlcCompileTask.cs" />
     <Compile Include="MessageTask.cs" />
+    <Compile Include="ParseTextUnified.cs" />
     <Compile Include="PresetDocument.cs" />
     <Compile Include="PresetStoreEnabledSCL.cs" />
     <Compile Include="PresetValueParser.cs" />
@@ -212,6 +232,9 @@
       <DependentUpon>WaitConnection.cs</DependentUpon>
     </Compile>
     <Compile Include="XMLUtil.cs" />
+    <EmbeddedResource Include="Alarms\AlarmGenerate.resx">
+      <DependentUpon>AlarmGenerate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="BrowseDialog.resx">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -321,5 +344,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -136,7 +136,7 @@ namespace TIAEKtool
 
 
 
-            MultilingualText readComment(XmlElement comment_elem)
+            MultilingualText ReadComment(XmlElement comment_elem)
             {
 
                 MultilingualText comment = new MultilingualText();
@@ -167,9 +167,8 @@ namespace TIAEKtool
                     parent_copy = null;
                 }
 
-                if (path is IndexComponent)
+                if (path is IndexComponent ic)
                 {
-                    IndexComponent ic = (IndexComponent)path;
                     int[] indices = new int[ic.Indices.Length];
                     if (!(ic.Parent is MemberComponent && ic.Parent.Type is ARRAY)) throw new Exception("Parent of index component is not an array");
                     ARRAY array_type = (ARRAY)ic.Parent.Type;
@@ -214,9 +213,8 @@ namespace TIAEKtool
                     subs_count = 0;
                 }
 
-                if (path is IndexComponent)
+                if (path is IndexComponent ic)
                 {
-                    IndexComponent ic = (IndexComponent)path;
                     IndexComponent copy = new IndexComponent(new int[ic.Indices.Length], ic.Type, parent_copy);
                     for (int i = 0; i < ic.Indices.Length; i++)
                     {
@@ -238,7 +236,7 @@ namespace TIAEKtool
 
           
             static readonly char[] path_sep = new char[] { ',' };
-            protected void readSubelement(XmlElement subelement, PathComponent parent)
+            protected void ReadSubelement(XmlElement subelement, PathComponent parent)
             {
 
                 string indices_str = subelement.GetAttribute("Path");
@@ -248,12 +246,12 @@ namespace TIAEKtool
                 {
                     indices[i] = int.Parse(index_strings[i]);
                 }
-                PathComponent subs;
-                int subs_count = SubstituteIndices(parent, out subs, (indices as IList<int>).GetEnumerator());
+                
+                int subs_count = SubstituteIndices(parent, out PathComponent subs, (indices as IList<int>).GetEnumerator());
                 if (subs_count != indices.Length)
                 {
-                    if (!(subs is IndexComponent)
-                        || (subs_count != (indices.Length + ((IndexComponent)subs).Indices.Length)))
+                    if (!(subs is IndexComponent ic)
+                        || (subs_count != (indices.Length + ic.Indices.Length)))
                     {
                         throw new Exception("Length of path in subelement doesn't match number of indices in path");
                     }
@@ -265,7 +263,7 @@ namespace TIAEKtool
                 MultilingualText comment = null;
                 if (comment_elem != null)
                 {
-                    comment = readComment(comment_elem);
+                    comment = ReadComment(comment_elem);
                 }
                 if (((options & Options.AllowNoComment) != 0) || comment != null) {
                     handle_tag(new HandleTagEventArgs()
@@ -283,20 +281,18 @@ namespace TIAEKtool
 
 
 
-            protected MemberComponent readMember(XmlElement member_elem, PathComponent parent)
+            protected MemberComponent ReadMember(XmlElement member_elem, PathComponent parent)
             {
                 string name = member_elem.GetAttribute("Name");
 
 
 
                 string type_str = member_elem.GetAttribute("Datatype");
-                string left;
-                DataType type = DataTypeParser.Parse(type_str, out left);
+                DataType type = DataTypeParser.Parse(type_str, out string left);
                 MemberComponent member = new MemberComponent(name, type, parent);
                 PathComponent child_path = member;
-                if (type is ARRAY)
-                {
-                    ARRAY array = (ARRAY)type;
+                if (type is ARRAY array) { 
+                
                     child_path = new IndexComponent(new int[array.Limits.Count], array.MemberType, member);
 
                     if ((options & Options.NoSubelement) != 0)
@@ -318,7 +314,7 @@ namespace TIAEKtool
                 MultilingualText comment = null;
                 if (comment_elem != null)
                 {
-                    comment = readComment(comment_elem);
+                    comment = ReadComment(comment_elem);
                 }
                 if (((options & Options.AllowNoComment) != 0) || comment != null)
                 {
@@ -333,10 +329,9 @@ namespace TIAEKtool
                 XmlNodeList member_elems = member_elem.SelectNodes("if:Member", XMLUtil.nameSpaces);
                 foreach (XmlNode m in member_elems)
                 {
-                    MemberComponent submember = readMember((XmlElement)m, child_path);
-                    if (child_path.Type is STRUCT)
+                    MemberComponent submember = ReadMember((XmlElement)m, child_path);
+                    if (child_path.Type is STRUCT struct_type)
                     {
-                        STRUCT struct_type = (STRUCT)child_path.Type;
                         struct_type.Members.Add(new StructMember() { Name = submember.Name, MemberType = submember.Type });
                     }
                 }
@@ -347,7 +342,7 @@ namespace TIAEKtool
                     foreach (XmlNode s in sub_elems)
                     {
 
-                        readSubelement(s as XmlElement, child_path);
+                        ReadSubelement(s as XmlElement, child_path);
 
                     }
                 }
@@ -356,14 +351,14 @@ namespace TIAEKtool
 
             }
 
-            protected void readStaticSection(XmlNode section, PathComponent parent)
+            protected void ReadStaticSection(XmlNode section, PathComponent parent)
             {
                 XmlNode member_node = section.FirstChild;
                 while (member_node != null)
                 {
                     if (member_node.NodeType == XmlNodeType.Element && member_node.Name == "Member")
                     {
-                        readMember(member_node as XmlElement, parent);
+                        ReadMember(member_node as XmlElement, parent);
                     }
                     member_node = member_node.NextSibling;
                 }
@@ -383,7 +378,7 @@ namespace TIAEKtool
                 if (static_section == null) throw new XmlException("Missing static section of block");
                 PathComponent parent = new MemberComponent(block_name, new STRUCT());
 
-                readStaticSection(static_section, parent);
+                ReadStaticSection(static_section, parent);
             }
         }
 
@@ -404,14 +399,17 @@ namespace TIAEKtool
         }
         public void Parse(IEngineeringCompositionOrObject top, MessageLog log = null, Options options = 0)
         {
-            ParseCtxt parse = new ParseCtxt(OnHandleTag,options);
-            parse.Log = log;
+            ParseCtxt parse = new ParseCtxt(OnHandleTag, options)
+            {
+                Log = log
+            };
+           
             lock (portal)
             {
 
-                if (top is PlcBlockGroup)
+                if (top is PlcBlockGroup group)
                 {
-                    parse.HandleBlockFolder((PlcBlockGroup)top);
+                    parse.HandleBlockFolder(group);
                 }
                 else
                 {
@@ -431,13 +429,19 @@ namespace TIAEKtool
         {
             if (worker != null && worker.IsBusy) return;
 
-            worker = new BackgroundWorker();
-            worker.WorkerSupportsCancellation = true;
+            worker = new BackgroundWorker()
+            {
+                WorkerSupportsCancellation = true,
+            };
             worker.DoWork += DoWork;
             worker.RunWorkerCompleted += RunWorkerCompleted;
+        
             callback_ctxt = SynchronizationContext.Current;
-            ParseCtxt parse = new ParseCtxt(HandleTagAsync, options);
-            parse.Log = log;
+            ParseCtxt parse = new ParseCtxt(HandleTagAsync, options)
+            {
+                Log = log
+            };
+            
             WorkerArg arg = new WorkerArg(portal, top, parse);
             worker.RunWorkerAsync(arg);
         }

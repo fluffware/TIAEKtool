@@ -49,9 +49,10 @@
             this.btn_preset_import = new System.Windows.Forms.Button();
             this.btn_hmi_tags = new System.Windows.Forms.Button();
             this.btn_copy = new System.Windows.Forms.Button();
+            this.btn_compile_download = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.loadPresetList = new System.Windows.Forms.OpenFileDialog();
-            this.btn_compile_download = new System.Windows.Forms.Button();
+            this.btn_alarm = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -92,7 +93,7 @@
             this.disconnectToolStripMenuItem,
             this.browseToolStripMenuItem});
             this.tIAPortalToolStripMenuItem.Name = "tIAPortalToolStripMenuItem";
-            this.tIAPortalToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
+            this.tIAPortalToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.tIAPortalToolStripMenuItem.Text = "TIAPortal";
             // 
             // connectToolStripMenuItem
@@ -134,14 +135,14 @@
             // startTIAOpToolStripMenuItem
             // 
             this.startTIAOpToolStripMenuItem.Name = "startTIAOpToolStripMenuItem";
-            this.startTIAOpToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.startTIAOpToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.startTIAOpToolStripMenuItem.Text = "Start TIA op";
             this.startTIAOpToolStripMenuItem.Click += new System.EventHandler(this.StartTIAOpToolStripMenuItem_Click);
             // 
             // startSyncTIAOpToolStripMenuItem
             // 
             this.startSyncTIAOpToolStripMenuItem.Name = "startSyncTIAOpToolStripMenuItem";
-            this.startSyncTIAOpToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.startSyncTIAOpToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.startSyncTIAOpToolStripMenuItem.Text = "Start sync TIA op";
             this.startSyncTIAOpToolStripMenuItem.Click += new System.EventHandler(this.StartSyncTIAOpToolStripMenuItemClick);
             // 
@@ -164,6 +165,7 @@
             this.flowLayoutPanel1.Controls.Add(this.btn_hmi_tags);
             this.flowLayoutPanel1.Controls.Add(this.btn_copy);
             this.flowLayoutPanel1.Controls.Add(this.btn_compile_download);
+            this.flowLayoutPanel1.Controls.Add(this.btn_alarm);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(283, 3);
@@ -231,6 +233,16 @@
             this.btn_copy.UseVisualStyleBackColor = true;
             this.btn_copy.Click += new System.EventHandler(this.BtnCopyClick);
             // 
+            // btn_compile_download
+            // 
+            this.btn_compile_download.Location = new System.Drawing.Point(3, 177);
+            this.btn_compile_download.Name = "btn_compile_download";
+            this.btn_compile_download.Size = new System.Drawing.Size(100, 23);
+            this.btn_compile_download.TabIndex = 6;
+            this.btn_compile_download.Text = "Compl/Dld";
+            this.btn_compile_download.UseVisualStyleBackColor = true;
+            this.btn_compile_download.Click += new System.EventHandler(this.BtnCompileDownloadClick);
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.AutoSize = true;
@@ -252,15 +264,15 @@
             this.loadPresetList.DefaultExt = "xlsx";
             this.loadPresetList.FileName = "Preset.xlsx";
             // 
-            // btn_compile_download
+            // alarm_button
             // 
-            this.btn_compile_download.Location = new System.Drawing.Point(3, 177);
-            this.btn_compile_download.Name = "btn_compile_download";
-            this.btn_compile_download.Size = new System.Drawing.Size(100, 23);
-            this.btn_compile_download.TabIndex = 6;
-            this.btn_compile_download.Text = "Compl/Dld";
-            this.btn_compile_download.UseVisualStyleBackColor = true;
-            this.btn_compile_download.Click += new System.EventHandler(this.BtnCompileDownloadClick);
+            this.btn_alarm.Location = new System.Drawing.Point(3, 206);
+            this.btn_alarm.Name = "alarm_button";
+            this.btn_alarm.Size = new System.Drawing.Size(100, 23);
+            this.btn_alarm.TabIndex = 7;
+            this.btn_alarm.Text = "Alarm";
+            this.btn_alarm.UseVisualStyleBackColor = true;
+            this.btn_alarm.Click += new System.EventHandler(this.BtnAlarmClick);
             // 
             // MainForm
             // 
@@ -307,6 +319,7 @@
         private System.Windows.Forms.Button btn_preset_import;
         private System.Windows.Forms.OpenFileDialog loadPresetList;
         private System.Windows.Forms.Button btn_compile_download;
+        private System.Windows.Forms.Button btn_alarm;
     }
 }
 

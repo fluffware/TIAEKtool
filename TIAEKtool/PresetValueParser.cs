@@ -489,6 +489,36 @@ namespace TIAEKtool
 
             }
         }
+        public static int[] GetPresetSymbols(XmlElement tag_element, ConstantLookup constants)
+        {
+            List<int> symbols = new List<int>();
+            int npresets = GetArrayEndIndex(tag_element, "Info", constants);
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Symbol']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            foreach (XmlElement v in start_values)
+            {
+                symbols.Add(int.Parse(v.InnerText.Replace("_", String.Empty)));
+            }
+            while (symbols.Count < npresets)
+            {
+                symbols.Add(1);
+            }
+            return symbols.ToArray();
+        }
+
+        public static void SetPresetSymbols(XmlElement tag_element, ConstantLookup constants, int[] values)
+        {
+
+            XmlNodeList start_values = tag_element.SelectNodes(".//if:Member[@Name='Info']/if:Sections/if:Section/if:Member[@Name='Symbol']/if:Subelement/if:StartValue", XMLUtil.nameSpaces);
+            if (start_values.Count < values.Length)
+            {
+                throw new Exception("More preset symbols in file than in PLC database");
+            }
+            for (int i = 0; i < values.Length; i++)
+            {
+                start_values[i].InnerText = values[i].ToString();
+
+            }
+        }
 
         public static object[] GetPresetValue(XmlElement tag_element, PathComponent path, ConstantLookup constants)
         {

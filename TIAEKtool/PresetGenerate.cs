@@ -21,6 +21,7 @@ using Siemens.Engineering.SW.Types;
 using Siemens.Engineering.Hmi.TextGraphicList;
 using static TIAEKtool.PresetDocument;
 using Siemens.Engineering.HmiUnified;
+using Siemens.Engineering.HmiUnified.UI.Screens;
 
 namespace TIAEKtool
 {
@@ -375,12 +376,19 @@ namespace TIAEKtool
                 foreach (HmiSoftware hmi in hmiSoftware)
                 {
                     // Create HMI tags
-
-
+                    string popup_name = "PresetSettingsPopup_" + group_name;
+                    HmiScreen popup = hmi.Screens.Find(popup_name);
+                    if (popup == null)
+                    {
+                        task_dialog.AddTask(new MessageTask("Skipping preset group " + group_name + " for HMI " + hmi.Name,
+                            MessageLog.Severity.Info,
+                            "Assuming preset group " + group_name + " is not used by this HMI since the pop-up screen " + popup_name + " was not found"));
+                        continue;
+                    }
                     var preset_tag_table = hmi.TagTables;
                     string table_name = "Preset_" + group_name;
                     task_dialog.AddTask(new CreatePresetUnifiedHmiTagsTask(tiaPortal, tags, preset_tag_table, table_name, group_name, db_name, hmi_db_name, presetList.Culture));
-                    string popup_name = "PresetSettingsPopup_" + group_name;
+                    
                     task_dialog.AddTask(new CreatePresetUnifiedSettingsPopupTask(tiaPortal, tags, hmi.Screens, popup_name, group_name, presetList.Culture));
                 }
             }
@@ -402,18 +410,7 @@ namespace TIAEKtool
             }
             return block;
         }
-        private PlcBlock FindPlcBlock(PathComponent path, PlcBlockGroup blocks)
-        {
-            while (path.Parent != null)
-            {
-                path = path.Parent;
-            }
-            if (!(path is MemberComponent)) return null;
-            string name = ((MemberComponent)path).Name;
-            Console.WriteLine("Name "+name);
-            return FindPlcBlockName(name,blocks);
-        }
-
+        
         private void ExportButton_Click(object sender, EventArgs e)
         {
 
@@ -461,6 +458,7 @@ namespace TIAEKtool
                         {
                             group.preset_names = PresetValueParser.GetPresetNames(static_elem, constants);
                             group.preset_colors = PresetValueParser.GetPresetColors(static_elem, constants);
+                            group.preset_symbols = PresetValueParser.GetPresetSymbols(static_elem, constants);
                             group.presets = new List<PresetDocument.PresetInfo>();
                             var tags = tag_groups[group_name];
                             foreach (var tag in tags)
@@ -497,6 +495,7 @@ namespace TIAEKtool
         {
             presetList.Culture = cultureComboBox.SelectedItem.ToString();
         }
+
     }
 
  

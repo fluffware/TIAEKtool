@@ -45,8 +45,13 @@ namespace TIAEKtool
         {
             var tag = tags.Find(name);
             if (tag != null) tag.Delete();
-            tag = tags.Create(name);
-           
+            try
+            {
+                tag = tags.Create(name);
+            } catch(Exception ex)
+            {
+                throw new Exception("Failed to create HMI tag '" + name + ": " + ex.Message + "'");
+            }
             tag.DataType= type;
             tag.InitialValue = value;
             tag.Connection = "<Internal tag>";

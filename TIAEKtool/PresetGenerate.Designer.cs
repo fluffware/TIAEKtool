@@ -45,8 +45,8 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.writeButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
-            this.savePresetList = new System.Windows.Forms.SaveFileDialog();
             this.cultureComboBox = new System.Windows.Forms.ComboBox();
+            this.savePresetList = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.presetListView)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -226,13 +226,6 @@
             this.exportButton.UseVisualStyleBackColor = true;
             this.exportButton.Click += new System.EventHandler(this.ExportButton_Click);
             // 
-            // savePresetList
-            // 
-            this.savePresetList.DefaultExt = "xlsx";
-            this.savePresetList.FileName = "Presets";
-            this.savePresetList.Filter = "EXCEL files (*.xlsx)|*.xlsx";
-            this.savePresetList.Title = "Save prest list";
-            // 
             // cultureComboBox
             // 
             this.cultureComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -244,6 +237,13 @@
             this.cultureComboBox.Size = new System.Drawing.Size(121, 21);
             this.cultureComboBox.TabIndex = 2;
             this.cultureComboBox.SelectedIndexChanged += new System.EventHandler(this.CultureComboBox_SelectedIndexChanged);
+            // 
+            // savePresetList
+            // 
+            this.savePresetList.DefaultExt = "xlsx";
+            this.savePresetList.FileName = "Presets";
+            this.savePresetList.Filter = "EXCEL files (*.xlsx)|*.xlsx";
+            this.savePresetList.Title = "Save prest list";
             // 
             // PresetGenerate
             // 

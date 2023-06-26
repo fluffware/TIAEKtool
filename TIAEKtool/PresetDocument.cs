@@ -25,6 +25,7 @@ namespace TIAEKtool
         {
             public string[] preset_names;
             public uint[] preset_colors;
+            public int[] preset_symbols;
             public List<PresetInfo> presets;
 
             public PresetGroup()
@@ -35,6 +36,7 @@ namespace TIAEKtool
             {
                 preset_names = new string[preset_count];
                 preset_colors = new uint[preset_count];
+                preset_symbols = new int[preset_count];
                 presets = new List<PresetInfo>();
             }
         }
@@ -143,7 +145,8 @@ namespace TIAEKtool
                 rangePresetColorHeader.Style.Font.Bold = true;
                 rangePresetColorHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
                
-               //var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(hexcolors, true);
+
+                //var rangePresetColors = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(hexcolors, true);
                 for (int i = 0; i < npresets; i++)
                 {
                     int a = (int)preset_group.Value.preset_colors[i] >> 24 & 0xff;
@@ -156,6 +159,15 @@ namespace TIAEKtool
                     cell.Style.Font.FontColor = grey > 128 * 100 ? XLColor.Black : XLColor.White;
                     cell.Value = "#" + r.ToString("X2") + g.ToString("X2") + b.ToString("X2");
                 }
+                row_index++;
+                
+
+                var rangePresetSymbolHeader = ws.Range(row_index, 1, row_index, N_PROPERTIES);
+                rangePresetSymbolHeader.FirstCell().Value = "Symbol index";
+                rangePresetSymbolHeader.Merge();
+                rangePresetSymbolHeader.Style.Font.Bold = true;
+                rangePresetSymbolHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                var rangePresetSymbol = ws.Cell(row_index, N_PROPERTIES + 1).InsertData(preset_group.Value.preset_symbols, true);
                 row_index++;
 
                 var rangeHeader = ws.Cell(row_index, 1).InsertData(headers, true);
@@ -357,6 +369,18 @@ namespace TIAEKtool
                 }
 
                 group.preset_colors = colors.ToArray();
+
+                row_index++;
+
+
+                var preset_symbol_cell = ws.Cell(row_index, 1);
+                if (preset_symbol_cell.Value as string != "Symbol index")
+                {
+                    throw new Exception("Failed to find row starting with 'Symbol index' in worksheet " + ws.Name);
+                }
+                var symbol_range = ws.Range(row_index, first_value_column, row_index, last_value_column);
+                int[] symbols = symbol_range.Cells().Select(x => x.GetValue<int>()).ToArray<int>();
+                group.preset_symbols = symbols;
 
                 row_index += 2;
 

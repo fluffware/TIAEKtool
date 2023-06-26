@@ -7,14 +7,18 @@ using System.Xml;
 
 namespace TIAEKtool
 {
-    public class ParseText
+    public class ParseTextUnified
     {
+        public enum AlignmentType { Right,Left};
         public class FieldInfo
         {
             public string TagName;
             public string DisplayType;
             public int Length;
-            public string FormatPattern;
+            public int Precision;
+            public AlignmentType Alignment;
+            public bool ZeroPadding;
+           
             public override bool Equals(object obj)
             {
                 if (!(obj is FieldInfo))
@@ -25,23 +29,41 @@ namespace TIAEKtool
                 return field.TagName == TagName
                     && field.DisplayType == DisplayType
                     && field.Length == Length
-                    && field.FormatPattern == FormatPattern;
+                    && field.Precision == Precision
+                    && field.Alignment == Alignment
+                    && field.ZeroPadding == ZeroPadding;
             }
             public override int GetHashCode()
             {
-                return TagName.GetHashCode() ^ DisplayType.GetHashCode() ^ Length ^ FormatPattern.GetHashCode();
+                return TagName.GetHashCode() ^ DisplayType.GetHashCode() ^ Length
+                       ^ Precision ^ Alignment.GetHashCode()
+                       ^ ZeroPadding.GetHashCode();
             }
 
         }
+        /*
+        <body><p>Larm 3
+        <field ref="0" />
+        </p></body>
+        <fieldinfos>
+        <fieldinfo name = "0" domaintype="HMIAlarmParameter1WithoutCommonTextList">
+        <reference TargetID = "@OpenLink" >
+        < name > Siemens.Simatic.Hmi.Utah.Alarm.HmiDiscreteAlarm:sDB_Larm_Test_Larm3</name>
+        </reference>
+        <subreference />
+        <domaindata><format displaytype = "Decimal" length="5" precision="3" alignment="Right" zeropadding="True" /></domaindata>
+        </fieldinfo>
+        </fieldinfos>
+        */
         static string GetAttributeDefault(XmlElement elem, string name, string def)
         {
             string v = elem.GetAttribute(name);
-            if (v != null) return v;
+            if (v !="") return v;
             else return def;
         }
-        public static XmlElement ParseTextToTextElement(XmlDocument doc, string text, ref List<FieldInfo> fields)
+        public static string ParseTextToText(string text, ref List<FieldInfo> fields)
         {
-
+            var doc = new XmlDocument();
             XmlElement text_elem = doc.CreateElement("Text");
             XmlElement body_elem = doc.CreateElement("body");
             text_elem.AppendChild(body_elem);
@@ -65,21 +87,12 @@ namespace TIAEKtool
                 XmlElement tag_elem = (XmlElement)tag_node;
                 FieldInfo field = new FieldInfo();
                 field.TagName = tag_elem.GetAttribute("name");
-                field.DisplayType = GetAttributeDefault(tag_elem, "type", "Display");
-                field.Length = int.Parse(GetAttributeDefault(tag_elem, "length","5"));
-                field.FormatPattern = tag_elem.GetAttribute("pattern");
-                if (field.FormatPattern == "")
-                {
-                    switch (field.DisplayType.ToLower())
-                    {
-                        case "text":
-                            field.FormatPattern = new string('?', field.Length);
-                            break;
-                        case "int":
-                            field.FormatPattern = "s" + new string('9', field.Length);
-                            break;
-                    }
-                }
+                field.DisplayType = GetAttributeDefault(tag_elem,"type","Decimal");
+                field.Length = int.Parse(GetAttributeDefault(tag_elem,"length","5"));
+                field.Precision = int.Parse(GetAttributeDefault(tag_elem, "precision", "0"));
+                field.Alignment = GetAttributeDefault(tag_elem, "alignment","left").ToLower() == "right" ? AlignmentType.Right : AlignmentType.Left;
+                field.ZeroPadding = bool.Parse(GetAttributeDefault(tag_elem, "zeropadding", "false"));
+          
 
                 XmlElement field_elem = doc.CreateElement("field");
               
@@ -111,23 +124,40 @@ namespace TIAEKtool
                     fieldinfos_elem.AppendChild(fieldinfo_elem);
                     fieldinfo_elem.SetAttribute("name", refno.ToString());
                     refno++;
-                    fieldinfo_elem.SetAttribute("domaintype", "HMICommonTagDisplayFormat");
+                    fieldinfo_elem.SetAttribute("domaintype", "HMIAlarmParameter1WithoutCommonTextList");
                     XmlElement reference_elem = doc.CreateElement("reference");
                     fieldinfo_elem.AppendChild(reference_elem);
+                    XmlElement subreference_elem = doc.CreateElement("subreference");
+                    fieldinfo_elem.AppendChild(subreference_elem);
                     reference_elem.SetAttribute("TargetID", "@OpenLink");
                     XmlElement name_elem = doc.CreateElement("name");
                     reference_elem.AppendChild(name_elem);
-                    name_elem.InnerText = "Siemens.Simatic.Hmi.Utah.Tag.HmiTag:" + field.TagName;
+                    name_elem.InnerText = "Siemens.Simatic.Hmi.Utah.Alarm.HmiDiscreteAlarm:" + field.TagName;
                     XmlElement domaindata_elem = doc.CreateElement("domaindata");
                     fieldinfo_elem.AppendChild(domaindata_elem);
                     XmlElement format_elem = doc.CreateElement("format");
                     domaindata_elem.AppendChild(format_elem);
                     format_elem.SetAttribute("displaytype", field.DisplayType);
                     format_elem.SetAttribute("length", field.Length.ToString());
-                    format_elem.SetAttribute("formatpattern", field.FormatPattern);
+                    format_elem.SetAttribute("alignment", field.Alignment.ToString()); 
+                    format_elem.SetAttribute("precision", field.Precision.ToString());
+                    format_elem.SetAttribute("zeropadding", field.ZeroPadding.ToString());
                 }
             }
-            return text_elem;
+            /*
+            // Wrap all texts with <p> </p>
+            foreach (XmlNode node in body_elem.ChildNodes)
+            {
+                if (node.NodeType == XmlNodeType.Text)
+                {
+                    XmlElement p_elem = doc.CreateElement("p");
+                    XmlNode text_node = body_elem.ReplaceChild(p_elem, node);
+                    p_elem.AppendChild(text_node);
+                    
+                }
+            }
+          */
+                return text_elem.InnerXml;
         }
     }
 }
