@@ -1,13 +1,11 @@
-﻿using System;
+﻿using ClosedXML.Excel;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-
-using PLC.Types;
-using System.Globalization;
-using ClosedXML.Excel;
-using System.Drawing;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
@@ -420,7 +418,7 @@ namespace TIAEKtool
                             object cell_value = cell.Value;
 
 
-                            if (value_type is PLC.Types.TIME)
+                            if (value_type is TIME)
                             {
                                 if (cell_value is string ts)
                                 {
@@ -433,7 +431,7 @@ namespace TIAEKtool
 
                             }
                             else
-                            if (value_type is PLC.Types.Integer || value_type is PLC.Types.BitString)
+                            if (value_type is Integer || value_type is BitString)
                             {
                                 if (cell_value is double v)
                                 {
@@ -449,7 +447,7 @@ namespace TIAEKtool
                                     throw new Exception("Invalid integer in cell " + cell.Address.ToString() + " in " + ws.Name);
                                 }
                             }
-                            else if (value_type is PLC.Types.Float)
+                            else if (value_type is Float)
                             {
                                 if (cell_value is double v)
                                 {
@@ -465,7 +463,7 @@ namespace TIAEKtool
                                     throw new Exception("Invalid number in cell " + cell.Address.ToString() + " in " + ws.Name);
                                 }
                             }
-                            else if (value_type is PLC.Types.BOOL)
+                            else if (value_type is BOOL)
                             {
                                 if (cell_value is bool v)
                                 {
@@ -482,7 +480,7 @@ namespace TIAEKtool
                                 }
 
                             }
-                            else if (value_type is PLC.Types.STRING)
+                            else if (value_type is STRING)
                             {
                                 info.values[preset_index] = cell_value.ToString();
                             }

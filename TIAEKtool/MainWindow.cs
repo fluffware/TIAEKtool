@@ -16,6 +16,8 @@ using System.Threading;
 using static TIAEKtool.PresetDocument;
 using System.Xml;
 using Siemens.Engineering.HmiUnified;
+using TIAEKtool.Plc;
+using TIAEKtool.Alarms;
 
 namespace TIAtool
 {
@@ -172,7 +174,9 @@ namespace TIAtool
             if (AutoExpandMaxChildren > 0)
             {
                 TIATree.TreeNodeBuilder.Expand(projectTreeView.Nodes, AutoExpandMaxChildren);
+                
             }
+            projectTreeView.Sort();
 
         }
 
@@ -686,10 +690,84 @@ namespace TIAtool
                 MessageBox.Show("No PLC is selected");
                 return;
             }
+            ConstantLookup constants = new ConstantLookup();
+
+            try
+            {
+                constants.Populate(tiaPortal, plc);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to build lookup table for user constants: " + ex.Message);
+                return;
+            }
             List<HmiSoftware> unified_hmis = new List<HmiSoftware>();
             FindUnifiedHmis(projectTreeView.Nodes, ref unified_hmis);
-            alarmGenerate = new AlarmGenerate(tiaPortal, plc.BlockGroup, unified_hmis, culture);
+            alarmGenerate = new AlarmGenerate(tiaPortal, plc.BlockGroup, unified_hmis, constants, culture);
             alarmGenerate.ShowDialog();
+        }
+
+        private void BtnImportAlarmClick(object sender, EventArgs e)
+        {
+            PlcSoftware plc = null;
+            if (!FindPlc(projectTreeView.Nodes, ref plc))
+            {
+                MessageBox.Show("More than one PLC is selected");
+                return;
+            }
+
+            if (plc == null)
+            {
+                MessageBox.Show("No PLC is selected");
+                return;
+            }
+            if (loadAlarms.ShowDialog() == DialogResult.OK)
+            {
+                ConstantLookup constants = new ConstantLookup();
+
+                try
+                {
+                    constants.Populate(tiaPortal, plc);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to build lookup table for user constants: " + ex.Message);
+                    return;
+                }
+                try
+                {
+                    AlarmDocument.Load(loadAlarms.FileName, out List<AlarmTag> alarm_tags, culture);
+                    if (task_dialog == null)
+                    {
+                        task_dialog = new TaskDialog();
+                    }
+                    task_dialog.Clear();
+                 
+                    task_dialog.AddTask(new UpdateAlarmTagsTask(tiaPortal, plc.BlockGroup,alarm_tags, culture,constants));
+
+                    task_dialog.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to load alarms from file " + loadAlarms.FileName + ": " + ex.Message);
+                    return;
+                }
+                /*
+                try
+                {
+                    UpdatePresetValues(plc, preset_groups);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to update presets loaded from file " + loadPresetList.FileName + ": " + ex.Message);
+                    return;
+                }
+                */
+
+            }
+            
+           
+            
         }
     }
 }

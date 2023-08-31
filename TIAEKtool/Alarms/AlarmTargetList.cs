@@ -1,23 +1,18 @@
-﻿using PLC.Types;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
-   
-    public class AlarmSinkList : BindingList<AlarmSinkList.Row>
+
+    public class AlarmTargetList : BindingList<AlarmTargetList.Row>
     {
         // Maps AlarmTag to a row with a single culture
         public class Row : IComparable<Row>
         {
-            private readonly AlarmSink _sink;
+            private readonly AlarmTarget _target;
 
             protected static string PathType(PathComponent path)
             {
@@ -28,18 +23,18 @@ namespace TIAEKtool
 
             public int CompareTo(Row other)
             {
-                return _sink.name.CompareTo(other._sink.name);
+                return _target.name.CompareTo(other._target.name);
             }
 
-            public string PlcTag { get => (_sink is AlarmSinkTag sink) ? sink.plcTag.ToString() : ""; }
-            public string Name { get => _sink.name; set { _sink.name = value; } }
-            public string Label { get => _sink.label; set { _sink.label = value; } }
+            public string PlcTag { get => (_target is AlarmTargetTag sink) ? sink.plcTag.ToString() : ""; }
+            public string Name { get => _target.name; set { _target.name = value; } }
+            public string Label { get => _target.label; set { _target.label = value; } }
             
 
-            public AlarmSink AlarmSink { get => _sink; }
-            public Row(AlarmSink sink)
+            public AlarmTarget AlarmSink { get => _target; }
+            public Row(AlarmTarget sink)
             {
-                _sink = sink;
+                _target = sink;
             }
         }
 
@@ -51,11 +46,11 @@ namespace TIAEKtool
      
       
 
-        public AlarmSinkList() : base(new List<AlarmSinkList.Row>())
+        public AlarmTargetList() : base(new List<AlarmTargetList.Row>())
         {
         }
         
-        public void AddSink(AlarmSink sink)
+        public void AddSink(AlarmTarget sink)
         {
             Add(new Row(sink));
         }
@@ -66,10 +61,10 @@ namespace TIAEKtool
         protected override void ApplySortCore(PropertyDescriptor prop, ListSortDirection direction)
         {
             RaiseListChangedEvents = false;
-            List<AlarmTagList.Row> itemsList = (List<AlarmTagList.Row>)this.Items;
+            List<AlarmTargetList.Row> itemsList = (List<AlarmTargetList.Row>)this.Items;
             if (prop.PropertyType.GetInterface("IComparable") != null)
             {
-                itemsList.Sort(new Comparison<AlarmTagList.Row>(delegate (AlarmTagList.Row x, AlarmTagList.Row y)
+                itemsList.Sort(new Comparison<AlarmTargetList.Row>(delegate (Row x, Row y)
                 {
                     // Compare x to y if x is not null. If x is, but y isn't, we compare y
                     // to x and reverse the result. If both are null, they're equal.

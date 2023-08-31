@@ -81,13 +81,13 @@
     <Reference Include="FastMember, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FastMember.1.3.0\lib\net45\FastMember.dll</HintPath>
     </Reference>
-    <Reference Include="Siemens.Engineering, Version=16.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
+    <Reference Include="Siemens.Engineering, Version=17.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll</HintPath>
+      <HintPath>C:\Program Files\Siemens\Automation\Portal V18\PublicAPI\V18\Siemens.Engineering.dll</HintPath>
     </Reference>
-    <Reference Include="Siemens.Engineering.Hmi, Version=16.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
+    <Reference Include="Siemens.Engineering.Hmi, Version=17.0.0.0, Culture=neutral, PublicKeyToken=d29ec89bac048f84, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.Hmi.dll</HintPath>
+      <HintPath>C:\Program Files\Siemens\Automation\Portal V18\PublicAPI\V18\Siemens.Engineering.Hmi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -116,25 +116,43 @@
       <DependentUpon>AlarmGenerate.cs</DependentUpon>
     </Compile>
     <Compile Include="Alarms\AlarmCommentParser.cs" />
-    <Compile Include="Alarms\AlarmSink.cs" />
-    <Compile Include="Alarms\AlarmSinkTag.cs" />
+    <Compile Include="Alarms\AlarmHandlingSCL.cs" />
+    <Compile Include="Alarms\AlarmTarget.cs" />
+    <Compile Include="Alarms\AlarmTargetHmi.cs" />
+    <Compile Include="Alarms\AlarmTargetTag.cs" />
     <Compile Include="Alarms\AlarmTag.cs" />
-    <Compile Include="Alarms\AlarmSinkList.cs" />
+    <Compile Include="Alarms\AlarmTargetList.cs" />
     <Compile Include="Alarms\AlarmTagList.cs" />
     <Compile Include="Alarms\CreateAlarmUnifiedHmiAlarmsTask.cs" />
     <Compile Include="Alarms\CreateAlarmUnifiedHmiTagsTask.cs" />
+    <Compile Include="Alarms\AlarmDocument.cs" />
+    <Compile Include="Alarms\CreateTagAlarmsTask.cs" />
+    <Compile Include="Alarms\HmiUtils.cs" />
+    <Compile Include="Alarms\UpdateAckTagsTask.cs" />
+    <Compile Include="Alarms\UpdateAlarmTagsTask.cs" />
     <Compile Include="BrowseDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BrowseDialog.Designer.cs">
       <DependentUpon>BrowseDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommentEditor.cs" />
     <Compile Include="CreatePresetUnifiedSettingsPopupTask.cs" />
     <Compile Include="CreatePresetUnifiedHmiTagsTask.cs" />
     <Compile Include="DeleteHmiTextListTask.cs" />
     <Compile Include="CreatePlcCompileTask.cs" />
     <Compile Include="MessageTask.cs" />
     <Compile Include="ParseTextUnified.cs" />
+    <Compile Include="Plc\BlockXmlCache.cs" />
+    <Compile Include="Plc\CreateTagTask.cs" />
+    <Compile Include="Plc\ITagCache.cs" />
+    <Compile Include="Plc\PathComponentUtils.cs" />
+    <Compile Include="Plc\PlcUtils.cs" />
+    <Compile Include="Plc\PlcValue.cs" />
+    <Compile Include="Plc\Tag.cs" />
+    <Compile Include="Plc\TagCacheTree.cs" />
+    <Compile Include="Plc\TagCacheXML.cs" />
+    <Compile Include="Plc\TagsXML.cs" />
     <Compile Include="PresetDocument.cs" />
     <Compile Include="PresetStoreEnabledSCL.cs" />
     <Compile Include="PresetValueParser.cs" />
@@ -171,12 +189,12 @@
     </Compile>
     <Compile Include="MessageLog.cs" />
     <Compile Include="ParseText.cs" />
-    <Compile Include="PathComponent.cs" />
+    <Compile Include="Plc\PathComponent.cs" />
     <Compile Include="PresetCommentParser.cs" />
     <Compile Include="PresetPopup.cs" />
-    <Compile Include="PresetSCL.cs" />
+    <Compile Include="BuildSCL.cs" />
     <Compile Include="ConstTable.cs" />
-    <Compile Include="DataType.cs" />
+    <Compile Include="Plc\DataType.cs" />
     <Compile Include="MultilingualText.cs" />
     <Compile Include="PresetDB.cs" />
     <Compile Include="PresetGenerate.cs">
@@ -329,6 +347,7 @@
     <None Include="Images\EK.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Alarms\InitialAlarmHandlingSCL.xml" />
     <Content Include="Images\EK.ico" />
     <Content Include="Images\Error.png" />
     <Content Include="Images\Info.png" />

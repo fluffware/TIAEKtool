@@ -1,10 +1,10 @@
-﻿using PLC.Types;
-using Siemens.Engineering;
+﻿using Siemens.Engineering;
 using Siemens.Engineering.Hmi.Tag;
-using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
@@ -66,7 +66,7 @@ namespace TIAEKtool
                         PathComponent preset_names = new MemberComponent("Names", name_array, new MemberComponent(dbName, new STRUCT()));
                         for (int p = 1; p <= nPresets; p++)
                         {
-                            PathComponent name = new IndexComponent(new int[1] { p }, new STRING(), preset_names);
+                            PathComponent name = new IndexComponent(new int[1] { p }, preset_names);
                             editor.AddIndexedTag("PresetName_" + groupName + "_", p, name.ToString());
                         }
 
@@ -77,7 +77,7 @@ namespace TIAEKtool
                         PathComponent preset_colors = new MemberComponent("Colors", color_array, new MemberComponent(dbName, new STRUCT()));
                         for (int p = 1; p <= nPresets; p++)
                         {
-                            PathComponent color = new IndexComponent(new int[1] { p }, INT.Type, preset_colors);
+                            PathComponent color = new IndexComponent(new int[1] { p }, preset_colors);
                             editor.AddIndexedTag("PresetColor_" + groupName + "_", p, color.ToString());
                         }
                         TIAutils.ImportHMITagTableXML(table_doc, folder);

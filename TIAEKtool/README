@@ -1,4 +1,4 @@
-﻿This is a tool to build a preset system for PLC-programs written using Siemens TIA Portal.
+﻿This is a tool to build a preset and alarm systems for PLC-programs written using Siemens TIA Portal.
 It connects to TIA Portal using TIA Openness.
 
 
@@ -52,3 +52,38 @@ Minimum and maximum allowed value for the preset. Default is the limits for the 
 Assigns a name to a specific value for an enumerated type. If present the preset will be presented as a multiple choice between the given states.
 
 
+Alarms are implemented as discrete alarms in Unified HMI.
+Tags in global DBs may be turned into triggers for alarms by annotating them in the comments.
+
+Alarm tag annotations:
+
+@{alarm <class>: <alarm text>}
+Sets alarm class and text for the alarm. Mandatory.
+The language is the same as the comment.
+
+@{alarm_text_1 <alarm text>}
+@{alarm_text_2 <alarm text>}
+Additional alarm texts.
+
+@{alarm_id <id>}
+ID for the alarm
+
+@{alarm_priority <priority>}
+Priority for the alarm.
+
+@{alarm_delay <delay>}
+How long the tag must be asserted before an alarm is triggered. In milliseconds.
+
+@{alarm_edge <edge>}
+Decides what edge triggers the alarm. Falling or Rising.
+
+@{alarm_targets <target>, ... }
+One or more targets separated by comma. A target is an indication of how an alarm will be used, 
+either a HMI device where it will be displayed or a tag that will be set when this alarm is active.
+
+
+Some tags may be marked as alarm targets. This means they are set when at least one of the alarms that have them as targets are active.
+A target tag is annotated as follows:
+
+@{alarm_target <name>:<label>}
+The name is a symbolic name used when referring to this tag in a alarm_targets annotation. Label is a short descriptive text used in UI.

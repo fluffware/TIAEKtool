@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TIAEKtool;
 
-namespace PLC.Types
+namespace TIAEktool.Plc.Types
 {
 
     public static class DataTypeParser

@@ -65,15 +65,16 @@ namespace TIAtool
             public Filter Descend = AlwaysTrue; // Examine child items
             public Filter Leaf = AlwaysTrue; // Include this item even if no child item is included
 
-           
+
             public event EventHandler<BuildDoneEventArgs> BuildDone;
-          
+
             class Handler : NodeHandler
             {
                 readonly TreeNodeCollection parent = null;
                 TreeNode node = null;
                 readonly TreeNodeBuilder builder;
-                public Handler(TreeNodeBuilder builder, TreeNodeCollection nodes) {
+                public Handler(TreeNodeBuilder builder, TreeNodeCollection nodes)
+                {
                     parent = nodes;
                     this.builder = builder;
                 }
@@ -104,9 +105,9 @@ namespace TIAtool
                 }
             }
 
-            
 
-           
+
+
 
             protected static bool AlwaysTrue(Object obj)
             {
@@ -167,7 +168,7 @@ namespace TIAtool
 
 
                 }
-                
+
                 public BuildTask(TreeNodeBuilder builder, TreeNodeCollection nodes, TiaPortal tia)
                 {
                     this.builder = builder;
@@ -237,14 +238,14 @@ namespace TIAtool
 
                 public override void CaughtException(Exception ex)
                 {
-                   
-                    Console.WriteLine("Failed to build node tree: " + ex.Message +"\n"+ ex.StackTrace);
+
+                    Console.WriteLine("Failed to build node tree: " + ex.Message + "\n" + ex.StackTrace);
                 }
 
             }
             public void StartBuild(TreeNodeCollection nodes)
             {
-                BuildTask task = new BuildTask(this, nodes,TIA);
+                BuildTask task = new BuildTask(this, nodes, TIA);
                 thread.RunAsync(task);
             }
 
@@ -259,10 +260,10 @@ namespace TIAtool
                         // Do nothing just wait for the worker to finish
                     }
                 }
-                
+
             }
 
-           
+
 
 
             // Expand all nodes with max_children or fewer
@@ -275,6 +276,7 @@ namespace TIAtool
                     Expand(node.Nodes, max_children);
                 }
             }
+
         }
 
         public class NodeHandler
@@ -500,24 +502,36 @@ namespace TIAtool
         }
         private static void HandleUnifiedTagTables(NodeHandler handler, HmiTagTableComposition tag_tables)
         {
-            NodeHandler tables_handler = handler.Enter(tag_tables, "Tag tables");
-            if (tables_handler != null)
+
+            foreach (HmiTagTable table in tag_tables)
             {
-                foreach (HmiTagTable table in tag_tables) {
-                    NodeHandler table_handler = handler.Enter(table, table.Name);
-                    if (table_handler != null)
+                NodeHandler table_handler = handler.Enter(table, table.Name);
+                if (table_handler != null)
+                {
+                    HmiTagComposition tags = table.Tags;
+                    foreach (HmiTag tag in tags)
                     {
-                        HmiTagComposition tags = table.Tags;
-                        foreach (HmiTag tag in tags)
-                        {
-                            table_handler.Enter(tag, tag.Name);
-                            table_handler.Exit(tag);
-                        }
+                        table_handler.Enter(tag, tag.Name);
+                        table_handler.Exit(tag);
                     }
-                    handler.Exit(table);
                 }
+                handler.Exit(table);
             }
-            handler.Exit(tag_tables);
+
+        }
+        private static void HandleUnifiedTagTableGroups(NodeHandler handler, HmiTagTableGroupComposition tag_table_groups)
+        {
+            foreach (HmiTagTableGroup group in tag_table_groups)
+            {
+                NodeHandler group_handler = handler.Enter(group, group.Name);
+                if (group_handler != null)
+                {
+
+                    HandleUnifiedTagTables(handler, group.TagTables);
+                    HandleUnifiedTagTableGroups(handler, group.Groups);
+                }
+                handler.Exit(group);
+            }
         }
 
         // Device items
@@ -596,8 +610,17 @@ namespace TIAtool
                     {
                         HmiScreenComposition screens = hmi_software.Screens;
                         HandleUnifiedScreens(child_handler, screens);
-                        HmiTagTableComposition tags = hmi_software.TagTables;
-                        HandleUnifiedTagTables(child_handler, tags);
+
+                        NodeHandler tables_handler = child_handler.Enter(hmi_software.TagTables, "Tag tables");
+                        if (tables_handler != null)
+                        {
+                            HmiTagTableComposition tags = hmi_software.TagTables;
+                            HandleUnifiedTagTables(tables_handler, tags);
+                            HmiTagTableGroupComposition groups = hmi_software.TagTableGroups;
+                            HandleUnifiedTagTableGroups(tables_handler, groups);
+                        }
+                        child_handler.Exit(hmi_software.TagTables);
+
                     }
                 }
 

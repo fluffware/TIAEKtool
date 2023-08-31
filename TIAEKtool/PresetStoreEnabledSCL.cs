@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using TIAEKtool.Plc;
 using TIAEKtool.Properties;
 
 namespace TIAEKtool
 {
-    public class PresetStoreEnabledSCL : PresetSCL
+    public class PresetStoreEnabledSCL : BuildSCL
     {
       
         public PresetStoreEnabledSCL(string block_name, string value_type_name, string enable_type_name, XmlDocument doc) : base(block_name)

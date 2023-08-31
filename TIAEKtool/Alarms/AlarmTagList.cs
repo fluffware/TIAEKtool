@@ -1,21 +1,17 @@
-﻿using PLC.Types;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
-   
+
     public class AlarmTagList : BindingList<AlarmTagList.Row>
     {
         // Maps AlarmTag to a row with a single culture
-        public class Row: IComparable<Row>
+        public class Row : IComparable<Row>
         {
             private readonly StringBuilder _culture;  // Common for all rows
             private readonly AlarmTag _tag;
@@ -35,9 +31,9 @@ namespace TIAEKtool
             public string Culture { get => _culture.ToString(); }
             public string PlcTag { get => _tag.plcTag.ToString(); }
             public string Id { get => _tag.id.ToString(); set { _tag.id = int.Parse(value); } }
-            public string Sinks { get => string.Join(",", _tag.sinks); 
-                set {foreach (string sink in value.Split(','))
-                    { _tag.sinks.Add(sink); } 
+            public string Sinks { get => string.Join(",", _tag.targets);
+                set { foreach (string sink in value.Split(','))
+                    { _tag.targets.Add(sink); }
                 } }
             public string AlarmClass { get => _tag.alarmClass; set { _tag.alarmClass = value; } }
             public string Priority { get => _tag.priority.ToString(); set { _tag.priority = int.Parse(value); } }
@@ -45,6 +41,9 @@ namespace TIAEKtool
             public string Edge { get => _tag.edge.ToString(); set { _tag.edge = (value.ToLower() == "falling") ? AlarmTag.Edge.Falling : AlarmTag.Edge.Rising; } }
             public string AlarmText { get => _tag.eventText[_culture.ToString()]; set { _tag.eventText[_culture.ToString()] = value; } }
 
+           
+            public string AdditionalText1 { get => _tag?.additionalText?[0]?[_culture.ToString()] ?? ""; }
+            public string AdditionalText2 { get => _tag?.additionalText?[1]?[_culture.ToString()] ?? ""; }
             public AlarmTag AlarmTag { get => _tag; }
             public Row(StringBuilder culture, AlarmTag tag)
             {

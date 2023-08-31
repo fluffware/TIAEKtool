@@ -1,11 +1,7 @@
-﻿using PLC.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Xml;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 using TIAEKtool.Properties;
 
 namespace TIAEKtool
@@ -40,10 +36,10 @@ namespace TIAEKtool
 
             int[] preset_index = new int[1] { 1 };
             PathComponent preset_member = new MemberComponent("Preset", array_type);
-            preset_prefix = new IndexComponent(preset_index, array_type.MemberType, preset_member);
+            preset_prefix = new IndexComponent(preset_index,  preset_member);
 
             PathComponent enable_member = new MemberComponent("Enable", array_type);
-            enable_prefix = new IndexComponent(preset_index, array_type.MemberType, enable_member);
+            enable_prefix = new IndexComponent(preset_index,  enable_member);
 
             enable_selected_prefix = new MemberComponent("EnableSelected", new STRUCT());
             preset_selected_prefix = new MemberComponent("PresetSelected", new STRUCT());

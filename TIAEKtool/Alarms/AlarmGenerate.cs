@@ -1,6 +1,7 @@
 ﻿using Siemens.Engineering;
 using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HmiUnified;
+using Siemens.Engineering.HmiUnified.HmiConnections;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.SW;
@@ -11,7 +12,8 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
+using TIAEKtool.Alarms;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
@@ -69,7 +71,7 @@ namespace TIAEKtool
             }
         }
         protected AlarmTagList alarmList;
-        protected AlarmSinkList sinkList;
+        protected AlarmTargetList sinkList;
         readonly TagParser parser;
         readonly PlcSoftware plcSoftware;
 
@@ -77,7 +79,8 @@ namespace TIAEKtool
         TaskDialog task_dialog;
         readonly TiaPortal tiaPortal;
         readonly MessageLog log = new MessageLog();
-        public AlarmGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiSoftware> hmiSoftware, string culture)
+        readonly ConstantLookup constants;
+        public AlarmGenerate(TiaPortal portal, IEngineeringCompositionOrObject top, List<HmiSoftware> hmiSoftware, ConstantLookup constants, string culture)
         {
             InitializeComponent();
             tiaPortal = portal;
@@ -89,7 +92,7 @@ namespace TIAEKtool
             };  
             alarmListView.DataSource = alarmList;
 
-            sinkList = new AlarmSinkList();
+            sinkList = new AlarmTargetList();
             sinkListView.DataSource = sinkList;
 
             writeButton.Enabled = false;
@@ -105,6 +108,7 @@ namespace TIAEKtool
             plcSoftware = (PlcSoftware)node;
 
             this.hmiSoftware = hmiSoftware;
+            this.constants = constants;
 
             Project proj = tiaPortal.Projects[0];
             LanguageAssociation langs = proj.LanguageSettings.ActiveLanguages;
@@ -126,26 +130,38 @@ namespace TIAEKtool
            
             foreach (string c in ev.Comment.Cultures)
             {
-                AlarmCommentParser.Parse(ev.Comment[c], c, out AlarmTag alarm_tag, out AlarmSink alarm_sink);
+                AlarmCommentParser.Parse(ev.Comment[c], c, out AlarmTag alarm_tag, out AlarmTarget alarm_target);
                 if (alarm_tag != null && alarm_tag.alarmClass != null)
                 {
                     alarm_tag.plcTag = ev.Path;
                     alarmList.AddTag(alarm_tag);
                 }
-                if (alarm_sink != null)
+                if (alarm_target != null)
                 {
-                    if (alarm_sink is AlarmSinkTag sink_tag)
+                    if (alarm_target is AlarmTargetTag sink_tag)
                     {
                         sink_tag.plcTag = ev.Path;
                     }
-                    sinkList.AddSink(alarm_sink);
+                    sinkList.AddSink(alarm_target);
                 }
             }
         }
 
         public void ParseDone(object source, TagParser.ParseDoneEventArgs ev)
         {
-          
+
+            foreach (HmiSoftware hmi in hmiSoftware)
+            {
+                HmiConnection plc_connection = Alarms.HmiUtils.FindPlcConnection(hmi, log, out string target_id, out string target_label);
+                if (plc_connection != null)
+                {
+                    AlarmTarget target= new AlarmTargetHmi(target_id, target_label)
+                    {
+                        hmiName = hmi.Name
+                    };
+                    sinkList.AddSink(target);
+                }
+            }
             writeButton.Enabled = true;
             exportButton.Enabled = true;
             if (log.HighestSeverity >= MessageLog.Severity.Warning)
@@ -180,11 +196,18 @@ namespace TIAEKtool
             }
             alarm_tags.Sort();
 
-            
+            List<AlarmTarget> alarm_targets = new List<AlarmTarget>();
+            foreach (AlarmTargetList.Row r in sinkList)
+            {
+                alarm_targets.Add(r.AlarmSink);
+            }
+
+
             foreach (HmiSoftware hmi in hmiSoftware)
             {
                 Dictionary<PathComponent, String> plc_to_hmi = new Dictionary<PathComponent, string>();
 
+                // Build a map from a PLC tag to the coorresponding HMI tag
                 foreach (var hmi_tag in hmi.Tags)
                 {
                     if (hmi_tag.PlcTag != null && hmi_tag.PlcTag.Length > 0)
@@ -197,12 +220,18 @@ namespace TIAEKtool
                     }
 
                 }
+
                 var lang = proj.LanguageSettings.Languages.Find(new CultureInfo(alarmList.Culture));
+
+                task_dialog.AddTask(new CreateTagAlarmsTask(tiaPortal, plcSoftware, alarm_targets, alarm_tags));
+                task_dialog.AddTask(new UpdateAckTagsTask(tiaPortal, plcSoftware.BlockGroup, alarm_tags,alarmList.Culture,constants));
                 // Create HMI tags
                 task_dialog.AddTask(new CreateAlarmUnifiedHmiTagsTask(tiaPortal, hmi, alarm_tags, plc_to_hmi));
 
                 // Create HMI alarms
                 task_dialog.AddTask(new CreateAlarmUnifiedHmiAlarmsTask(tiaPortal, hmi, alarm_tags, plc_to_hmi, lang));
+
+                
             }
             
            
@@ -210,37 +239,28 @@ namespace TIAEKtool
             task_dialog.Show();
         }
 
-        private PlcBlock FindPlcBlockName(string name, PlcBlockGroup blocks)
-        {
-            PlcBlock block = blocks.Blocks.Find(name);
-            if (block == null)
-            {
-                foreach (PlcBlockGroup group in blocks.Groups)
-                {
-                    block = FindPlcBlockName(name, group);
-                    if (block != null) break;
-                }
-            }
-            return block;
-        }
-        private PlcBlock FindPlcBlock(PathComponent path, PlcBlockGroup blocks)
-        {
-            while (path.Parent != null)
-            {
-                path = path.Parent;
-            }
-            if (!(path is MemberComponent)) return null;
-            string name = ((MemberComponent)path).Name;
-            Console.WriteLine("Name "+name);
-            return FindPlcBlockName(name,blocks);
-        }
+       
 
         private void ExportButton_Click(object sender, EventArgs e)
         {
 
             if (saveAlarmList.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                
+                List<AlarmTag> alarm_tags = new List<AlarmTag>();
+                foreach (AlarmTagList.Row r in alarmList)
+                {
+                    alarm_tags.Add(r.AlarmTag);
+
+
+                }
+                List<AlarmTarget> alarm_targets = new List<AlarmTarget>();
+                foreach (AlarmTargetList.Row r in sinkList)
+                {
+                    alarm_targets.Add(r.AlarmSink);
+
+
+                }
+                AlarmDocument.Save(saveAlarmList.FileName, alarm_tags, alarm_targets, cultureComboBox.SelectedItem.ToString());
 
             }
         }

@@ -1,17 +1,13 @@
-﻿using PLC.Types;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
-   
+
     public class PresetTagList : BindingList<PresetTagList.Row>
     {
         // Maps PresetTag to a row with a single culture

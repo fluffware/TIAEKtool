@@ -20,17 +20,18 @@ namespace TIAEKtool
 
         public void AddText(string culture, string text)
         {
-            texts.Add(culture, text);
+          
+            texts[culture] = text;
         }
 
         public string this[string culture]
         {
             get
             {
-                string value;
+                string value = null;
                 if (culture == null) return "";
                 if (texts.TryGetValue(culture, out value)) return value;
-                if (texts.TryGetValue("default", out value)) return value; 
+                if (texts.TryGetValue("default", out value)) return value;
                 return "";
             }
             set
@@ -43,7 +44,19 @@ namespace TIAEKtool
         {
             return texts.TryGetValue(culture, out text);
         }
-
+        public bool TryGetAnyText(out string text)
+        {
+            IEnumerator<string> iter = texts.Values.GetEnumerator();
+            if (iter.MoveNext())
+            {
+                text = iter.Current;
+                return true;
+            } else
+            {
+                text = "";
+               return false;
+            }
+        }
         public string [] Cultures { get
             {
                 Dictionary<string, string>.KeyCollection keys = texts.Keys;

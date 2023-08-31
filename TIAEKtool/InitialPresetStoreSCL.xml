@@ -1,5 +1,5 @@
 ﻿<Document>
-  <Engineering version="V15" />
+  <Engineering version="V18" />
   <DocumentInfo>
   </DocumentInfo>
   <SW.Blocks.FC ID="0">
@@ -27,6 +27,7 @@
       <IsIECCheckEnabled>false</IsIECCheckEnabled>
       <MemoryLayout>Optimized</MemoryLayout>
       <Name>Preset_main</Name>
+		<Namespace/>
       <Number>30</Number>
       <ProgrammingLanguage>SCL</ProgrammingLanguage>
       <SetENOAutomatically>False</SetENOAutomatically>
@@ -34,7 +35,7 @@
     <ObjectList>
       <SW.Blocks.CompileUnit ID="4" CompositionName="CompileUnits">
         <AttributeList>
-          <NetworkSource><StructuredText xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v1">
+          <NetworkSource><StructuredText xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v3">
             
             </StructuredText></NetworkSource>
           <ProgrammingLanguage>SCL</ProgrammingLanguage>

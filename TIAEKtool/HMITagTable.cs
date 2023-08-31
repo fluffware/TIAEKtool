@@ -1,10 +1,6 @@
-﻿using PLC.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Xml;
+using TIAEktool.Plc.Types;
 
 namespace TIAEKtool
 {

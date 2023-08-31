@@ -1,27 +1,22 @@
-﻿using PLC.Types;
-using Siemens.Engineering;
-using Siemens.Engineering.HW;
-using Siemens.Engineering.SW.Blocks;
+﻿using Siemens.Engineering;
+using Siemens.Engineering.Hmi;
 using Siemens.Engineering.Hmi.Screen;
 using Siemens.Engineering.Hmi.Tag;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml;
-using Siemens.Engineering.Hmi;
-using Siemens.Engineering.HW.Features;
-using Siemens.Engineering.SW;
-using Siemens.Engineering.SW.Types;
 using Siemens.Engineering.Hmi.TextGraphicList;
-using static TIAEKtool.PresetDocument;
 using Siemens.Engineering.HmiUnified;
 using Siemens.Engineering.HmiUnified.UI.Screens;
+using Siemens.Engineering.HW;
+using Siemens.Engineering.HW.Features;
+using Siemens.Engineering.SW;
+using Siemens.Engineering.SW.Blocks;
+using Siemens.Engineering.SW.Types;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Windows.Forms;
+using System.Xml;
+using static TIAEKtool.PresetDocument;
 
 namespace TIAEKtool
 {
@@ -385,9 +380,9 @@ namespace TIAEKtool
                             "Assuming preset group " + group_name + " is not used by this HMI since the pop-up screen " + popup_name + " was not found"));
                         continue;
                     }
-                    var preset_tag_table = hmi.TagTables;
+                    var preset_tag_table_groups = hmi.TagTableGroups;
                     string table_name = "Preset_" + group_name;
-                    task_dialog.AddTask(new CreatePresetUnifiedHmiTagsTask(tiaPortal, tags, preset_tag_table, table_name, group_name, db_name, hmi_db_name, presetList.Culture));
+                    task_dialog.AddTask(new CreatePresetUnifiedHmiTagsTask(tiaPortal, tags, preset_tag_table_groups, table_name, group_name, db_name, hmi_db_name, presetList.Culture));
                     
                     task_dialog.AddTask(new CreatePresetUnifiedSettingsPopupTask(tiaPortal, tags, hmi.Screens, popup_name, group_name, presetList.Culture));
                 }

@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using TIAEKtool.Plc;
 using TIAEKtool.Properties;
 
 namespace TIAEKtool
 {
-    public class PresetRecallSCL : PresetSCL
+    public class PresetRecallSCL : BuildSCL
     {
       
         public PresetRecallSCL(string block_name, string value_type_name, string enable_type_name, XmlDocument doc) : base(block_name)

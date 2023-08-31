@@ -7,10 +7,10 @@ namespace TIAEKtool
         class Ctxt
         {
             public AlarmTag alarm_tag = null;
-            public AlarmSink alarm_sink = null;
+            public AlarmTarget alarm_sink = null;
             public string culture;
 
-            AlarmTag get_tag()
+            AlarmTag GetTag()
             {
                 if (alarm_tag == null)
                 {
@@ -27,7 +27,7 @@ namespace TIAEKtool
             {
                 if (type == "alarm")
                 {
-                    get_tag();
+                    GetTag();
                     int p = data.IndexOf(':');
                     if (p < 0) return;
                     string alarm_class = data.Substring(0, p).Trim();
@@ -44,26 +44,34 @@ namespace TIAEKtool
                     }
                     alarm_tag.alarmClass = alarm_class;
                 }
+                else if (type == "alarm_text_1")
+                {
+                    alarm_tag.additionalText[0] = new MultilingualText(culture, data.Trim());
+                }
+                else if (type == "alarm_text_2")
+                {
+                    alarm_tag.additionalText[1] = new MultilingualText(culture, data.Trim());
+                }
                 else if (type == "alarm_id")
                 {
-                    get_tag();
+                    GetTag();
                     if (int.TryParse(data, out int value) && value >= 0)
                     {
                         alarm_tag.id = value;
                     }
                 }
-                else if (type == "alarm_sinks")
+                else if (type == "alarm_targets")
                 {
-                    get_tag();
+                    GetTag();
                     char[] split_on = { ',', ' ' };
                     foreach (string sink in data.Split(split_on, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        alarm_tag.sinks.Add(sink);
+                        alarm_tag.targets.Add(sink);
                     }
                 }
                 else if (type == "alarm_priority")
                 {
-                    get_tag();
+                    GetTag();
                     if (int.TryParse(data, out int value) && value >= 0)
                     {
                         alarm_tag.priority = value;
@@ -71,7 +79,7 @@ namespace TIAEKtool
                 }
                 else if (type == "alarm_delay")
                 {
-                    get_tag();
+                    GetTag();
                     if (int.TryParse(data, out int value) && value >= 0)
                     {
                         alarm_tag.delay = value;
@@ -79,10 +87,10 @@ namespace TIAEKtool
                 }
                 else if (type == "alarm_edge")
                 {
-                    get_tag();
+                    GetTag();
                     alarm_tag.edge = data.Trim().ToLower() == "falling" ? AlarmTag.Edge.Falling : AlarmTag.Edge.Rising;
                 }
-                else if (type == "alarm_sink")
+                else if (type == "alarm_target")
                 {
                     string name;
                     string label;
@@ -91,18 +99,19 @@ namespace TIAEKtool
                     {
                         name = data.Trim();
                         label = name;
-                    } else
+                    }
+                    else
                     {
                         name = data.Substring(0, p).Trim();
                         label = data.Substring(p + 1).Trim();
                     }
 
-                    alarm_sink = new AlarmSinkTag(name, label);
+                    alarm_sink = new AlarmTargetTag(name, label);
                 }
             }
         }
 
-        static public void Parse(string comment, string culture, out AlarmTag alarm_tag, out AlarmSink alarm_sink)
+        static public void Parse(string comment, string culture, out AlarmTag alarm_tag, out AlarmTarget alarm_sink)
         {
             Ctxt ctxt = new Ctxt { culture = culture };
             CommentParser.Parse(comment, ctxt.Handler);

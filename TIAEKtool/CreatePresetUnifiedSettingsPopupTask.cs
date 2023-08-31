@@ -1,15 +1,6 @@
-﻿using PLC.Types;
-using Siemens.Engineering;
-using Siemens.Engineering.Hmi.Screen;
-using Siemens.Engineering.Hmi.Tag;
-using Siemens.Engineering.HmiUnified.UI.Base;
-using Siemens.Engineering.HmiUnified.UI.Controls;
-using Siemens.Engineering.HmiUnified.UI.Dynamization;
-using Siemens.Engineering.HmiUnified.UI.Dynamization.Script;
+﻿using Siemens.Engineering;
 using Siemens.Engineering.HmiUnified.UI.Enum;
 using Siemens.Engineering.HmiUnified.UI.Screens;
-using Siemens.Engineering.HmiUnified.UI.Widgets;
-using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;

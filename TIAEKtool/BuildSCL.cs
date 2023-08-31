@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using TIAEKtool.Properties;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
-    public class PresetSCL
+    public class BuildSCL
     {
         protected XmlElement structured_text;
        
@@ -17,9 +14,9 @@ namespace TIAEKtool
         protected XmlDocument doc;
         public XmlDocument Document { get => doc; }
         protected XmlNamespaceManager nsmgr;
-        protected const string StructuredTextNS = "http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v1";
+        protected const string StructuredTextNS = "http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v3";
         
-        public PresetSCL(string block_name)
+        public BuildSCL(string block_name)
         {
             NameTable nt = new NameTable();
             nsmgr = new XmlNamespaceManager(nt);
@@ -35,11 +32,12 @@ namespace TIAEKtool
         {
             this.doc = doc;
             builder = new Builder(doc);
+            XmlElement blocks = (XmlElement) doc.SelectSingleNode("/Document/SW.Blocks.FC|/Document/SW.Blocks.FB");
             structured_text =
-               (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/ObjectList/SW.Blocks.CompileUnit/AttributeList/NetworkSource/st:StructuredText", nsmgr);
+               (XmlElement)blocks.SelectSingleNode("ObjectList/SW.Blocks.CompileUnit/AttributeList/NetworkSource/st:StructuredText", nsmgr);
             if (structured_text == null) throw new Exception("No 'StructuredText' in XML");
             XmlElement name_elem =
-            (XmlElement)doc.SelectSingleNode("/Document/SW.Blocks.FC/AttributeList/Name", nsmgr);
+            (XmlElement)blocks.SelectSingleNode("AttributeList/Name", nsmgr);
             name_elem.InnerText = block_name;
         }
 

@@ -52,8 +52,8 @@ namespace TIAEKtool
 
         public Entry Lookup(string name)
         {
-            Entry entry;
-            if (lookup.TryGetValue(name, out entry))
+            
+            if (lookup.TryGetValue(name, out Entry entry))
             {
                 return entry;
             }

@@ -31,27 +31,29 @@
         {
             this.alarmListView = new System.Windows.Forms.DataGridView();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.sinkListView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.writeButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
             this.cultureComboBox = new System.Windows.Forms.ComboBox();
             this.saveAlarmList = new System.Windows.Forms.SaveFileDialog();
-            this.sinkListView = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Order = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.alarmListColumnGroup = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.alarmListColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.alarmListColumnLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.add_text_1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.add_text_2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.alarmListColumnType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.edge = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.delay = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.alarmListView)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
-            this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sinkListView)).BeginInit();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // alarmListView
@@ -64,6 +66,8 @@
             this.alarmListColumnGroup,
             this.alarmListColumnPath,
             this.alarmListColumnLabel,
+            this.add_text_1,
+            this.add_text_2,
             this.alarmListColumnType,
             this.edge,
             this.delay});
@@ -89,6 +93,47 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 178F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(800, 450);
             this.tableLayoutPanel1.TabIndex = 1;
+            // 
+            // sinkListView
+            // 
+            this.sinkListView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.sinkListView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.sinkListView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn3,
+            this.dataGridViewTextBoxColumn5,
+            this.dataGridViewTextBoxColumn4});
+            this.sinkListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.sinkListView.Location = new System.Drawing.Point(3, 274);
+            this.sinkListView.Name = "sinkListView";
+            this.sinkListView.Size = new System.Drawing.Size(794, 173);
+            this.sinkListView.TabIndex = 2;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "Name";
+            this.dataGridViewTextBoxColumn3.HeaderText = "Name";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            this.dataGridViewTextBoxColumn3.ReadOnly = true;
+            this.dataGridViewTextBoxColumn3.Width = 60;
+            // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "Label";
+            this.dataGridViewTextBoxColumn5.HeaderText = "Label";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            this.dataGridViewTextBoxColumn5.ReadOnly = true;
+            this.dataGridViewTextBoxColumn5.Width = 58;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "PlcTag";
+            this.dataGridViewTextBoxColumn4.HeaderText = "PLC path";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            this.dataGridViewTextBoxColumn4.ReadOnly = true;
+            this.dataGridViewTextBoxColumn4.Width = 76;
             // 
             // flowLayoutPanel1
             // 
@@ -145,47 +190,6 @@
             this.saveAlarmList.Filter = "EXCEL files (*.xlsx)|*.xlsx";
             this.saveAlarmList.Title = "Save prest list";
             // 
-            // sinkListView
-            // 
-            this.sinkListView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.sinkListView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.sinkListView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn3,
-            this.dataGridViewTextBoxColumn5,
-            this.dataGridViewTextBoxColumn4});
-            this.sinkListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sinkListView.Location = new System.Drawing.Point(3, 274);
-            this.sinkListView.Name = "sinkListView";
-            this.sinkListView.Size = new System.Drawing.Size(794, 173);
-            this.sinkListView.TabIndex = 2;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "Name";
-            this.dataGridViewTextBoxColumn3.HeaderText = "Name";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            this.dataGridViewTextBoxColumn3.ReadOnly = true;
-            this.dataGridViewTextBoxColumn3.Width = 60;
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "Label";
-            this.dataGridViewTextBoxColumn5.HeaderText = "Label";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.ReadOnly = true;
-            this.dataGridViewTextBoxColumn5.Width = 58;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.dataGridViewTextBoxColumn4.DataPropertyName = "PlcTag";
-            this.dataGridViewTextBoxColumn4.HeaderText = "PLC path";
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            this.dataGridViewTextBoxColumn4.ReadOnly = true;
-            this.dataGridViewTextBoxColumn4.Width = 76;
-            // 
             // id
             // 
             this.id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -231,14 +235,30 @@
             this.alarmListColumnLabel.ReadOnly = true;
             this.alarmListColumnLabel.Width = 53;
             // 
+            // add_text_1
+            // 
+            this.add_text_1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.add_text_1.DataPropertyName = "AdditionalText1";
+            this.add_text_1.HeaderText = "Additional text 1";
+            this.add_text_1.Name = "add_text_1";
+            this.add_text_1.ReadOnly = true;
+            this.add_text_1.Width = 90;
+            // 
+            // add_text_2
+            // 
+            this.add_text_2.DataPropertyName = "AdditionalText2";
+            this.add_text_2.HeaderText = "Additional text 2";
+            this.add_text_2.Name = "add_text_2";
+            this.add_text_2.ReadOnly = true;
+            // 
             // alarmListColumnType
             // 
             this.alarmListColumnType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.alarmListColumnType.DataPropertyName = "Sinks";
-            this.alarmListColumnType.HeaderText = "Sinks";
+            this.alarmListColumnType.HeaderText = "Targets";
             this.alarmListColumnType.Name = "alarmListColumnType";
             this.alarmListColumnType.ReadOnly = true;
-            this.alarmListColumnType.Width = 58;
+            this.alarmListColumnType.Width = 68;
             // 
             // edge
             // 
@@ -270,9 +290,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.alarmListView)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sinkListView)).EndInit();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sinkListView)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -294,6 +314,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn alarmListColumnGroup;
         private System.Windows.Forms.DataGridViewTextBoxColumn alarmListColumnPath;
         private System.Windows.Forms.DataGridViewTextBoxColumn alarmListColumnLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn add_text_1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn add_text_2;
         private System.Windows.Forms.DataGridViewTextBoxColumn alarmListColumnType;
         private System.Windows.Forms.DataGridViewComboBoxColumn edge;
         private System.Windows.Forms.DataGridViewTextBoxColumn delay;

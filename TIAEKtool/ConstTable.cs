@@ -26,7 +26,7 @@ namespace TIAEKtool
          }
 
       
-        public static FileInfo buildFile(string table_name, IEnumerable<Constant> constants)
+        public static FileInfo BuildFile(string table_name, IEnumerable<Constant> constants)
          {
             
             XmlWriterSettings settings = new XmlWriterSettings {
@@ -98,7 +98,7 @@ namespace TIAEKtool
             return file;
          }
 
-        static private void readObjectList(XmlReader r, out string comment)
+        static private void ReadObjectList(XmlReader r, out string comment)
         {
             comment = null;
             if (!r.ReadToDescendant("MultilingualText")) return;
@@ -106,7 +106,7 @@ namespace TIAEKtool
             comment = r.ReadElementContentAsString();
         }
 
-        static private void readAttributeList(XmlReader r, out string name, out string value_str, out string type_str)
+        static private void ReadAttributeList(XmlReader r, out string name, out string value_str, out string type_str)
         {
             name = null;
             value_str = null;
@@ -136,7 +136,7 @@ namespace TIAEKtool
         
         }
       
-        static private void readConstant(XmlReader r, List<Constant> constants)
+        static private void ReadConstant(XmlReader r, List<Constant> constants)
         {
 
           
@@ -151,11 +151,11 @@ namespace TIAEKtool
                 {
                     if (r.LocalName == "ObjectList")
                     {
-                        readObjectList(r.ReadSubtree(), out comment);
+                        ReadObjectList(r.ReadSubtree(), out comment);
                     }
                     else if (r.LocalName == "AttributeList")
                     {
-                        readAttributeList(r.ReadSubtree(), out name, out value_str, out type);
+                        ReadAttributeList(r.ReadSubtree(), out name, out value_str, out type);
                     }
                     else
                     {
@@ -172,7 +172,7 @@ namespace TIAEKtool
                 }
             }
         }
-        static public List<Constant> getConstants(FileInfo file)
+        static public List<Constant> GetConstants(FileInfo file)
         {
             List<Constant> constants = new List<Constant>();
 
@@ -190,7 +190,7 @@ namespace TIAEKtool
                 {
                     if (r.GetAttribute("CompositionName") == "UserConstants")
                     {
-                     readConstant(r.ReadSubtree(), constants);
+                     ReadConstant(r.ReadSubtree(), constants);
                     }
                 } while (r.ReadToNextSibling("SW.Tags.PlcUserConstant"));
             }

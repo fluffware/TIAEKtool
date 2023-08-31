@@ -1,10 +1,8 @@
-﻿using PLC.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
@@ -202,10 +200,9 @@ namespace TIAEKtool
             }
             if (start_value != null)
             {
-                XmlElement start_elem = elem.SelectSingleNode("if:StartValue", nsmgr) as XmlElement;
-                if (start_elem == null)
+                if (elem.SelectSingleNode("if:StartValue", nsmgr) == null)
                 {
-                    start_elem = doc.CreateElement("StartValue", XMLUtil.InterfaceNS);
+                    XmlElement start_elem = doc.CreateElement("StartValue", XMLUtil.InterfaceNS);
                     elem.AppendChild(start_elem);
                     start_elem.InnerText = start_value; // Only set start value if there wasn't one before
                 }
@@ -223,7 +220,7 @@ namespace TIAEKtool
                 MemberComponent mc = (MemberComponent)path.Parent;
                 ARRAY array_type = new ARRAY() { Limits = ((ARRAY)mc.Type).Limits, MemberType = BOOL.Type };
                 MemberComponent mc_copy = new MemberComponent(mc.Name, array_type, mc.Parent);
-                path = new IndexComponent(ic.Indices, BOOL.Type, mc_copy);
+                path = new IndexComponent(ic.Indices, mc_copy);
             }
             else
             {

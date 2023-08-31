@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace TIAEKtool
 {
-    public abstract class AlarmSink
+    public abstract class AlarmTarget
     {
         public string name;
         public string label;
 
-        public AlarmSink(string name, string label)
+        public AlarmTarget(string name, string label)
         {
             this.name = name;
             this.label = label;

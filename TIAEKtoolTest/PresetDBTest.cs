@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PLC.Types;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TIAEktool.Plc.Types;
 using TIAEKtool;
+using TIAEKtool.Plc;
 
 namespace TIAEKtoolTest
 {

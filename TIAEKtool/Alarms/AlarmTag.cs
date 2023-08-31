@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
@@ -15,8 +16,9 @@ namespace TIAEKtool
         public string hmiTag = null;
         public int id;
         public MultilingualText eventText = null;
+        public MultilingualText[] additionalText = null;
         public string alarmClass = null;
-        public HashSet<String> sinks = null; // Where to handle the alarm (HMIs or tags)
+        public HashSet<String> targets = null; // Where to handle the alarm (HMIs or tags)
         public int priority = 12;
         public int delay = 0; // Delay in ms
         public Edge edge = Edge.Rising; 
@@ -35,11 +37,18 @@ namespace TIAEKtool
             {
                 alarmClass = "Alarm";
             }
-            if (sinks == null)
+            if (targets == null)
             {
-                sinks = new HashSet<string>();
+                targets = new HashSet<string>();
             }
-           
+            if (additionalText == null)
+            {
+                additionalText = new MultilingualText[2];
+                for (int i = 0; i < additionalText.Length;i++)
+                {
+                    additionalText[i] = new MultilingualText();
+                }
+            }
         }
     }
 

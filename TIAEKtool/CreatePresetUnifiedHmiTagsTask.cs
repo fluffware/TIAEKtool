@@ -1,36 +1,34 @@
-﻿using PLC.Types;
-using Siemens.Engineering;
-using Siemens.Engineering.Hmi.Tag;
+﻿using Siemens.Engineering;
 using Siemens.Engineering.HmiUnified;
 using Siemens.Engineering.HmiUnified.HmiTags;
-using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
-using System.Xml;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
     public class CreatePresetUnifiedHmiTagsTask : SequentialTask
     {
         TiaPortal portal;
-        HmiTagTableComposition tag_tables;
+        HmiTagTableGroupComposition tag_table_groups;
         string tableName;
         string groupName;
         string dbName;
         string hmiDbName;
         string culture;
         IList<PresetTag> tags;
-        public CreatePresetUnifiedHmiTagsTask(TiaPortal portal, IList<PresetTag> tags, HmiTagTableComposition tag_tables, string table_name, string group_name, string db_name, string hmi_db_name, string culture)
+        public CreatePresetUnifiedHmiTagsTask(TiaPortal portal, IList<PresetTag> tags, HmiTagTableGroupComposition tag_table_groups, string table_name, string group_name, string db_name, string hmi_db_name, string culture)
         {
             this.portal = portal;
             this.tags = tags;
-            this.tag_tables = tag_tables;
+            this.tag_table_groups = tag_table_groups;
             this.tableName = table_name;
             groupName = group_name;
             dbName = db_name;
             hmiDbName = hmi_db_name;
             this.culture = culture;
-            Description = TIAutils.FindParentDeviceName(tag_tables) + ": Create HMI tag table " + tableName;
+            Description = TIAutils.FindParentDeviceName(tag_table_groups) + ": Create HMI tag table " + tableName;
         }
         private HmiTag modify_tag(HmiTagComposition tags, string name, string plc_tag, string plc_connection)
         {
@@ -58,6 +56,7 @@ namespace TIAEKtool
             return tag;
         }
 
+        const string TagGroupName = "Preset";
         protected override void DoWork()
         {
             lock (portal)
@@ -65,8 +64,13 @@ namespace TIAEKtool
 
                 try
                 {
-
-
+                    // Create Preset group if it doesn't exist
+                    HmiTagTableGroup group = tag_table_groups.Find(TagGroupName);
+                    if (group == null)
+                    {
+                        group = tag_table_groups.Create(TagGroupName);
+                    }
+                    HmiTagTableComposition tag_tables = group.TagTables;
                     // Create tag table if it doesn't exist
                     HmiTagTable table = tag_tables.Find(tableName);
                     if (table == null)
@@ -75,7 +79,7 @@ namespace TIAEKtool
                     }
 
                     // Find PLC connection
-                    var hmi_software = (HmiSoftware)tag_tables.Parent;
+                    var hmi_software = (HmiSoftware)tag_table_groups.Parent;
                     string connection_name = null;
                     foreach (var connection in hmi_software.Connections) {
                         if (connection.CommunicationDriver.StartsWith("SIMATIC S7"))

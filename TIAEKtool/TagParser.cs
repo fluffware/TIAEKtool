@@ -1,22 +1,18 @@
-﻿    using PLC.Types;
-    using Siemens.Engineering;
-    using Siemens.Engineering.SW.Blocks;
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Xml;
-using TIAtool;
+﻿using Siemens.Engineering;
+using Siemens.Engineering.SW.Blocks;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Threading;
+using System.Xml;
+using TIAEktool.Plc.Types;
+using TIAEKtool.Plc;
 
 namespace TIAEKtool
 {
 
-   
+
     public class TagParser : IDisposable
     {
         public enum Options
@@ -41,7 +37,7 @@ namespace TIAEKtool
         public event EventHandler<HandleTagEventArgs> HandleTag;
 
       
-        TiaPortal portal;
+        readonly TiaPortal portal;
 
         BackgroundWorker worker;
         public TagParser(TiaPortal portal)
@@ -154,87 +150,7 @@ namespace TIAEKtool
             }
 
 
-            // Substitute all indices in path with th low limit of the corresponding array
-            protected PathComponent SubstituteIndicesLow(PathComponent path)
-            {
-                PathComponent parent_copy;
-                if (path.Parent != null)
-                {
-                    parent_copy = SubstituteIndicesLow(path.Parent);
-                }
-                else
-                {
-                    parent_copy = null;
-                }
-
-                if (path is IndexComponent ic)
-                {
-                    int[] indices = new int[ic.Indices.Length];
-                    if (!(ic.Parent is MemberComponent && ic.Parent.Type is ARRAY)) throw new Exception("Parent of index component is not an array");
-                    ARRAY array_type = (ARRAY)ic.Parent.Type;
-                    for (int l = 0; l < array_type.Limits.Count; l++)
-                    {
-                        Constant low = array_type.Limits[l].LowLimit;
-                        if (!(low is IntegerLiteral)) throw new Exception("Low limity of array is not an integer constant.");
-                        int low_limit = ((IntegerLiteral)low).Value;
-                        indices[l] = low_limit;
-                        
-                    }
-
-                    return new IndexComponent(indices, ic.Type, parent_copy);
-                }
-                else
-                {
-                    MemberComponent member = (MemberComponent)path;
-                    return new MemberComponent(member.Name, member.Type, parent_copy);
-                }
-            }
-
-            
-            /// <summary>
-            /// Makes a copy of the path with the indices substitutes
-            /// </summary>
-            /// <param name="path">Original path</param>
-            /// <param name="substituted">Copy of path with new indices</param>
-            /// <param name="indices">Indices to substitute</param>
-            /// <returns>Number of indices in path</returns>
-            protected static int SubstituteIndices(PathComponent path, out PathComponent substituted, IEnumerator<int> indices)
-            {
-                PathComponent parent_copy;
-                int subs_count;
-                if (path.Parent != null)
-                {
-                     subs_count = SubstituteIndices(path.Parent, out parent_copy, indices);
                     
-                }
-                else
-                {
-                    parent_copy = null;
-                    subs_count = 0;
-                }
-
-                if (path is IndexComponent ic)
-                {
-                    IndexComponent copy = new IndexComponent(new int[ic.Indices.Length], ic.Type, parent_copy);
-                    for (int i = 0; i < ic.Indices.Length; i++)
-                    {
-                        if (!indices.MoveNext()) break;
-                        copy.Indices[i] = indices.Current;
-                       
-                    }
-                    subs_count += ic.Indices.Length;
-                    substituted = copy;
-                    return subs_count;
-                }
-                else
-                {
-                    MemberComponent member = (MemberComponent)path;
-                    substituted = new MemberComponent(member.Name, member.Type, parent_copy);
-                    return subs_count;
-                }
-            }
-
-          
             static readonly char[] path_sep = new char[] { ',' };
             protected void ReadSubelement(XmlElement subelement, PathComponent parent)
             {
@@ -247,7 +163,7 @@ namespace TIAEKtool
                     indices[i] = int.Parse(index_strings[i]);
                 }
                 
-                int subs_count = SubstituteIndices(parent, out PathComponent subs, (indices as IList<int>).GetEnumerator());
+                int subs_count = PathComponentUtils.SubstituteIndices(parent, out PathComponent subs, (indices as IList<int>).GetEnumerator());
                 if (subs_count != indices.Length)
                 {
                     if (!(subs is IndexComponent ic)
@@ -258,10 +174,10 @@ namespace TIAEKtool
                     // It's the path of the array itself not an array item.
                     subs = subs.Parent;
                 }
-                XmlElement comment_elem = subelement.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) as XmlElement;
+              
 
                 MultilingualText comment = null;
-                if (comment_elem != null)
+                if (subelement.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) is XmlElement comment_elem)
                 {
                     comment = ReadComment(comment_elem);
                 }
@@ -293,7 +209,7 @@ namespace TIAEKtool
                 PathComponent child_path = member;
                 if (type is ARRAY array) { 
                 
-                    child_path = new IndexComponent(new int[array.Limits.Count], array.MemberType, member);
+                    child_path = new IndexComponent(new int[array.Limits.Count], member);
 
                     if ((options & Options.NoSubelement) != 0)
                     {
@@ -301,7 +217,7 @@ namespace TIAEKtool
                         {
                             handle_tag(new HandleTagEventArgs()
                             {
-                                Path = SubstituteIndicesLow(child_path),
+                                Path = PathComponentUtils.SubstituteIndicesLow(child_path),
                                 Comment = null
                             });
                         }
@@ -310,9 +226,9 @@ namespace TIAEKtool
                 }
 
 
-                XmlElement comment_elem = member_elem.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) as XmlElement;
+               
                 MultilingualText comment = null;
-                if (comment_elem != null)
+                if (member_elem.SelectSingleNode("if:Comment", XMLUtil.nameSpaces) is XmlElement comment_elem)
                 {
                     comment = ReadComment(comment_elem);
                 }
@@ -320,7 +236,7 @@ namespace TIAEKtool
                 {
                     handle_tag(new HandleTagEventArgs()
                     {
-                        Path = SubstituteIndicesLow(member),
+                        Path = PathComponentUtils.SubstituteIndicesLow(member),
                         Comment = comment
                     });
 
@@ -453,9 +369,9 @@ namespace TIAEKtool
             lock (arg.portal)
             {
 
-                if (arg.top is PlcBlockGroup)
+                if (arg.top is PlcBlockGroup top)
                 {
-                    arg.ctxt.HandleBlockFolder((PlcBlockGroup)arg.top);
+                    arg.ctxt.HandleBlockFolder(top);
                 }
                 else
                 {

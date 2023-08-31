@@ -50,9 +50,11 @@
             this.btn_hmi_tags = new System.Windows.Forms.Button();
             this.btn_copy = new System.Windows.Forms.Button();
             this.btn_compile_download = new System.Windows.Forms.Button();
+            this.btn_alarm = new System.Windows.Forms.Button();
+            this.import_alarm_button = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.loadPresetList = new System.Windows.Forms.OpenFileDialog();
-            this.btn_alarm = new System.Windows.Forms.Button();
+            this.loadAlarms = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -166,6 +168,7 @@
             this.flowLayoutPanel1.Controls.Add(this.btn_copy);
             this.flowLayoutPanel1.Controls.Add(this.btn_compile_download);
             this.flowLayoutPanel1.Controls.Add(this.btn_alarm);
+            this.flowLayoutPanel1.Controls.Add(this.import_alarm_button);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(283, 3);
@@ -243,6 +246,26 @@
             this.btn_compile_download.UseVisualStyleBackColor = true;
             this.btn_compile_download.Click += new System.EventHandler(this.BtnCompileDownloadClick);
             // 
+            // btn_alarm
+            // 
+            this.btn_alarm.Location = new System.Drawing.Point(3, 206);
+            this.btn_alarm.Name = "btn_alarm";
+            this.btn_alarm.Size = new System.Drawing.Size(100, 23);
+            this.btn_alarm.TabIndex = 7;
+            this.btn_alarm.Text = "Alarm";
+            this.btn_alarm.UseVisualStyleBackColor = true;
+            this.btn_alarm.Click += new System.EventHandler(this.BtnAlarmClick);
+            // 
+            // import_alarm_button
+            // 
+            this.import_alarm_button.Location = new System.Drawing.Point(3, 235);
+            this.import_alarm_button.Name = "import_alarm_button";
+            this.import_alarm_button.Size = new System.Drawing.Size(100, 23);
+            this.import_alarm_button.TabIndex = 8;
+            this.import_alarm_button.Text = "Import Alarms";
+            this.import_alarm_button.UseVisualStyleBackColor = true;
+            this.import_alarm_button.Click += new System.EventHandler(this.BtnImportAlarmClick);
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.AutoSize = true;
@@ -264,15 +287,10 @@
             this.loadPresetList.DefaultExt = "xlsx";
             this.loadPresetList.FileName = "Preset.xlsx";
             // 
-            // alarm_button
+            // loadAlarms
             // 
-            this.btn_alarm.Location = new System.Drawing.Point(3, 206);
-            this.btn_alarm.Name = "alarm_button";
-            this.btn_alarm.Size = new System.Drawing.Size(100, 23);
-            this.btn_alarm.TabIndex = 7;
-            this.btn_alarm.Text = "Alarm";
-            this.btn_alarm.UseVisualStyleBackColor = true;
-            this.btn_alarm.Click += new System.EventHandler(this.BtnAlarmClick);
+            this.loadAlarms.DefaultExt = "xlsx";
+            this.loadAlarms.FileName = "Alarms.xlsx";
             // 
             // MainForm
             // 
@@ -320,6 +338,8 @@
         private System.Windows.Forms.OpenFileDialog loadPresetList;
         private System.Windows.Forms.Button btn_compile_download;
         private System.Windows.Forms.Button btn_alarm;
+        private System.Windows.Forms.Button import_alarm_button;
+        private System.Windows.Forms.OpenFileDialog loadAlarms;
     }
 }
 

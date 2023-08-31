@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TIAEKtool;
+using TIAEKtool.Plc;
 
 namespace TIAEKtoolTest
 {
@@ -10,10 +11,10 @@ namespace TIAEKtoolTest
         [TestMethod]
         public void ParseTime()
         {
-            Assert.AreEqual(new TimeSpan(0, 0, 1), PresetValueParser.ParseTimeValue("T#1s"));
-            Assert.AreEqual(new TimeSpan(10, 20, 30, 20, 630), PresetValueParser.ParseTimeValue("T#10d_20h_30m_20s_630ms"));
-            Assert.AreEqual(new TimeSpan(10, 20, 30, 20, 630), PresetValueParser.ParseTimeValue("TIME#10d_20h_30m_20s_630ms"));
-            Assert.AreEqual(new TimeSpan(20, 0,0), PresetValueParser.ParseTimeValue("T#20h"));
+            Assert.AreEqual(new TimeSpan(0, 0, 1), PlcValue.ParseTimeValue("T#1s"));
+            Assert.AreEqual(new TimeSpan(10, 20, 30, 20, 630), PlcValue.ParseTimeValue("T#10d_20h_30m_20s_630ms"));
+            Assert.AreEqual(new TimeSpan(10, 20, 30, 20, 630), PlcValue.ParseTimeValue("TIME#10d_20h_30m_20s_630ms"));
+            Assert.AreEqual(new TimeSpan(20, 0,0), PlcValue.ParseTimeValue("T#20h"));
         }
 
         public void TimespanToPLCValue()

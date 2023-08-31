@@ -1,14 +1,7 @@
-﻿using PLC.Types;
-using Siemens.Engineering;
-using Siemens.Engineering.Hmi.Tag;
+﻿using Siemens.Engineering;
 using Siemens.Engineering.Hmi.TextGraphicList;
-using Siemens.Engineering.SW.Blocks;
-using Siemens.Engineering.SW.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
-using TIAEKtool.Properties;
 
 namespace TIAEKtool
 {
