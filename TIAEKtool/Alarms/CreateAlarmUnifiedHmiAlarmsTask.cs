@@ -66,8 +66,8 @@ namespace TIAEKtool
                                     Console.WriteLine("Before: " + hmi_alarm.EventText.Items.Find(lang).Text);
 
                                     List<ParseTextUnified.FieldInfo> fields = null;
-                                    string parsed_text = ParseTextUnified.ParseTextToText(alarm.eventText[lang.Culture.Name], ref fields);
-                                    //string parsed_text = hmi_alarm.EventText.Items.Find(lang).Text;
+                                    //string parsed_text = ParseTextUnified.ParseTextToText(alarm.eventText[lang.Culture.Name], ref fields);
+                                    string parsed_text = hmi_alarm.EventText.Items.Find(lang).Text;
                                     hmi_alarm.EventText.Items.Find(lang).Text = parsed_text;
                                 }
                             }
